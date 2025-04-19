@@ -26,6 +26,7 @@ interface WindowProps {
   onClose: () => void
   initialPosition: Position
   initialSize: Size
+  
 }
 
 export function Window({

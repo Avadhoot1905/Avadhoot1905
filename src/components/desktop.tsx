@@ -101,11 +101,13 @@ export function MacOSDesktop() {
 
   return (
     <div
-      className={`h-screen w-full overflow-hidden font-sans transition-colors duration-300 ${
-        theme === "dark"
-          ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white"
-          : "bg-gradient-to-b from-blue-100 to-blue-200 text-black"
-      }`}
+      className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative"
+      style={{
+        backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light.jpg' : 'v-dark.jpg'})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
     >
       <AnimatePresence mode="wait">
         <LockScreen 

@@ -19,7 +19,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
   const { theme } = useTheme()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex h-16 items-end justify-center">
+    <div className="fixed bottom-0 left-0 right-0 flex h-16 items-end justify-center z-50">
       <motion.div
         className={`mb-2 flex h-16 items-end rounded-2xl p-1 backdrop-blur-xl border ${
           theme === "dark" 

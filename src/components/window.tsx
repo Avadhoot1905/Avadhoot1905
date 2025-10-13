@@ -50,25 +50,28 @@ export function Window({
   if (!mounted) return null
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      style={{ position: "absolute", zIndex: isActive ? 10 : 5 }}
+    <Rnd
+      default={{
+        x: initialPosition.x,
+        y: initialPosition.y,
+        width: initialSize.width,
+        height: initialSize.height,
+      }}
+      minWidth={300}
+      minHeight={200}
+      bounds="window"
+      dragHandleClassName="window-drag-handle"
+      onMouseDown={onActivate}
+      style={{ 
+        zIndex: isActive ? 10 : 5 
+      }}
     >
-      <Rnd
-        default={{
-          x: initialPosition.x,
-          y: initialPosition.y,
-          width: initialSize.width,
-          height: initialSize.height,
-        }}
-        minWidth={300}
-        minHeight={200}
-        bounds="parent"
-        onMouseDown={onActivate}
-        className={`overflow-hidden rounded-2xl border shadow-lg ${
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+        className={`h-full w-full overflow-hidden rounded-2xl border shadow-lg ${
           theme === "dark"
             ? `border-gray-700 bg-gray-800 ${isActive ? "shadow-xl" : ""}`
             : `border-gray-200 bg-white ${isActive ? "shadow-xl" : ""}`
@@ -79,28 +82,28 @@ export function Window({
             theme === "dark" ? (isActive ? "bg-gray-700" : "bg-gray-800") : isActive ? "bg-gray-200" : "bg-gray-100"
           }`}
         >
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 z-10">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onClose()
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 hover:text-white"
+              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 hover:text-white z-10"
             >
               <X className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 hover:text-white">
+            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 hover:text-white z-10">
               <Minus className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 hover:text-white">
+            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 hover:text-white z-10">
               <Square className="h-2 w-2" />
             </button>
           </div>
-          <div className="flex-1 text-center text-xs font-medium">{title}</div>
+          <div className="window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center">{title}</div>
           <div className="w-16"></div>
         </div>
         <div className="h-[calc(100%-2rem)] overflow-auto">{children}</div>
-      </Rnd>
-    </motion.div>
+      </motion.div>
+    </Rnd>
   )
 }

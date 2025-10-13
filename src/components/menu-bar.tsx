@@ -28,9 +28,15 @@ export function MenuBar() {
 
   return (
     <motion.div
-      className={`flex h-10 w-full items-center px-4 backdrop-blur-md fixed top-0 left-0 z-[10000] ${
-        theme === "dark" ? "bg-gray-900/80 text-white" : "bg-gray-100/80 text-black"
+      className={`flex h-10 w-full items-center px-4 backdrop-blur-xl fixed top-0 left-0 z-[10000] border-b ${
+        theme === "dark" 
+          ? "bg-black/20 text-white border-white/10" 
+          : "bg-white/20 text-black border-black/10"
       }`}
+      style={{
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+      }}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -38,16 +44,35 @@ export function MenuBar() {
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("apple")}
-          className="flex h-6 w-6 items-center justify-center rounded-full text-xl font-bold"
+          className={`flex h-6 w-6 items-center justify-center rounded-full text-xl font-bold backdrop-blur-xl border transition-all duration-200 ${
+            activeMenu === "apple"
+              ? theme === "dark" 
+                ? "bg-white/20 border-white/30" 
+                : "bg-black/20 border-black/30"
+              : theme === "dark"
+                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
+                : "hover:bg-black/10 hover:border-black/20 border-transparent"
+          }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
         >
           <SiApple className="h-4 w-4" />
         </button>
         {activeMenu === "apple" && (
           <motion.div
-            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
-              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border backdrop-blur-xl ${
+              theme === "dark" 
+                ? "bg-black/30 border-white/20" 
+                : "bg-white/30 border-black/20"
             }`}
-            style={{ position: 'absolute', zIndex: 99999 }}
+            style={{ 
+              position: 'absolute', 
+              zIndex: 99999,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -104,22 +129,35 @@ export function MenuBar() {
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("file")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium ${
+          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
             activeMenu === "file"
-              ? "bg-blue-500 text-white"
+              ? theme === "dark" 
+                ? "bg-white/20 border-white/30 text-white" 
+                : "bg-black/20 border-black/30 text-black"
               : theme === "dark"
-                ? "hover:bg-gray-700"
-                : "hover:bg-gray-200"
+                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
+                : "hover:bg-black/10 hover:border-black/20 border-transparent"
           }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
         >
           File <ChevronDown className="ml-1 h-3 w-3" />
         </button>
         {activeMenu === "file" && (
           <motion.div
-            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
-              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border backdrop-blur-xl ${
+              theme === "dark" 
+                ? "bg-black/30 border-white/20" 
+                : "bg-white/30 border-black/20"
             }`}
-            style={{ position: 'absolute', zIndex: 99999 }}
+            style={{ 
+              position: 'absolute', 
+              zIndex: 99999,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -154,22 +192,35 @@ export function MenuBar() {
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("edit")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium ${
+          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
             activeMenu === "edit"
-              ? "bg-blue-500 text-white"
+              ? theme === "dark" 
+                ? "bg-white/20 border-white/30 text-white" 
+                : "bg-black/20 border-black/30 text-black"
               : theme === "dark"
-                ? "hover:bg-gray-700"
-                : "hover:bg-gray-200"
+                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
+                : "hover:bg-black/10 hover:border-black/20 border-transparent"
           }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
         >
           Edit <ChevronDown className="ml-1 h-3 w-3" />
         </button>
         {activeMenu === "edit" && (
           <motion.div
-            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
-              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border backdrop-blur-xl ${
+              theme === "dark" 
+                ? "bg-black/30 border-white/20" 
+                : "bg-white/30 border-black/20"
             }`}
-            style={{ position: 'absolute', zIndex: 99999 }}
+            style={{ 
+              position: 'absolute', 
+              zIndex: 99999,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -215,22 +266,35 @@ export function MenuBar() {
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("view")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium ${
+          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
             activeMenu === "view"
-              ? "bg-blue-500 text-white"
+              ? theme === "dark" 
+                ? "bg-white/20 border-white/30 text-white" 
+                : "bg-black/20 border-black/30 text-black"
               : theme === "dark"
-                ? "hover:bg-gray-700"
-                : "hover:bg-gray-200"
+                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
+                : "hover:bg-black/10 hover:border-black/20 border-transparent"
           }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
         >
           View <ChevronDown className="ml-1 h-3 w-3" />
         </button>
         {activeMenu === "view" && (
           <motion.div
-            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
-              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border backdrop-blur-xl ${
+              theme === "dark" 
+                ? "bg-black/30 border-white/20" 
+                : "bg-white/30 border-black/20"
             }`}
-            style={{ position: 'absolute', zIndex: 99999 }}
+            style={{ 
+              position: 'absolute', 
+              zIndex: 99999,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -267,9 +331,19 @@ export function MenuBar() {
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("theme")}
-          className={`flex items-center rounded-full p-1 ${
-            theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-700"
+          className={`flex items-center rounded-full p-1 backdrop-blur-xl border transition-all duration-200 ${
+            activeMenu === "theme"
+              ? theme === "dark" 
+                ? "bg-white/20 border-white/30 text-white" 
+                : "bg-black/20 border-black/30 text-black"
+              : theme === "dark"
+                ? "bg-white/10 border-white/20 text-gray-200 hover:bg-white/15 hover:border-white/30"
+                : "bg-black/10 border-black/20 text-gray-700 hover:bg-black/15 hover:border-black/30"
           }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
         >
           {theme === "dark" ? (
             <Moon className="h-4 w-4" />
@@ -281,10 +355,17 @@ export function MenuBar() {
         </button>
         {activeMenu === "theme" && (
           <motion.div
-            className={`absolute right-0 top-full z-[99999] mt-1 w-32 rounded-md shadow-xl border ${
-              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+            className={`absolute right-0 top-full z-[99999] mt-1 w-32 rounded-md shadow-xl border backdrop-blur-xl ${
+              theme === "dark" 
+                ? "bg-black/30 border-white/20" 
+                : "bg-white/30 border-black/20"
             }`}
-            style={{ position: 'absolute', zIndex: 99999 }}
+            style={{ 
+              position: 'absolute', 
+              zIndex: 99999,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -324,8 +405,32 @@ export function MenuBar() {
       </div>
 
       <div className="flex items-center space-x-2 text-sm">
-        <div className={`rounded-full px-2 py-1 ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}>100%</div>
-        <div>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+        <div 
+          className={`rounded-full px-2 py-1 backdrop-blur-xl border border-transparent transition-all duration-200 ${
+            theme === "dark" 
+              ? "hover:bg-white/10 hover:border-white/20" 
+              : "hover:bg-black/10 hover:border-black/20"
+          }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
+        >
+          100%
+        </div>
+        <div 
+          className={`rounded px-2 py-1 backdrop-blur-xl border border-transparent transition-all duration-200 ${
+            theme === "dark" 
+              ? "hover:bg-white/10 hover:border-white/20" 
+              : "hover:bg-black/10 hover:border-black/20"
+          }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
+        >
+          {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
       </div>
     </motion.div>
   )

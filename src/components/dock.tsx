@@ -21,9 +21,15 @@ export function Dock({ apps, onAppClick }: DockProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 flex h-16 items-end justify-center">
       <motion.div
-        className={`mb-2 flex h-16 items-end rounded-2xl p-1 backdrop-blur-lg ${
-          theme === "dark" ? "bg-gray-800/20" : "bg-white/20"
+        className={`mb-2 flex h-16 items-end rounded-2xl p-1 backdrop-blur-xl border ${
+          theme === "dark" 
+            ? "bg-black/20 border-white/10" 
+            : "bg-white/20 border-black/10"
         }`}
+        style={{
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -42,7 +48,17 @@ export function Dock({ apps, onAppClick }: DockProps) {
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
               <div className="relative">
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                <div 
+                  className={`h-12 w-12 rounded-xl flex items-center justify-center text-3xl backdrop-blur-xl border ${
+                    theme === "dark" 
+                      ? "bg-black/30 border-white/20" 
+                      : "bg-white/30 border-black/20"
+                  }`}
+                  style={{
+                    backdropFilter: 'blur(15px) saturate(160%)',
+                    WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+                  }}
+                >
                   {app.icon}
                 </div>
                 {app.isOpen && (
@@ -51,9 +67,15 @@ export function Dock({ apps, onAppClick }: DockProps) {
               </div>
               {hoveredApp === app.id && (
                 <motion.div
-                  className={`absolute -top-8 whitespace-nowrap rounded px-2 py-1 text-xs ${
-                    theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-800/80 text-white"
+                  className={`absolute -top-8 whitespace-nowrap rounded px-2 py-1 text-xs backdrop-blur-xl border ${
+                    theme === "dark" 
+                      ? "bg-black/40 text-white border-white/20" 
+                      : "bg-white/40 text-black border-black/20"
                   }`}
+                  style={{
+                    backdropFilter: 'blur(15px) saturate(160%)',
+                    WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+                  }}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 5 }}

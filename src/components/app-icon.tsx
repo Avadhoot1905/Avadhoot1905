@@ -22,9 +22,15 @@ export function AppIcon({ id, name, icon, onClick }: AppIconProps) {
       whileTap={{ scale: 0.95 }}
     >
       <motion.div
-        className={`mb-1 rounded-xl p-2 shadow-sm backdrop-blur-sm ${
-          theme === "dark" ? "bg-gray-800/50 hover:bg-gray-700/70" : "bg-white/50 hover:bg-white/70"
+        className={`mb-1 rounded-xl p-2 shadow-xl backdrop-blur-xl border ${
+          theme === "dark" 
+            ? "bg-black/20 hover:bg-black/30 border-white/10" 
+            : "bg-white/20 hover:bg-white/30 border-black/10"
         }`}
+        style={{
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+        }}
         whileHover={{ y: -5 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
@@ -33,8 +39,8 @@ export function AppIcon({ id, name, icon, onClick }: AppIconProps) {
         </div>
       </motion.div>
       <div
-        className={`rounded px-2 py-0.5 text-center text-xs backdrop-blur-sm ${
-          theme === "dark" ? "bg-black/40 text-white" : "bg-black/20 text-white"
+        className={`rounded px-2 py-0.5 text-center text-xs ${
+          theme === "dark" ? "text-white" : "text-black"
         }`}
       >
         {name}

@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { MenuBar } from "@/components/menu-bar"
 import { Dock } from "@/components/dock"
 import { Window } from "@/components/window"
 import { AppIcon } from "@/components/app-icon"
+import { LockScreen } from "@/components/lock-screen"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
@@ -34,12 +35,53 @@ export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
   const [activeWindow, setActiveWindow] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isLocked, setIsLocked] = useState(true) // Start with lock screen
+  const [lastActivity, setLastActivity] = useState(Date.now())
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Activity tracking
+  const updateActivity = useCallback(() => {
+    setLastActivity(Date.now())
+    if (isLocked) {
+      setIsLocked(false)
+    }
+  }, [isLocked])
+
+  // Inactivity detection
+  useEffect(() => {
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+    
+    events.forEach(event => {
+      document.addEventListener(event, updateActivity, true)
+    })
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, updateActivity, true)
+      })
+    }
+  }, [updateActivity])
+
+  // Auto-lock after 1 minute of inactivity
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivity > 60000) { // 60 seconds
+        setIsLocked(true)
+      }
+    }, 5000) // Check every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [lastActivity])
+
+  const handleUnlock = () => {
+    setIsLocked(false)
+    setLastActivity(Date.now())
+  }
 
   const toggleWindow = (appId: string) => {
     if (openWindows.includes(appId)) {
@@ -59,16 +101,24 @@ export function MacOSDesktop() {
 
   return (
     <div
-      className={`h-screen w-full overflow-hidden font-sans transition-colors duration-300
-        ${
-          theme === "dark"
-            ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white"
-            : "bg-gradient-to-b from-blue-100 to-blue-200 text-black"
-        }`}
+      className={`h-screen w-full overflow-hidden font-sans transition-colors duration-300 ${
+        theme === "dark"
+          ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white"
+          : "bg-gradient-to-b from-blue-100 to-blue-200 text-black"
+      }`}
     >
-      <MenuBar />
+      <AnimatePresence mode="wait">
+        <LockScreen 
+          key="lockscreen"
+          isLocked={isLocked} 
+          onUnlock={handleUnlock} 
+        />
+      </AnimatePresence>
+      {!isLocked && (
+        <>
+          <MenuBar />
 
-      <div className="relative h-screen w-full overflow-hidden p-4 pt-14">
+          <div className="relative h-screen w-full overflow-hidden p-4 pt-14">
         <motion.div
           className="grid grid-cols-6 gap-4 p-4"
           initial={{ opacity: 0, y: 20 }}
@@ -538,6 +588,8 @@ export function MacOSDesktop() {
         ]}
         onAppClick={toggleWindow}
       />
+        </>
+      )}
     </div>
   )
 }

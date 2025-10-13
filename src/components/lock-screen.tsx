@@ -123,7 +123,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           }}
         >
           <div className="text-white/80 text-sm font-light">
-            macOS Tahoe
+            Avadhoot Ganesh Mahadik
           </div>
         </div>
       </div>

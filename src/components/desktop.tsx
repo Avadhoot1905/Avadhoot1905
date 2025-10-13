@@ -28,7 +28,8 @@ import {
 import { 
   SiApple,
   SiGithub,
-  SiLinkedin
+  SiLinkedin,
+  SiLeetcode
 } from "react-icons/si"
 
 export function MacOSDesktop() {
@@ -84,6 +85,21 @@ export function MacOSDesktop() {
   }
 
   const toggleWindow = (appId: string) => {
+    // Handle external links for social media apps
+    if (appId === "linkedin") {
+      window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank")
+      return
+    }
+    if (appId === "github") {
+      window.open("https://github.com/Avadhoot1905", "_blank")
+      return
+    }
+    if (appId === "leetcode") {
+      window.open("https://leetcode.com/u/arcsmo19/", "_blank")
+      return
+    }
+    
+    // Handle regular window toggling
     if (openWindows.includes(appId)) {
       setOpenWindows(openWindows.filter((id) => id !== appId))
       setActiveWindow(openWindows.length > 1 ? openWindows[0] : null)
@@ -587,6 +603,7 @@ export function MacOSDesktop() {
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
+          { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
         ]}
         onAppClick={toggleWindow}
       />

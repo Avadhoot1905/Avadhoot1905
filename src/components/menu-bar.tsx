@@ -28,7 +28,7 @@ export function MenuBar() {
 
   return (
     <motion.div
-      className={`flex h-10 w-full items-center px-4 backdrop-blur-md ${
+      className={`flex h-10 w-full items-center px-4 backdrop-blur-md fixed top-0 left-0 z-[10000] ${
         theme === "dark" ? "bg-gray-900/80 text-white" : "bg-gray-100/80 text-black"
       }`}
       initial={{ opacity: 0, y: -10 }}
@@ -44,9 +44,10 @@ export function MenuBar() {
         </button>
         {activeMenu === "apple" && (
           <motion.div
-            className={`absolute left-0 top-full z-50 mt-1 w-56 rounded-md shadow-lg ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
+              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
             }`}
+            style={{ position: 'absolute', zIndex: 99999 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -115,9 +116,10 @@ export function MenuBar() {
         </button>
         {activeMenu === "file" && (
           <motion.div
-            className={`absolute left-0 top-full z-50 mt-1 w-56 rounded-md shadow-lg ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
+              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
             }`}
+            style={{ position: 'absolute', zIndex: 99999 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -164,9 +166,10 @@ export function MenuBar() {
         </button>
         {activeMenu === "edit" && (
           <motion.div
-            className={`absolute left-0 top-full z-50 mt-1 w-56 rounded-md shadow-lg ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
+              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
             }`}
+            style={{ position: 'absolute', zIndex: 99999 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -224,9 +227,10 @@ export function MenuBar() {
         </button>
         {activeMenu === "view" && (
           <motion.div
-            className={`absolute left-0 top-full z-50 mt-1 w-56 rounded-md shadow-lg ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`absolute left-0 top-full z-[99999] mt-1 w-56 rounded-md shadow-xl border ${
+              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
             }`}
+            style={{ position: 'absolute', zIndex: 99999 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -277,9 +281,10 @@ export function MenuBar() {
         </button>
         {activeMenu === "theme" && (
           <motion.div
-            className={`absolute right-0 top-full z-50 mt-1 w-32 rounded-md shadow-lg ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`absolute right-0 top-full z-[99999] mt-1 w-32 rounded-md shadow-xl border ${
+              theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
             }`}
+            style={{ position: 'absolute', zIndex: 99999 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}

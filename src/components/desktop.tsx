@@ -68,7 +68,7 @@ export function MacOSDesktop() {
     >
       <MenuBar />
 
-      <div className="relative h-[calc(100vh-2.5rem-4rem)] w-full overflow-hidden p-4">
+      <div className="relative h-[calc(100vh-2.5rem-4rem)] w-full overflow-hidden p-4 pt-14">
         <motion.div
           className="grid grid-cols-6 gap-4 p-4"
           initial={{ opacity: 0, y: 20 }}

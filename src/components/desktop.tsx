@@ -29,7 +29,8 @@ import {
   SiApple,
   SiGithub,
   SiLinkedin,
-  SiLeetcode
+  SiLeetcode,
+  SiMedium
 } from "react-icons/si"
 
 export function MacOSDesktop() {
@@ -38,7 +39,7 @@ export function MacOSDesktop() {
   const [mounted, setMounted] = useState(false)
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
-  const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode">("github")
+  const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium">("github")
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
@@ -97,6 +98,10 @@ export function MacOSDesktop() {
     }
     if (appId === "leetcode") {
       window.open("https://leetcode.com/u/arcsmo19/", "_blank")
+      return
+    }
+    if (appId === "medium") {
+      window.open("https://medium.com/@arcsmo19", "_blank")
       return
     }
     
@@ -306,6 +311,21 @@ export function MacOSDesktop() {
                       <SiLeetcode className="text-orange-500" />
                       <span>LeetCode</span>
                     </button>
+                    <button
+                      onClick={() => setActiveSafariTab("medium")}
+                      className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
+                        activeSafariTab === "medium"
+                          ? theme === "dark"
+                            ? "bg-gray-900 text-white"
+                            : "bg-white text-black"
+                          : theme === "dark"
+                          ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      }`}
+                    >
+                      <SiMedium />
+                      <span>Medium</span>
+                    </button>
                   </div>
                 </div>
 
@@ -352,6 +372,16 @@ export function MacOSDesktop() {
                         className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
                       >
                         https://leetcode.com/u/arcsmo19/
+                      </a>
+                    )}
+                    {activeSafariTab === "medium" && (
+                      <a
+                        href="https://medium.com/@arcsmo19"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
+                      >
+                        https://medium.com/@arcsmo19
                       </a>
                     )}
                   </div>
@@ -465,6 +495,47 @@ export function MacOSDesktop() {
                         >
                           <SiLeetcode />
                           <span>View on LeetCode</span>
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSafariTab === "medium" && (
+                    <div className="space-y-6">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-white" : "bg-black"}`}>
+                          <SiMedium className={`text-4xl ${theme === "dark" ? "text-black" : "text-white"}`} />
+                        </div>
+                        <div>
+                          <h1 className="text-3xl font-bold mb-1">arcsmo19</h1>
+                          <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                            Writer & Blogger
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
+                        <h2 className="text-xl font-semibold mb-3">My Blog</h2>
+                        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+                          Follow my Medium blog for insightful articles on technology, programming,
+                          web development, and my journey as a developer. Sharing knowledge and experiences!
+                        </p>
+                      </div>
+
+                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
+                        <h2 className="text-xl font-semibold mb-3">Read My Articles</h2>
+                        <a
+                          href="https://medium.com/@arcsmo19"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-white ${
+                            theme === "dark" 
+                              ? "bg-black hover:bg-gray-200 text-black" 
+                              : "bg-black hover:bg-gray-800"
+                          }`}
+                        >
+                          <SiMedium />
+                          <span>View on Medium</span>
                         </a>
                       </div>
                     </div>
@@ -793,6 +864,7 @@ export function MacOSDesktop() {
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
           { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
+          { id: "medium", icon: <SiMedium className="text-gray-800 dark:text-white" />, isOpen: false },
         ]}
         onAppClick={toggleWindow}
       />

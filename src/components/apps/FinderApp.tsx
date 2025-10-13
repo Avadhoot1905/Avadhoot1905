@@ -22,11 +22,14 @@ export function FinderApp() {
         </div>
         <div className="flex-1 p-2">
           <div className="grid grid-cols-4 gap-4">
-            <div className="flex flex-col items-center">
+            <div 
+              className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => window.open("https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link", "_blank")}
+            >
               <div className="h-16 w-16 rounded flex items-center justify-center">
                 <FaFilePdf className="text-4xl text-red-500" />
               </div>
-              <div className="mt-1 text-xs">Document.pdf</div>
+              <div className="mt-1 text-xs">Resume.pdf</div>
             </div>
             <div className="flex flex-col items-center">
               <div className="h-16 w-16 rounded flex items-center justify-center">

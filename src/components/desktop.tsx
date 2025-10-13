@@ -16,7 +16,8 @@ import {
   FaUser,
   FaCode,
   FaGraduationCap,
-  FaBriefcase
+  FaBriefcase,
+  FaGamepad
 } from "react-icons/fa"
 import { 
   SiGithub,
@@ -32,6 +33,7 @@ import { EducationApp } from "@/components/apps/EducationApp"
 import { ExperienceApp } from "@/components/apps/ExperienceApp"
 import { MessagesApp } from "@/components/apps/MessagesApp"
 import { PhotosApp } from "@/components/apps/PhotosApp"
+import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -196,6 +198,12 @@ export function MacOSDesktop() {
             icon={<FaBriefcase className="text-gray-700" />}
             onClick={() => toggleWindow("experience")}
           />
+          <AppIcon
+            id="tictactoe"
+            name="Tic Tac Toe"
+            icon={<FaGamepad className="text-pink-500" />}
+            onClick={() => toggleWindow("tictactoe")}
+          />
         </motion.div>
 
         <AnimatePresence>
@@ -318,6 +326,21 @@ export function MacOSDesktop() {
               <ExperienceApp />
             </Window>
           )}
+
+          {openWindows.includes("tictactoe") && (
+            <Window
+              key="tictactoe"
+              id="tictactoe"
+              title="Tic Tac Toe"
+              isActive={activeWindow === "tictactoe"}
+              onActivate={() => activateWindow("tictactoe")}
+              onClose={() => toggleWindow("tictactoe")}
+              initialPosition={{ x: 300, y: 100 }}
+              initialSize={{ width: 500, height: 600 }}
+            >
+              <TicTacToeApp />
+            </Window>
+          )}
         </AnimatePresence>
       </div>
 
@@ -328,6 +351,7 @@ export function MacOSDesktop() {
           { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
           { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
           { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
+          { id: "tictactoe", icon: <FaGamepad className="text-pink-500" />, isOpen: openWindows.includes("tictactoe") },
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },

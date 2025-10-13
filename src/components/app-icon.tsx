@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
+import { ReactElement } from "react"
 
 interface AppIconProps {
   id: string
   name: string
-  icon: string
+  icon: ReactElement
   onClick: () => void
 }
 
@@ -27,7 +28,9 @@ export function AppIcon({ id, name, icon, onClick }: AppIconProps) {
         whileHover={{ y: -5 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
-        <img src={icon || "/placeholder.svg"} alt={name} className="h-12 w-12" />
+        <div className="h-12 w-12 flex items-center justify-center text-3xl">
+          {icon}
+        </div>
       </motion.div>
       <div
         className={`rounded px-2 py-0.5 text-center text-xs backdrop-blur-sm ${

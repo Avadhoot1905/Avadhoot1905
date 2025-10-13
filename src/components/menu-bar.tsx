@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronDown, Moon, Sun, Monitor } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion } from "framer-motion"
+import { SiApple } from "react-icons/si"
 
 export function MenuBar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
@@ -38,7 +39,9 @@ export function MenuBar() {
         <button
           onClick={() => toggleMenu("apple")}
           className="flex h-6 w-6 items-center justify-center rounded-full text-xl font-bold"
-        ></button>
+        >
+          <SiApple className="h-4 w-4" />
+        </button>
         {activeMenu === "apple" && (
           <motion.div
             className={`absolute left-0 top-full z-50 mt-1 w-56 rounded-md shadow-lg ${

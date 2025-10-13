@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
+import { ReactElement } from "react"
 
 interface DockProps {
   apps: {
     id: string
-    icon: string
+    icon: ReactElement
     isOpen: boolean
   }[]
   onAppClick: (appId: string) => void
@@ -41,7 +42,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
               <div className="relative">
-                <img src={app.icon || "/placeholder.svg"} alt={app.id} className="h-12 w-12 rounded-xl" />
+                <div className="h-12 w-12 rounded-xl flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                  {app.icon}
+                </div>
                 {app.isOpen && (
                   <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gray-400"></div>
                 )}

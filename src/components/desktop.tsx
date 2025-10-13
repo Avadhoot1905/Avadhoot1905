@@ -669,15 +669,15 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("about")}
               onClose={() => toggleWindow("about")}
               initialPosition={{ x: 150, y: 100 }}
-              initialSize={{ width: 600, height: 500 }}
+              initialSize={{ width: 700, height: 600 }}
             >
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto">
                 <div className="flex items-center mb-6">
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mr-6">
                     <FaUser className="text-white text-3xl" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold mb-2">Your Name</h1>
+                    <h1 className="text-2xl font-bold mb-2">Avadhoot Ganesh Mahadik</h1>
                     <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
                       Full Stack Developer
                     </p>
@@ -685,12 +685,23 @@ export function MacOSDesktop() {
                 </div>
                 <div className="space-y-4">
                   <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                    Passionate developer with expertise in modern web technologies. I love creating 
-                    beautiful, functional applications that solve real-world problems.
+                    I am a hardworking and persevering individual who believes in continuous improvement. 
+                    Patience and resilience drive my approach to problem-solving, and I am always eager to 
+                    refine my skills, adapt to new challenges, and push my boundaries.
                   </p>
                   <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                    When I'm not coding, you can find me exploring new technologies, contributing to 
-                    open source projects, or enjoying a good cup of coffee.
+                    Passionate about competitive programming, I actively solve LeetCode and DSA problems to 
+                    enhance my algorithmic thinking. My goal is to be able to reach a level of enlightenment 
+                    where coding becomes second nature—where I only need to think about the algorithm, and the 
+                    code flows effortlessly without conscious effort. Alongside this, I build full-stack 
+                    applications using industry-standard technologies like Next.js, Prisma, Docker, Git, etc., 
+                    ensuring scalability and efficiency in my projects. My aim is to bridge the gap between 
+                    theoretical knowledge and real-world application, creating solutions that are both impactful 
+                    and innovative.
+                  </p>
+                  <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+                    My journey is one of continuous learning, building, and problem-solving, and I look forward 
+                    to embracing new challenges and opportunities that help me grow.
                   </p>
                 </div>
               </div>
@@ -752,40 +763,73 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("education")}
               onClose={() => toggleWindow("education")}
               initialPosition={{ x: 180, y: 140 }}
-              initialSize={{ width: 650, height: 500 }}
+              initialSize={{ width: 750, height: 600 }}
             >
-              <div className="p-6 overflow-y-auto">
+              <div className="p-6 overflow-y-auto h-full">
                 <h1 className="text-xl font-bold mb-6">Education</h1>
                 <div className="space-y-6">
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaGraduationCap className="text-blue-600 mr-3 text-xl" />
-                      <div>
-                        <h3 className="text-lg font-semibold">Bachelor of Computer Science</h3>
-                        <p className={`text-sm ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          University Name • 2019-2023
+                  <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                    <div className="flex items-start mb-3">
+                      <FaGraduationCap className="text-blue-600 mr-3 text-xl mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="text-base font-semibold mb-1">Bachelor of Technology - BTech</h3>
+                        <p className="text-sm font-medium mb-1">Computer Science and Engineering with Business Systems</p>
+                        <p className={`text-xs ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
+                          Vellore Institute of Technology, Vellore • Jul 2023 - Jul 2027
+                        </p>
+                        <p className={`text-xs mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                          Grade: 8.43/10 (3.37/4)
                         </p>
                       </div>
                     </div>
-                    <p className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
-                      Graduated with honors. Specialized in software engineering and web development.
-                      Relevant coursework: Data Structures, Algorithms, Database Systems, Web Technologies.
-                    </p>
+                    <div className={`space-y-2 text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                      <p>
+                        I am an active member of ACM-VIT and SEDS-VIT, contributing to web projects like ExamCooker. 
+                        I also engage in cultural and fitness activities through Yuva Marathi and the Cycling Club.
+                      </p>
+                      <p>
+                        Passionate about hackathons, I've participated in Yantra'25, DevJams, and Caterpillar Hackathon. 
+                        With a strong learning mindset, I balance projects, competitions, and academics, maintaining 
+                        a GPA of 8.38/10 (3.37/4).
+                      </p>
+                    </div>
                   </div>
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaGraduationCap className="text-green-600 mr-3 text-xl" />
-                      <div>
-                        <h3 className="text-lg font-semibold">Full Stack Web Development Bootcamp</h3>
-                        <p className={`text-sm ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          Coding Institute • 2022
+
+                  <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                    <div className="flex items-start mb-3">
+                      <FaGraduationCap className="text-green-600 mr-3 text-xl mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="text-base font-semibold mb-1">All India Senior School Certificate Examination (AISSCE)</h3>
+                        <p className={`text-xs ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
+                          The Deens Academy • Jun 2021 - Mar 2023
+                        </p>
+                        <p className={`text-xs mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                          Grade 12: 90.8% | Grade 10: 92.2%
                         </p>
                       </div>
                     </div>
-                    <p className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
-                      Intensive 6-month program covering modern web development technologies including 
-                      React, Node.js, Express, MongoDB, and deployment strategies.
-                    </p>
+                    <div className={`space-y-2 text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                      <p>
+                        Deens Academy played a pivotal role in shaping my thought process and personal development. 
+                        It was where I spent my formative years, learning invaluable life lessons that continue to 
+                        guide me today.
+                      </p>
+                      <p>
+                        The school fostered intellectual curiosity and social growth. Interacting with peers taught 
+                        me to be sociable and amiable, skills that remain crucial in building meaningful relationships. 
+                        My teachers, especially in mathematics, played a key role in developing my analytical and 
+                        logical reasoning, which now aids me in algorithm design and coding.
+                      </p>
+                      <p>
+                        Beyond academics, Deens Academy's house system fostered teamwork and camaraderie. As part of 
+                        Flavus House (Yellow House), I developed leadership, a competitive spirit, and a strong sense 
+                        of belonging.
+                      </p>
+                      <p>
+                        Reflecting on my journey, I am grateful for the intellectual foundation and adaptability 
+                        Deens Academy nurtured in me. It remains integral to my growth, shaping who I am today.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

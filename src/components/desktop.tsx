@@ -13,25 +13,25 @@ import {
   FaSafari, 
   FaCommentDots, 
   FaImages, 
-  FaEnvelope, 
-  FaMusic,
-  FaFilePdf,
-  FaFileExcel,
-  FaFilePowerpoint,
-  FaChevronLeft,
-  FaChevronRight,
   FaUser,
   FaCode,
   FaGraduationCap,
   FaBriefcase
 } from "react-icons/fa"
 import { 
-  SiApple,
   SiGithub,
   SiLinkedin,
   SiLeetcode,
   SiMedium
 } from "react-icons/si"
+import { FinderApp } from "@/components/apps/FinderApp"
+import { SafariApp } from "@/components/apps/SafariApp"
+import { AboutApp } from "@/components/apps/AboutApp"
+import { ProjectsApp } from "@/components/apps/ProjectsApp"
+import { EducationApp } from "@/components/apps/EducationApp"
+import { ExperienceApp } from "@/components/apps/ExperienceApp"
+import { MessagesApp } from "@/components/apps/MessagesApp"
+import { PhotosApp } from "@/components/apps/PhotosApp"
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -39,7 +39,6 @@ export function MacOSDesktop() {
   const [mounted, setMounted] = useState(false)
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
-  const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium">("github")
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
@@ -211,43 +210,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 100, y: 100 }}
               initialSize={{ width: 600, height: 400 }}
             >
-              <div className="flex h-full flex-col">
-                <div className="flex border-b dark:border-gray-700">
-                  <div
-                    className={`w-48 border-r p-2 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-100"}`}
-                  >
-                    <div className="mb-1 font-semibold">Favorites</div>
-                    <div className={`pl-2 text-sm ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                      <div className="mb-1">Applications</div>
-                      <div className="mb-1">Documents</div>
-                      <div className="mb-1">Downloads</div>
-                      <div className="mb-1">Pictures</div>
-                    </div>
-                  </div>
-                  <div className="flex-1 p-2">
-                    <div className="grid grid-cols-4 gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="h-16 w-16 rounded flex items-center justify-center">
-                          <FaFilePdf className="text-4xl text-red-500" />
-                        </div>
-                        <div className="mt-1 text-xs">Document.pdf</div>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="h-16 w-16 rounded flex items-center justify-center">
-                          <FaFileExcel className="text-4xl text-green-500" />
-                        </div>
-                        <div className="mt-1 text-xs">Spreadsheet.xlsx</div>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="h-16 w-16 rounded flex items-center justify-center">
-                          <FaFilePowerpoint className="text-4xl text-orange-500" />
-                        </div>
-                        <div className="mt-1 text-xs">Presentation.pptx</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <FinderApp />
             </Window>
           )}
 
@@ -262,286 +225,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 150, y: 150 }}
               initialSize={{ width: 800, height: 600 }}
             >
-              <div className="flex h-full flex-col">
-                {/* Tab Bar */}
-                <div className={`flex items-center border-b ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
-                  <div className="flex space-x-1 p-2">
-                    <button
-                      onClick={() => setActiveSafariTab("github")}
-                      className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
-                        activeSafariTab === "github"
-                          ? theme === "dark"
-                            ? "bg-gray-900 text-white"
-                            : "bg-white text-black"
-                          : theme === "dark"
-                          ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      <SiGithub />
-                      <span>GitHub</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveSafariTab("linkedin")}
-                      className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
-                        activeSafariTab === "linkedin"
-                          ? theme === "dark"
-                            ? "bg-gray-900 text-white"
-                            : "bg-white text-black"
-                          : theme === "dark"
-                          ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      <SiLinkedin className="text-blue-500" />
-                      <span>LinkedIn</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveSafariTab("leetcode")}
-                      className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
-                        activeSafariTab === "leetcode"
-                          ? theme === "dark"
-                            ? "bg-gray-900 text-white"
-                            : "bg-white text-black"
-                          : theme === "dark"
-                          ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      <SiLeetcode className="text-orange-500" />
-                      <span>LeetCode</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveSafariTab("medium")}
-                      className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
-                        activeSafariTab === "medium"
-                          ? theme === "dark"
-                            ? "bg-gray-900 text-white"
-                            : "bg-white text-black"
-                          : theme === "dark"
-                          ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      <SiMedium />
-                      <span>Medium</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Address Bar */}
-                <div className={`flex items-center border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
-                  <div
-                    className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
-                  >
-                    <FaChevronLeft className={theme === "dark" ? "text-gray-300" : "text-gray-500"} />
-                  </div>
-                  <div
-                    className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
-                  >
-                    <FaChevronRight className={theme === "dark" ? "text-gray-300" : "text-gray-500"} />
-                  </div>
-                  <div
-                    className={`flex-1 rounded-full px-4 py-1 text-sm ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
-                  >
-                    {activeSafariTab === "github" && (
-                      <a
-                        href="https://github.com/Avadhoot1905"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-                      >
-                        https://github.com/Avadhoot1905
-                      </a>
-                    )}
-                    {activeSafariTab === "linkedin" && (
-                      <a
-                        href="https://www.linkedin.com/in/avadhoot-mahadik-125362295/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-                      >
-                        https://www.linkedin.com/in/avadhoot-mahadik-125362295/
-                      </a>
-                    )}
-                    {activeSafariTab === "leetcode" && (
-                      <a
-                        href="https://leetcode.com/u/arcsmo19/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-                      >
-                        https://leetcode.com/u/arcsmo19/
-                      </a>
-                    )}
-                    {activeSafariTab === "medium" && (
-                      <a
-                        href="https://medium.com/@arcsmo19"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-                      >
-                        https://medium.com/@arcsmo19
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-6">
-                  {activeSafariTab === "github" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}>
-                          <SiGithub className="text-4xl" />
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-bold mb-1">Avadhoot1905</h1>
-                          <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-                            Software Developer
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">About</h2>
-                        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                          Welcome to my GitHub profile! Here you'll find my open source projects,
-                          contributions, and various experiments with different technologies.
-                        </p>
-                      </div>
-
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">Visit My Profile</h2>
-                        <a
-                          href="https://github.com/Avadhoot1905"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors"
-                        >
-                          <SiGithub />
-                          <span>View on GitHub</span>
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeSafariTab === "linkedin" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center">
-                          <SiLinkedin className="text-4xl text-white" />
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-bold mb-1">Avadhoot Mahadik</h1>
-                          <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-                            Professional Network
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">Professional Profile</h2>
-                        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                          Connect with me on LinkedIn to see my professional experience,
-                          skills, endorsements, and network. Let's connect and grow together!
-                        </p>
-                      </div>
-
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">Connect With Me</h2>
-                        <a
-                          href="https://www.linkedin.com/in/avadhoot-mahadik-125362295/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                        >
-                          <SiLinkedin />
-                          <span>View on LinkedIn</span>
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeSafariTab === "leetcode" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center">
-                          <SiLeetcode className="text-4xl text-white" />
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-bold mb-1">arcsmo19</h1>
-                          <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-                            Coding Practice & Challenges
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">About My Practice</h2>
-                        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                          Check out my LeetCode profile to see my problem-solving journey,
-                          solved challenges, and coding statistics. Continuous learning and improvement!
-                        </p>
-                      </div>
-
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">View My Solutions</h2>
-                        <a
-                          href="https://leetcode.com/u/arcsmo19/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-                        >
-                          <SiLeetcode />
-                          <span>View on LeetCode</span>
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeSafariTab === "medium" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-white" : "bg-black"}`}>
-                          <SiMedium className={`text-4xl ${theme === "dark" ? "text-black" : "text-white"}`} />
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-bold mb-1">arcsmo19</h1>
-                          <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-                            Writer & Blogger
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">My Blog</h2>
-                        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                          Follow my Medium blog for insightful articles on technology, programming,
-                          web development, and my journey as a developer. Sharing knowledge and experiences!
-                        </p>
-                      </div>
-
-                      <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                        <h2 className="text-xl font-semibold mb-3">Read My Articles</h2>
-                        <a
-                          href="https://medium.com/@arcsmo19"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-white ${
-                            theme === "dark" 
-                              ? "bg-black hover:bg-gray-200 text-black" 
-                              : "bg-black hover:bg-gray-800"
-                          }`}
-                        >
-                          <SiMedium />
-                          <span>View on Medium</span>
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <SafariApp />
             </Window>
           )}
 
@@ -556,71 +240,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 200, y: 200 }}
               initialSize={{ width: 500, height: 400 }}
             >
-              <div className="flex h-full">
-                <div className={`w-1/3 border-r ${theme === "dark" ? "border-gray-700" : ""}`}>
-                  <div className={`border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      className={`w-full rounded-full px-3 py-1 text-sm ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
-                    />
-                  </div>
-                  <div className="p-2">
-                    <div className={`mb-2 rounded p-2 ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}>
-                      <div className="font-semibold">John Doe</div>
-                      <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                        Hey, how are you?
-                      </div>
-                    </div>
-                    <div className={`mb-2 rounded p-2 ${theme === "dark" ? "bg-gray-700" : "bg-blue-50"}`}>
-                      <div className="font-semibold">Jane Smith</div>
-                      <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                        Did you see the new update?
-                      </div>
-                    </div>
-                    <div className={`mb-2 rounded p-2 ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}>
-                      <div className="font-semibold">Team Chat</div>
-                      <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                        Meeting at 3pm
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-col">
-                  <div className={`border-b p-2 text-center ${theme === "dark" ? "border-gray-700" : ""}`}>
-                    <div className="font-semibold">Jane Smith</div>
-                    <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Online</div>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4">
-                    <div className="mb-4 flex justify-start">
-                      <div
-                        className={`max-w-[70%] rounded-lg p-2 text-sm ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
-                      >
-                        Hey there! How's your project going?
-                      </div>
-                    </div>
-                    <div className="mb-4 flex justify-end">
-                      <div className="max-w-[70%] rounded-lg bg-blue-500 p-2 text-sm text-white">
-                        It's going well! Just working on the macOS interface.
-                      </div>
-                    </div>
-                    <div className="mb-4 flex justify-start">
-                      <div
-                        className={`max-w-[70%] rounded-lg p-2 text-sm ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
-                      >
-                        Did you see the new update?
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`border-t p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
-                    <input
-                      type="text"
-                      placeholder="iMessage"
-                      className={`w-full rounded-full px-3 py-2 text-sm ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
-                    />
-                  </div>
-                </div>
-              </div>
+              <MessagesApp />
             </Window>
           )}
 
@@ -635,28 +255,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 250, y: 150 }}
               initialSize={{ width: 650, height: 450 }}
             >
-              <div className="flex h-full flex-col">
-                <div className={`border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
-                  <div className="flex space-x-4">
-                    <div className={`text-sm font-medium ${theme === "dark" ? "text-blue-400" : "text-blue-500"}`}>
-                      Photos
-                    </div>
-                    <div className="text-sm">Memories</div>
-                    <div className="text-sm">Albums</div>
-                  </div>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4">
-                  <h2 className="mb-2 text-lg font-semibold">Recents</h2>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[...Array(9)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`aspect-square rounded ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <PhotosApp />
             </Window>
           )}
 
@@ -671,40 +270,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 150, y: 100 }}
               initialSize={{ width: 700, height: 600 }}
             >
-              <div className="p-6 overflow-y-auto">
-                <div className="flex items-center mb-6">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mr-6">
-                    <FaUser className="text-white text-3xl" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold mb-2">Avadhoot Ganesh Mahadik</h1>
-                    <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      Full Stack Developer
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                    I am a hardworking and persevering individual who believes in continuous improvement. 
-                    Patience and resilience drive my approach to problem-solving, and I am always eager to 
-                    refine my skills, adapt to new challenges, and push my boundaries.
-                  </p>
-                  <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                    Passionate about competitive programming, I actively solve LeetCode and DSA problems to 
-                    enhance my algorithmic thinking. My goal is to be able to reach a level of enlightenment 
-                    where coding becomes second nature—where I only need to think about the algorithm, and the 
-                    code flows effortlessly without conscious effort. Alongside this, I build full-stack 
-                    applications using industry-standard technologies like Next.js, Prisma, Docker, Git, etc., 
-                    ensuring scalability and efficiency in my projects. My aim is to bridge the gap between 
-                    theoretical knowledge and real-world application, creating solutions that are both impactful 
-                    and innovative.
-                  </p>
-                  <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-                    My journey is one of continuous learning, building, and problem-solving, and I look forward 
-                    to embracing new challenges and opportunities that help me grow.
-                  </p>
-                </div>
-              </div>
+              <AboutApp />
             </Window>
           )}
 
@@ -719,38 +285,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 200, y: 120 }}
               initialSize={{ width: 700, height: 550 }}
             >
-              <div className="p-6 overflow-y-auto">
-                <h1 className="text-xl font-bold mb-6">My Projects</h1>
-                <div className="grid gap-6">
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaCode className="text-green-500 mr-2" />
-                      <h3 className="text-lg font-semibold">Portfolio Website</h3>
-                    </div>
-                    <p className={`mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      A responsive portfolio website built with Next.js and Tailwind CSS
-                    </p>
-                    <div className="flex gap-2">
-                      <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">Next.js</span>
-                      <span className="px-2 py-1 bg-cyan-500 text-white text-xs rounded">Tailwind</span>
-                    </div>
-                  </div>
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaCode className="text-purple-500 mr-2" />
-                      <h3 className="text-lg font-semibold">E-commerce Platform</h3>
-                    </div>
-                    <p className={`mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      Full-stack e-commerce solution with React, Node.js, and MongoDB
-                    </p>
-                    <div className="flex gap-2">
-                      <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded">React</span>
-                      <span className="px-2 py-1 bg-green-600 text-white text-xs rounded">Node.js</span>
-                      <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">MongoDB</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ProjectsApp />
             </Window>
           )}
 
@@ -765,74 +300,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 180, y: 140 }}
               initialSize={{ width: 750, height: 600 }}
             >
-              <div className="p-6 overflow-y-auto h-full">
-                <h1 className="text-xl font-bold mb-6">Education</h1>
-                <div className="space-y-6">
-                  <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
-                    <div className="flex items-start mb-3">
-                      <FaGraduationCap className="text-blue-600 mr-3 text-xl mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="text-base font-semibold mb-1">Bachelor of Technology - BTech</h3>
-                        <p className="text-sm font-medium mb-1">Computer Science and Engineering with Business Systems</p>
-                        <p className={`text-xs ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          Vellore Institute of Technology, Vellore • Jul 2023 - Jul 2027
-                        </p>
-                        <p className={`text-xs mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                          Grade: 8.43/10 (3.37/4)
-                        </p>
-                      </div>
-                    </div>
-                    <div className={`space-y-2 text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      <p>
-                        I am an active member of ACM-VIT and SEDS-VIT, contributing to web projects like ExamCooker. 
-                        I also engage in cultural and fitness activities through Yuva Marathi and the Cycling Club.
-                      </p>
-                      <p>
-                        Passionate about hackathons, I've participated in Yantra'25, DevJams, and Caterpillar Hackathon. 
-                        With a strong learning mindset, I balance projects, competitions, and academics, maintaining 
-                        a GPA of 8.38/10 (3.37/4).
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
-                    <div className="flex items-start mb-3">
-                      <FaGraduationCap className="text-green-600 mr-3 text-xl mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="text-base font-semibold mb-1">All India Senior School Certificate Examination (AISSCE)</h3>
-                        <p className={`text-xs ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          The Deens Academy • Jun 2021 - Mar 2023
-                        </p>
-                        <p className={`text-xs mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                          Grade 12: 90.8% | Grade 10: 92.2%
-                        </p>
-                      </div>
-                    </div>
-                    <div className={`space-y-2 text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      <p>
-                        Deens Academy played a pivotal role in shaping my thought process and personal development. 
-                        It was where I spent my formative years, learning invaluable life lessons that continue to 
-                        guide me today.
-                      </p>
-                      <p>
-                        The school fostered intellectual curiosity and social growth. Interacting with peers taught 
-                        me to be sociable and amiable, skills that remain crucial in building meaningful relationships. 
-                        My teachers, especially in mathematics, played a key role in developing my analytical and 
-                        logical reasoning, which now aids me in algorithm design and coding.
-                      </p>
-                      <p>
-                        Beyond academics, Deens Academy's house system fostered teamwork and camaraderie. As part of 
-                        Flavus House (Yellow House), I developed leadership, a competitive spirit, and a strong sense 
-                        of belonging.
-                      </p>
-                      <p>
-                        Reflecting on my journey, I am grateful for the intellectual foundation and adaptability 
-                        Deens Academy nurtured in me. It remains integral to my growth, shaping who I am today.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <EducationApp />
             </Window>
           )}
 
@@ -847,51 +315,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 220, y: 160 }}
               initialSize={{ width: 700, height: 550 }}
             >
-              <div className="p-6 overflow-y-auto">
-                <h1 className="text-xl font-bold mb-6">Work Experience</h1>
-                <div className="space-y-6">
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaBriefcase className="text-purple-600 mr-3 text-xl" />
-                      <div>
-                        <h3 className="text-lg font-semibold">Senior Frontend Developer</h3>
-                        <p className={`text-sm ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          Tech Company Inc. • 2023-Present
-                        </p>
-                      </div>
-                    </div>
-                    <p className={`mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      Lead frontend development for multiple high-traffic web applications. 
-                      Collaborate with cross-functional teams to deliver exceptional user experiences.
-                    </p>
-                    <ul className={`list-disc list-inside text-sm space-y-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                      <li>Developed and maintained React applications serving 100k+ users</li>
-                      <li>Improved application performance by 40% through code optimization</li>
-                      <li>Mentored junior developers and led code review processes</li>
-                    </ul>
-                  </div>
-                  <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-                    <div className="flex items-center mb-3">
-                      <FaBriefcase className="text-green-600 mr-3 text-xl" />
-                      <div>
-                        <h3 className="text-lg font-semibold">Full Stack Developer</h3>
-                        <p className={`text-sm ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
-                          StartupXYZ • 2021-2023
-                        </p>
-                      </div>
-                    </div>
-                    <p className={`mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-                      Built scalable web applications from concept to deployment. 
-                      Worked with modern technologies to create innovative solutions.
-                    </p>
-                    <ul className={`list-disc list-inside text-sm space-y-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                      <li>Developed RESTful APIs using Node.js and Express</li>
-                      <li>Created responsive frontends with React and Tailwind CSS</li>
-                      <li>Implemented CI/CD pipelines and cloud deployment strategies</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+              <ExperienceApp />
             </Window>
           )}
         </AnimatePresence>

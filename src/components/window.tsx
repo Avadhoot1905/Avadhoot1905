@@ -68,7 +68,7 @@ export function Window({
         minHeight={200}
         bounds="parent"
         onMouseDown={onActivate}
-        className={`overflow-hidden rounded-lg border shadow-lg ${
+        className={`overflow-hidden rounded-2xl border shadow-lg ${
           theme === "dark"
             ? `border-gray-700 bg-gray-800 ${isActive ? "shadow-xl" : ""}`
             : `border-gray-200 bg-white ${isActive ? "shadow-xl" : ""}`

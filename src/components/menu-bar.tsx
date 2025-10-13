@@ -134,16 +134,14 @@ export function MenuBar() {
               ? theme === "dark" 
                 ? "bg-white/20 border-white/30 text-white" 
                 : "bg-black/20 border-black/30 text-black"
-              : theme === "dark"
-                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
-                : "hover:bg-black/10 hover:border-black/20 border-transparent"
+              : "border-transparent hover:bg-white/10 hover:border-white/20"
           }`}
           style={{
             backdropFilter: 'blur(15px) saturate(160%)',
             WebkitBackdropFilter: 'blur(15px) saturate(160%)'
           }}
         >
-          File <ChevronDown className="ml-1 h-3 w-3" />
+          File
         </button>
         {activeMenu === "file" && (
           <motion.div
@@ -197,16 +195,14 @@ export function MenuBar() {
               ? theme === "dark" 
                 ? "bg-white/20 border-white/30 text-white" 
                 : "bg-black/20 border-black/30 text-black"
-              : theme === "dark"
-                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
-                : "hover:bg-black/10 hover:border-black/20 border-transparent"
+              : "border-transparent hover:bg-white/10 hover:border-white/20"
           }`}
           style={{
             backdropFilter: 'blur(15px) saturate(160%)',
             WebkitBackdropFilter: 'blur(15px) saturate(160%)'
           }}
         >
-          Edit <ChevronDown className="ml-1 h-3 w-3" />
+          Edit
         </button>
         {activeMenu === "edit" && (
           <motion.div
@@ -271,16 +267,14 @@ export function MenuBar() {
               ? theme === "dark" 
                 ? "bg-white/20 border-white/30 text-white" 
                 : "bg-black/20 border-black/30 text-black"
-              : theme === "dark"
-                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
-                : "hover:bg-black/10 hover:border-black/20 border-transparent"
+              : "border-transparent hover:bg-white/10 hover:border-white/20"
           }`}
           style={{
             backdropFilter: 'blur(15px) saturate(160%)',
             WebkitBackdropFilter: 'blur(15px) saturate(160%)'
           }}
         >
-          View <ChevronDown className="ml-1 h-3 w-3" />
+          View
         </button>
         {activeMenu === "view" && (
           <motion.div

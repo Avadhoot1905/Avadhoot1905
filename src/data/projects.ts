@@ -39,7 +39,7 @@ export const projects: Project[] = [
   {
     id: 4,
     name: "iVision",
-    description: "A mobile-first task management application with real-time collaboration and cloud sync capabilities",
+    description: "An iOS based mobile application that leverages machine learning to identify diseases in the eye in real-time using the device camera",
     techStack: ["Swift", "Python", "Torch-Vision", "TensorFlow", "CoreML"],
     domain: "App Development",
     github: "https://github.com/Avadhoot1905/iVision-App"

@@ -493,7 +493,7 @@ export function SafariApp() {
                     rel="noopener noreferrer"
                     className={`inline-flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors font-medium text-white ${
                       theme === "dark" 
-                        ? "bg-white hover:bg-gray-200 text-black" 
+                        ? "bg-black hover:bg-gray-200 text-black" 
                         : "bg-black hover:bg-gray-800"
                     }`}
                   >

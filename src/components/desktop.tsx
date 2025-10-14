@@ -39,8 +39,8 @@ import { Game2048App } from "@/components/apps/Game2048App"
 import { TerminalApp } from "@/components/apps/TerminalApp"
 
 export function MacOSDesktop() {
-  const [openWindows, setOpenWindows] = useState<string[]>([])
-  const [activeWindow, setActiveWindow] = useState<string | null>(null)
+  const [openWindows, setOpenWindows] = useState<string[]>(["terminal", "about"])
+  const [activeWindow, setActiveWindow] = useState<string | null>("about")
   const [mounted, setMounted] = useState(false)
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
@@ -290,8 +290,8 @@ export function MacOSDesktop() {
               isActive={activeWindow === "about"}
               onActivate={() => activateWindow("about")}
               onClose={() => toggleWindow("about")}
-              initialPosition={{ x: 150, y: 100 }}
-              initialSize={{ width: 700, height: 600 }}
+              initialPosition={{ x: 50, y: 80 }}
+              initialSize={{ width: 650, height: 550 }}
             >
               <AboutApp />
             </Window>
@@ -380,8 +380,8 @@ export function MacOSDesktop() {
               isActive={activeWindow === "terminal"}
               onActivate={() => activateWindow("terminal")}
               onClose={() => toggleWindow("terminal")}
-              initialPosition={{ x: 250, y: 120 }}
-              initialSize={{ width: 700, height: 500 }}
+              initialPosition={{ x: 720, y: 80 }}
+              initialSize={{ width: 650, height: 550 }}
             >
               <TerminalApp />
             </Window>

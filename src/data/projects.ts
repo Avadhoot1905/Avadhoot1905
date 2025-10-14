@@ -55,7 +55,7 @@ export const projects: Project[] = [
   {
     id: 6,
     name: "SecureLink",
-    description: "Real-time chat application with Website DevelopmentSocket support, file sharing, and end-to-end encryption for users in the same subnet",
+    description: "Real-time chat application with WebSocket support, file sharing, and end-to-end encryption for users in the same subnet",
     techStack: ["Python"],
     domain: "system",
     github: "https://github.com/Avadhoot1905/SecureLink"
@@ -64,7 +64,7 @@ export const projects: Project[] = [
     id: 7,
     name: "vit-wifi-password-automator",
     description: "Wi-Fi password automator for seamless connectivity",
-    techStack: ["JavaScript","Chrome Website Development Extensions"],
+    techStack: ["JavaScript","Chrome Web Extensions"],
     domain: "Extension Development",
     github: "https://github.com/Avadhoot1905/vit-wifi-password-manager"
   },
@@ -102,7 +102,7 @@ export const projects: Project[] = [
   },
   {
     id: 12,
-    name: "IMDB Movie Website Developmentsite Development Scrapper",
+    name: "IMDB Movie Web Scrapper",
     description: "Website Development scraper for extracting movie data from IMDB with search and filtering capabilities",
     techStack: ["Python", "beautifulsoup4"],
     domain: "Data Science",
@@ -112,14 +112,14 @@ export const projects: Project[] = [
     id: 13,
     name: "VTOP Login Automator",
     description: "Automates the login process for VTOP, enhancing user convenience and efficiency.",
-    techStack: ["JavaScript","Chrome Website Development Extensions"],
+    techStack: ["JavaScript","Chrome Web Extensions"],
     domain: "Extension Development",
     github: "https://github.com/Avadhoot1905/vtop-password-automater"
   },
   {
     id: 14,
     name: "FoundIt",
-    description: "Lost and Found Website Developmentsite (frontend)",
+    description: "Lost and Found Website (frontend)",
     techStack: ["Next.js"],
     domain: "Website Development",
     github: "https://github.com/AasaSingh05/Found-It"

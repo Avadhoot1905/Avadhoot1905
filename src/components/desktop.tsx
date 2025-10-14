@@ -90,6 +90,11 @@ export function MacOSDesktop() {
     setLastActivity(Date.now())
   }
 
+  const handleLockScreen = () => {
+    setIsLocked(true)
+    setLastActivity(Date.now())
+  }
+
   const toggleWindow = (appId: string) => {
     // Handle external links for social media apps
     if (appId === "linkedin") {
@@ -144,7 +149,7 @@ export function MacOSDesktop() {
       </AnimatePresence>
       {!isLocked && (
         <>
-          <MenuBar />
+          <MenuBar onLockScreen={handleLockScreen} />
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14">
         <motion.div

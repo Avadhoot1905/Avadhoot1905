@@ -6,7 +6,11 @@ import { useTheme } from "next-themes"
 import { motion } from "framer-motion"
 import { SiApple } from "react-icons/si"
 
-export function MenuBar() {
+interface MenuBarProps {
+  onLockScreen?: () => void
+}
+
+export function MenuBar({ onLockScreen }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
@@ -96,32 +100,52 @@ export function MenuBar() {
                 App Store...
               </div>
               <div className={`my-1 border-t ${theme === "dark" ? "border-gray-700" : ""}`}></div>
-              <div
-                className={`rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  onLockScreen?.()
+                }}
+                className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
                 Sleep
-              </div>
-              <div
-                className={`rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  onLockScreen?.()
+                }}
+                className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
                 Restart...
-              </div>
-              <div
-                className={`rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  onLockScreen?.()
+                }}
+                className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
                 Shut Down...
-              </div>
+              </button>
               <div className={`my-1 border-t ${theme === "dark" ? "border-gray-700" : ""}`}></div>
-              <div
-                className={`rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  onLockScreen?.()
+                }}
+                className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
                 Lock Screen
-              </div>
-              <div
-                className={`rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  onLockScreen?.()
+                }}
+                className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
                 Log Out...
-              </div>
+              </button>
             </div>
           </motion.div>
         )}

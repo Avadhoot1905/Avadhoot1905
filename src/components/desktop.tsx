@@ -59,7 +59,7 @@ export function MacOSDesktop() {
 
   // Inactivity detection
   useEffect(() => {
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+    const events = ['mousedown', 'mousemove', 'keydown', 'keyup', 'scroll', 'touchstart', 'click', 'input']
     
     events.forEach(event => {
       document.addEventListener(event, updateActivity, true)

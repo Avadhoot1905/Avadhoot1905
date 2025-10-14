@@ -373,8 +373,6 @@ export function MacOSDesktop() {
           { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
           { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
           { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
-          { id: "tictactoe", icon: <FaGamepad className="text-pink-500" />, isOpen: openWindows.includes("tictactoe") },
-          { id: "2048", icon: <FaGamepad className="text-amber-500" />, isOpen: openWindows.includes("2048") },
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },

@@ -20,7 +20,7 @@ export function EducationApp() {
                 Vellore Institute of Technology, Vellore • Jul 2023 - Jul 2027
               </p>
               <p className={`text-xs mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                Grade: 8.43/10 (3.37/4)
+                Grade: 8.38/10 (3.37/4)
               </p>
             </div>
           </div>

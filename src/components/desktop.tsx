@@ -17,7 +17,8 @@ import {
   FaCode,
   FaGraduationCap,
   FaBriefcase,
-  FaGamepad
+  FaGamepad,
+  FaTerminal
 } from "react-icons/fa"
 import { 
   SiGithub,
@@ -35,6 +36,7 @@ import { MessagesApp } from "@/components/apps/MessagesApp"
 import { PhotosApp } from "@/components/apps/PhotosApp"
 import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
 import { Game2048App } from "@/components/apps/Game2048App"
+import { TerminalApp } from "@/components/apps/TerminalApp"
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -211,6 +213,12 @@ export function MacOSDesktop() {
             icon={<FaGamepad className="text-amber-500" />}
             onClick={() => toggleWindow("2048")}
           />
+          <AppIcon
+            id="terminal"
+            name="Terminal"
+            icon={<FaTerminal className="text-gray-300" />}
+            onClick={() => toggleWindow("terminal")}
+          />
         </motion.div>
 
         <AnimatePresence>
@@ -363,6 +371,21 @@ export function MacOSDesktop() {
               <Game2048App />
             </Window>
           )}
+
+          {openWindows.includes("terminal") && (
+            <Window
+              key="terminal"
+              id="terminal"
+              title="Terminal"
+              isActive={activeWindow === "terminal"}
+              onActivate={() => activateWindow("terminal")}
+              onClose={() => toggleWindow("terminal")}
+              initialPosition={{ x: 250, y: 120 }}
+              initialSize={{ width: 700, height: 500 }}
+            >
+              <TerminalApp />
+            </Window>
+          )}
         </AnimatePresence>
       </div>
 
@@ -374,6 +397,7 @@ export function MacOSDesktop() {
           { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
           { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
+          { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
           { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },

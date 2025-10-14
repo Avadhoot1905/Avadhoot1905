@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { FaChevronLeft, FaChevronRight, FaStar, FaCodeBranch, FaBook } from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
+import { getGithubData } from "@/actions/github"
+import { getLeetcodeData } from "@/actions/leetcode"
+import { getMediumData } from "@/actions/medium"
 
 interface GitHubRepo {
   id: number
@@ -33,6 +36,19 @@ interface LeetCodeStats {
   mediumSolved: number
   hardSolved: number
   ranking: number
+  contributionPoints?: number
+}
+
+interface LeetCodeSubmission {
+  title: string
+  titleSlug: string
+  timestamp: string
+  statusDisplay: string
+  lang: string
+}
+
+interface LeetCodeCalendar {
+  [date: string]: number
 }
 
 interface MediumArticle {
@@ -49,67 +65,131 @@ export function SafariApp() {
   const [githubUser, setGithubUser] = useState<GitHubUser | null>(null)
   const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
   const [leetcodeStats, setLeetcodeStats] = useState<LeetCodeStats | null>(null)
+  const [leetcodeSubmissions, setLeetcodeSubmissions] = useState<LeetCodeSubmission[]>([])
+  const [leetcodeCalendar, setLeetcodeCalendar] = useState<LeetCodeCalendar>({})
   const [mediumArticles, setMediumArticles] = useState<MediumArticle[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Fetch GitHub data
+  // Fetch GitHub data using server action (with Redis caching)
   useEffect(() => {
-    if (activeSafariTab === "github") {
+    if (activeSafariTab === "github" && !githubUser) {
       setLoading(true)
-      Promise.all([
-        fetch("https://api.github.com/users/Avadhoot1905").then(res => res.json()),
-        fetch("https://api.github.com/users/Avadhoot1905/repos?sort=updated&per_page=6").then(res => res.json())
-      ])
-        .then(([user, repos]) => {
-          setGithubUser(user)
-          setGithubRepos(repos)
+      setError(null)
+      console.log('Fetching GitHub data...')
+      getGithubData()
+        .then(result => {
+          console.log('GitHub result:', result)
+          if (result.success && result.data) {
+            setGithubUser(result.data.user)
+            setGithubRepos(result.data.repos)
+          } else {
+            const errorMsg = result.error || 'Failed to fetch GitHub data'
+            console.error("GitHub API error:", errorMsg)
+            setError(errorMsg)
+          }
         })
-        .catch(error => console.error("GitHub API error:", error))
+        .catch(error => {
+          console.error("GitHub API error:", error)
+          setError(error.message || 'Unknown error')
+        })
         .finally(() => setLoading(false))
     }
-  }, [activeSafariTab])
+  }, [activeSafariTab, githubUser])
 
-  // Fetch LeetCode data
+  // Fetch LeetCode data using server action (with Redis caching)
   useEffect(() => {
-    if (activeSafariTab === "leetcode") {
+    if (activeSafariTab === "leetcode" && !leetcodeStats) {
       setLoading(true)
-      fetch("https://leetcode-stats-api.herokuapp.com/arcsmo19")
-        .then(res => res.json())
-        .then(data => {
+      setError(null)
+      console.log('Fetching LeetCode data...')
+      getLeetcodeData()
+        .then(result => {
+          console.log('LeetCode result:', result)
+          if (result.success && result.data) {
+            const stats = result.data.stats
+            setLeetcodeStats({
+              totalSolved: stats.totalSolved || 0,
+              easySolved: stats.easySolved || 0,
+              mediumSolved: stats.mediumSolved || 0,
+              hardSolved: stats.hardSolved || 0,
+              ranking: stats.ranking || 0,
+              contributionPoints: stats.contributionPoints || 0
+            })
+            
+            // Set recent problems if available
+            if (result.data.recentProblems && result.data.recentProblems.length > 0) {
+              const recentSolved = result.data.recentProblems
+                .filter((sub: any) => sub.statusDisplay === "Accepted")
+                .slice(0, 5)
+                .map((sub: any) => ({
+                  title: sub.title,
+                  titleSlug: sub.titleSlug,
+                  timestamp: sub.timestamp,
+                  statusDisplay: sub.statusDisplay,
+                  lang: sub.lang
+                }))
+              setLeetcodeSubmissions(recentSolved)
+            }
+          } else {
+            const errorMsg = result.error || 'Failed to fetch LeetCode data'
+            console.error("LeetCode API error:", errorMsg)
+            setError(errorMsg)
+            // Set empty stats so the UI still renders
+            setLeetcodeStats({
+              totalSolved: 0,
+              easySolved: 0,
+              mediumSolved: 0,
+              hardSolved: 0,
+              ranking: 0
+            })
+          }
+        })
+        .catch(error => {
+          console.error("LeetCode API error:", error)
+          setError(error.message || 'Unknown error')
           setLeetcodeStats({
-            totalSolved: data.totalSolved || 0,
-            easySolved: data.easySolved || 0,
-            mediumSolved: data.mediumSolved || 0,
-            hardSolved: data.hardSolved || 0,
-            ranking: data.ranking || 0
+            totalSolved: 0,
+            easySolved: 0,
+            mediumSolved: 0,
+            hardSolved: 0,
+            ranking: 0
           })
         })
-        .catch(error => console.error("LeetCode API error:", error))
         .finally(() => setLoading(false))
     }
-  }, [activeSafariTab])
+  }, [activeSafariTab, leetcodeStats])
 
-  // Fetch Medium data
+  // Fetch Medium data using server action (with Redis caching)
   useEffect(() => {
-    if (activeSafariTab === "medium") {
+    if (activeSafariTab === "medium" && mediumArticles.length === 0) {
       setLoading(true)
-      fetch("https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@arcsmo19")
-        .then(res => res.json())
-        .then(data => {
-          if (data.items) {
-            const articles = data.items.slice(0, 5).map((item: any) => ({
+      setError(null)
+      console.log('Fetching Medium data...')
+      getMediumData()
+        .then(result => {
+          console.log('Medium result:', result)
+          if (result.success && result.data && result.data.items) {
+            const articles = result.data.items.map((item: any) => ({
               title: item.title,
               link: item.link,
               pubDate: item.pubDate,
-              content: item.description
+              content: item.contentSnippet || ""
             }))
             setMediumArticles(articles)
+          } else {
+            const errorMsg = result.error || 'Failed to fetch Medium posts'
+            console.error("Medium API error:", errorMsg)
+            setError(errorMsg)
           }
         })
-        .catch(error => console.error("Medium RSS error:", error))
+        .catch(error => {
+          console.error("Medium API error:", error)
+          setError(error.message || 'Unknown error')
+        })
         .finally(() => setLoading(false))
     }
-  }, [activeSafariTab])
+  }, [activeSafariTab, mediumArticles.length])
 
   return (
     <div className="flex h-full flex-col">
@@ -239,8 +319,29 @@ export function SafariApp() {
 
       {/* Content Area - API-based displays */}
       <div className="flex-1 overflow-y-auto">
+        {/* Error Display */}
+        {error && !loading && (
+          <div className="p-6">
+            <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-red-900/20 border-red-700 text-red-400" : "bg-red-50 border-red-300 text-red-700"}`}>
+              <p className="font-semibold mb-2">⚠️ Error Loading Data</p>
+              <p className="text-sm">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null)
+                  setGithubUser(null)
+                  setLeetcodeStats(null)
+                  setMediumArticles([])
+                }}
+                className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* GitHub Tab */}
-        {activeSafariTab === "github" && (
+        {activeSafariTab === "github" && !error && (
           <div className="p-6 space-y-6">
             {loading ? (
               <div className="flex items-center justify-center h-full">
@@ -371,7 +472,7 @@ export function SafariApp() {
         )}
 
         {/* LeetCode Tab */}
-        {activeSafariTab === "leetcode" && (
+        {activeSafariTab === "leetcode" && !error && (
           <div className="p-6 space-y-6">
             {loading ? (
               <div className="flex items-center justify-center h-full">
@@ -415,6 +516,50 @@ export function SafariApp() {
                   </div>
                 )}
 
+                {/* Recent Submissions */}
+                {leetcodeSubmissions.length > 0 && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Recently Solved Problems</h2>
+                    <div className="space-y-3">
+                      {leetcodeSubmissions.map((submission, index) => (
+                        <a
+                          key={index}
+                          href={`https://leetcode.com/problems/${submission.titleSlug}/`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`block p-4 rounded-lg border hover:shadow-lg transition-all ${
+                            theme === "dark" 
+                              ? "bg-gray-800 border-gray-700 hover:border-gray-600" 
+                              : "bg-white border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-1 hover:text-orange-500">
+                                {submission.title}
+                              </h3>
+                              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span className="flex items-center text-green-500">
+                                  <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                                  {submission.statusDisplay}
+                                </span>
+                                <span>{submission.lang}</span>
+                                <span>
+                                  {new Date(parseInt(submission.timestamp) * 1000).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* View Full Profile Button */}
                 <div className="text-center pt-4">
                   <a
@@ -437,7 +582,7 @@ export function SafariApp() {
         )}
 
         {/* Medium Tab */}
-        {activeSafariTab === "medium" && (
+        {activeSafariTab === "medium" && !error && (
           <div className="p-6 space-y-6">
             {loading ? (
               <div className="flex items-center justify-center h-full">

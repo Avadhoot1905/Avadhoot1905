@@ -35,7 +35,8 @@ export function MenuBar() {
       }`}
       style={{
         backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        transition: 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease'
       }}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}

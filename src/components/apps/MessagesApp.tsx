@@ -109,8 +109,8 @@ export function MessagesApp() {
                   message.role === "user"
                     ? "bg-blue-500 text-white"
                     : theme === "dark"
-                    ? "bg-gray-700"
-                    : "bg-gray-100"
+                    ? "bg-gray-700 text-gray-200"
+                    : "bg-gray-100 text-gray-900"
                 }`}
               >
                 <div className="whitespace-pre-wrap">{message.content}</div>

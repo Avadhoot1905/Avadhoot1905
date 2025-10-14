@@ -71,6 +71,7 @@ export function Window({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
+        style={{ transition: 'background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease' }}
         className={`h-full w-full overflow-hidden rounded-2xl border shadow-lg ${
           theme === "dark"
             ? `border-gray-700 bg-gray-800 ${isActive ? "shadow-xl" : ""}`
@@ -78,6 +79,7 @@ export function Window({
         }`}
       >
         <div
+          style={{ transition: 'background-color 0.3s ease' }}
           className={`flex h-8 items-center px-3 ${
             theme === "dark" ? (isActive ? "bg-gray-700" : "bg-gray-800") : isActive ? "bg-gray-200" : "bg-gray-100"
           }`}
@@ -99,10 +101,14 @@ export function Window({
               <Square className="h-2 w-2" />
             </button>
           </div>
-          <div className="window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center">{title}</div>
+          <div className={`window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center ${
+            theme === "dark" ? "text-gray-200" : "text-gray-700"
+          }`}>{title}</div>
           <div className="w-16"></div>
         </div>
-        <div className="h-[calc(100%-2rem)] overflow-auto">{children}</div>
+        <div className={`h-[calc(100%-2rem)] overflow-auto ${
+          theme === "dark" ? "text-gray-200" : "text-gray-900"
+        }`}>{children}</div>
       </motion.div>
     </Rnd>
   )

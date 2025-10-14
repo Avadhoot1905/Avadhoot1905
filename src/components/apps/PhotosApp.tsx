@@ -24,12 +24,12 @@ export function PhotosApp() {
           <div className={`text-sm font-medium ${theme === "dark" ? "text-blue-400" : "text-blue-500"}`}>
             Photos
           </div>
-          <div className="text-sm">Memories</div>
-          <div className="text-sm">Albums</div>
+          <div className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Memories</div>
+          <div className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Albums</div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
-        <h2 className="mb-2 text-lg font-semibold">Recents</h2>
+        <h2 className={`mb-2 text-lg font-semibold ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}>Recents</h2>
         <div className="grid grid-cols-3 gap-2">
           {images.map((image, i) => (
             <div

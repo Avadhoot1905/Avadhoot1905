@@ -29,7 +29,8 @@ export function AppIcon({ id, name, icon, onClick }: AppIconProps) {
         }`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}
         whileHover={{ y: -5 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}

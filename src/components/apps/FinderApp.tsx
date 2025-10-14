@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { FaFilePdf, FaFileExcel, FaFilePowerpoint } from "react-icons/fa"
+import { FaFilePdf } from "react-icons/fa"
 
 export function FinderApp() {
   const { theme } = useTheme()
@@ -30,18 +30,6 @@ export function FinderApp() {
                 <FaFilePdf className="text-4xl text-red-500" />
               </div>
               <div className="mt-1 text-xs">Resume.pdf</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-16 w-16 rounded flex items-center justify-center">
-                <FaFileExcel className="text-4xl text-green-500" />
-              </div>
-              <div className="mt-1 text-xs">Spreadsheet.xlsx</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-16 w-16 rounded flex items-center justify-center">
-                <FaFilePowerpoint className="text-4xl text-orange-500" />
-              </div>
-              <div className="mt-1 text-xs">Presentation.pptx</div>
             </div>
           </div>
         </div>

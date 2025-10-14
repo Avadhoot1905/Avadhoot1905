@@ -24,7 +24,7 @@ export async function getMediumData() {
             title: item.title,
             link: item.link,
             pubDate: item.pubDate,
-            contentSnippet: item.contentSnippet?.slice(0, 150) + '...',
+            contentSnippet: item['content:encodedSnippet'] || item.contentSnippet || item.content || 'No description available',
           })),
         }
       }

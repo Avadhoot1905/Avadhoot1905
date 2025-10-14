@@ -55,6 +55,11 @@ Historical documentation:
   - What changed and why
   - Before/after comparison
 
+- **[API_ROUTES_CLEANUP.md](API_ROUTES_CLEANUP.md)**
+  - Removal of duplicate API routes
+  - Why server actions are preferred
+  - Current architecture
+
 - **[CHANGES_SUMMARY.md](CHANGES_SUMMARY.md)**
   - Chronological list of all changes
   - Feature additions
@@ -98,6 +103,7 @@ Historical documentation:
 | NOTHING_VISIBLE_FIX.md | Specific bug fix | 2025-10-14 |
 | LEETCODE_SUBMISSIONS_FIX.md | Specific bug fix | 2025-10-14 |
 | MIGRATION_SUMMARY.md | Migration docs | 2025-10-14 |
+| API_ROUTES_CLEANUP.md | Code cleanup | 2025-10-14 |
 | CHANGES_SUMMARY.md | Change log | 2025-10-14 |
 
 ## 🎯 Recommended Reading Order

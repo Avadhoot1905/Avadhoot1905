@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# documentation
+# Keep logs/ folder but exclude temp files
+logs/*.tmp
+logs/*.draft
+
+# But DO include all .md files in logs/
+!logs/*.md

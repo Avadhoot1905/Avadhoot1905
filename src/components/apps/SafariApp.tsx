@@ -118,18 +118,22 @@ export function SafariApp() {
             })
             
             // Set recent problems if available
+            console.log('Recent problems data:', result.data.recentProblems)
             if (result.data.recentProblems && result.data.recentProblems.length > 0) {
               const recentSolved = result.data.recentProblems
-                .filter((sub: any) => sub.statusDisplay === "Accepted")
                 .slice(0, 5)
                 .map((sub: any) => ({
-                  title: sub.title,
-                  titleSlug: sub.titleSlug,
-                  timestamp: sub.timestamp,
-                  statusDisplay: sub.statusDisplay,
-                  lang: sub.lang
+                  title: sub.title || sub.titleSlug || 'Unknown Problem',
+                  titleSlug: sub.titleSlug || '',
+                  timestamp: sub.timestamp || Date.now().toString(),
+                  statusDisplay: sub.statusDisplay || 'Accepted',
+                  lang: sub.lang || sub.language || 'N/A'
                 }))
+              console.log('Setting submissions:', recentSolved)
               setLeetcodeSubmissions(recentSolved)
+            } else {
+              console.log('No recent problems found in response')
+              setLeetcodeSubmissions([])
             }
           } else {
             const errorMsg = result.error || 'Failed to fetch LeetCode data'
@@ -517,9 +521,9 @@ export function SafariApp() {
                 )}
 
                 {/* Recent Submissions */}
-                {leetcodeSubmissions.length > 0 && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">Recently Solved Problems</h2>
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Recently Solved Problems</h2>
+                  {leetcodeSubmissions.length > 0 ? (
                     <div className="space-y-3">
                       {leetcodeSubmissions.map((submission, index) => (
                         <a
@@ -557,8 +561,14 @@ export function SafariApp() {
                         </a>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className={`p-6 rounded-lg text-center ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        No recent submissions found. Check back later or view full profile on LeetCode.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* View Full Profile Button */}
                 <div className="text-center pt-4">

@@ -7,13 +7,13 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "macOS Web Experience",
-  description: "A macOS-inspired web experience built with Next.js",
+  title: "Avadhoot Ganesh Mahadik Portfolio",
+  description: "A portfolio showcasing the work of Avadhoot Ganesh Mahadik",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: Readonly<{ 
   children: React.ReactNode
 }>) {
   return (

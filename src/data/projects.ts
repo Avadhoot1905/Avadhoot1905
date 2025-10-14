@@ -3,7 +3,7 @@ export interface Project {
   name: string
   description: string
   techStack: string[]
-  domain: "web" | "app" | "system"
+  domain: "Website Development" | "App Development" | "system" | "Extension Development" | "Data Science" | "Machine Learning" | ""
   github?: string
   live?: string
 }
@@ -11,103 +11,118 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: 1,
-    name: "Portfolio Website",
-    description: "A responsive macOS-inspired portfolio website built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
-    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "React Icons"],
-    domain: "web",
-    github: "https://github.com/yourusername/portfolio",
-    live: "https://yourportfolio.com"
+    name: "Portfolio Website Developmentsite",
+    description: "A responsive macOS-inspired portfolio Website Developmentsite built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
+    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "React Icons","Redis"],
+    domain: "Website Development",
+    github: "https://github.com/Avadhoot1905/Avadhoot1905",
+    live: "https://avadhootmahadik.os.in"
   },
   {
     id: 2,
     name: "ExamCooker",
-    description: "A scalable web application for exam management and preparation, built with modern development practices and collaborative workflows",
-    techStack: ["React", "Node.js", "Express", "MongoDB", "Docker"],
-    domain: "web",
-    github: "https://github.com/yourusername/examcooker"
+    description: "A scalable Website Development application for exam management and preparation, built with modern development practices and collaborative workflows",
+    techStack: ["Next.js", "TypeScript", "CockroachDB", "Redis", "Python", "Prisma", "FastAPI","TailwindCSS","GCP"],
+    domain: "Website Development",
+    github: "https://github.com/ACM-VIT/ExamCooker-2024",
+    live:"https://examcooker.acmvit.in"
   },
   {
     id: 3,
-    name: "E-commerce Platform",
+    name: "Kathuria Gun House",
     description: "Full-stack e-commerce solution with payment integration, inventory management, and admin dashboard",
-    techStack: ["React", "Node.js", "MongoDB", "Stripe", "Redis"],
-    domain: "web",
-    github: "https://github.com/yourusername/ecommerce",
-    live: "https://yourecommerce.com"
+    techStack: ["Next.js", "TypeScript", "PostgreSQL", "CSS", "Prisma","Fuse.js","Razorpay"],
+    domain: "Website Development",
+    github: "https://github.com/Avadhoot1905/KGH",
+    live: "https://kathuriagunhouse.com"
   },
   {
     id: 4,
-    name: "Task Management App",
+    name: "iVision",
     description: "A mobile-first task management application with real-time collaboration and cloud sync capabilities",
-    techStack: ["React Native", "Firebase", "TypeScript", "Redux"],
-    domain: "app",
-    github: "https://github.com/yourusername/task-manager"
+    techStack: ["Swift", "Python", "Torch-Vision", "TensorFlow", "CoreML"],
+    domain: "App Development",
+    github: "https://github.com/Avadhoot1905/iVision-App"
   },
   {
     id: 5,
-    name: "Weather Dashboard",
-    description: "Real-time weather dashboard with interactive maps, forecasts, and location-based alerts",
-    techStack: ["Vue.js", "OpenWeather API", "Chart.js", "Tailwind CSS"],
-    domain: "web",
-    github: "https://github.com/yourusername/weather-dashboard",
-    live: "https://yourweather.com"
+    name: "Study.ai",
+    description: "Study resource tool with AI integration for personalized learning paths and content recommendations",
+    techStack: ["Next.js", "TypeScript", "Gemini API", "Tailwind CSS"],
+    domain: "Website Development",
+    github: "https://github.com/Avadhoot1905/study-resource-allocator"
   },
   {
     id: 6,
-    name: "Chat Application",
-    description: "Real-time chat application with WebSocket support, file sharing, and end-to-end encryption",
-    techStack: ["Socket.io", "React", "Node.js", "PostgreSQL", "JWT"],
-    domain: "web",
-    github: "https://github.com/yourusername/chat-app"
+    name: "SecureLink",
+    description: "Real-time chat application with Website DevelopmentSocket support, file sharing, and end-to-end encryption for users in the same subnet",
+    techStack: ["Python"],
+    domain: "system",
+    github: "https://github.com/Avadhoot1905/SecureLink"
   },
   {
     id: 7,
-    name: "Fitness Tracker",
-    description: "Mobile fitness tracking app with workout plans, calorie counter, and progress analytics",
-    techStack: ["Flutter", "Dart", "Firebase", "SQLite"],
-    domain: "app",
-    github: "https://github.com/yourusername/fitness-tracker"
+    name: "vit-wifi-password-automator",
+    description: "Wi-Fi password automator for seamless connectivity",
+    techStack: ["JavaScript","Chrome Website Development Extensions"],
+    domain: "Extension Development",
+    github: "https://github.com/Avadhoot1905/vit-wifi-password-manager"
   },
   {
     id: 8,
-    name: "File System Manager",
-    description: "Cross-platform file system management tool with advanced search and batch operations",
-    techStack: ["Python", "PyQt5", "SQLite", "Threading"],
+    name: "Arch Linux Backup Server",
+    description: "Cross-platform file system storage manager with advanced search and batch operations",
+    techStack: ["Bash", "Arch Linux", "rsync", "Threading", "Syncthing"],
     domain: "system",
     github: "https://github.com/yourusername/file-manager"
   },
   {
     id: 9,
-    name: "Social Media Analytics",
-    description: "Analytics dashboard for social media insights with data visualization and trend analysis",
-    techStack: ["Next.js", "Python", "FastAPI", "D3.js", "PostgreSQL"],
-    domain: "web",
-    github: "https://github.com/yourusername/social-analytics",
-    live: "https://youranalytics.com"
+    name: "Financial Statement Data Scraping and Analysis of NYSE 500 Constituents",
+    description: "A comprehensive tool for scraping and analyzing financial statements of NYSE 500 companies, providing insights and visualizations.",
+    techStack: ["Python", "beautifulsoup4", "requests", "pandas"],
+    domain: "Data Science",
+    github: "https://github.com/AasaSingh05/Finance-DA"
   },
   {
     id: 10,
-    name: "Code Snippet Manager",
-    description: "Developer tool for organizing and sharing code snippets with syntax highlighting and tagging",
-    techStack: ["Electron", "React", "Monaco Editor", "IndexedDB"],
-    domain: "system",
-    github: "https://github.com/yourusername/snippet-manager"
+    name: "Habit tracker",
+    description: "Habit tracking webapp with goal setting, reminders, and progress visualization",
+    techStack: ["React.js", "Vue.js", "Express.js"],
+    domain: "Website Development",
+    github: "https://github.com/Avadhoot1905/habit-tracker"
   },
   {
     id: 11,
-    name: "Recipe Finder",
-    description: "Recipe discovery app with ingredient-based search, meal planning, and grocery list generation",
-    techStack: ["React", "Spoonacular API", "Redux", "Material-UI"],
-    domain: "web",
-    github: "https://github.com/yourusername/recipe-finder",
-    live: "https://yourrecipes.com"
+    name: "ReLeaf",
+    description: "A government-based platform to monitor waste management and recycling, and routing effective waste truck paths",
+    techStack: ["Next.js", "Drizzle ORM", "PostgreSQL", "TypeScript", "Tailwind CSS", "Clerk"],
+    domain: "Website Development",
+    github: "https://github.com/Avadhoot1905/ReLeaf"
   },
   {
     id: 12,
-    name: "Expense Tracker",
-    description: "Mobile expense tracking app with budget management, reports, and multi-currency support",
-    techStack: ["React Native", "TypeScript", "AsyncStorage", "Chart.js"],
-    domain: "app",
-    github: "https://github.com/yourusername/expense-tracker"
-  }
+    name: "IMDB Movie Website Developmentsite Development Scrapper",
+    description: "Website Development scraper for extracting movie data from IMDB with search and filtering capabilities",
+    techStack: ["Python", "beautifulsoup4"],
+    domain: "Data Science",
+    github: "https://github.com/Avadhoot1905/Website Development-scrapper"
+  },
+  {
+    id: 13,
+    name: "VTOP Login Automator",
+    description: "Automates the login process for VTOP, enhancing user convenience and efficiency.",
+    techStack: ["JavaScript","Chrome Website Development Extensions"],
+    domain: "Extension Development",
+    github: "https://github.com/Avadhoot1905/vtop-password-automater"
+  },
+  {
+    id: 14,
+    name: "FoundIt",
+    description: "Lost and Found Website Developmentsite (frontend)",
+    techStack: ["Next.js"],
+    domain: "Website Development",
+    github: "https://github.com/AasaSingh05/Found-It"
+  },
+  
 ]

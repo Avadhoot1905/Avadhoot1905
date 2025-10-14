@@ -5,36 +5,71 @@ import { useTheme } from "next-themes"
 import { useState } from "react"
 import { projects as projectsData, type Project } from "@/data/projects"
 
-const domainIcons = {
-  web: FaGlobe,
-  app: FaMobile,
-  system: FaLaptopCode,
+const domainIcons: { [key: string]: any } = {
+  "Website Development": FaGlobe,
+  "App Development": FaMobile,
+  "system": FaLaptopCode,
+  "Extension Development": FaCode,
+  "Data Science": FaCode,
+  "Machine Learning": FaCode,
 }
 
-const domainColors = {
-  web: "text-blue-500",
-  app: "text-green-500",
-  system: "text-purple-500",
+const domainColors: { [key: string]: string } = {
+  "Website Development": "text-blue-500",
+  "App Development": "text-green-500",
+  "system": "text-purple-500",
+  "Extension Development": "text-orange-500",
+  "Data Science": "text-red-500",
+  "Machine Learning": "text-pink-500",
 }
 
 const techColors: { [key: string]: string } = {
   "Next.js": "bg-black text-white",
   "React": "bg-blue-600 text-white",
+  "React.js": "bg-blue-600 text-white",
   "TypeScript": "bg-blue-700 text-white",
   "Tailwind CSS": "bg-cyan-500 text-white",
+  "TailwindCSS": "bg-cyan-500 text-white",
   "Node.js": "bg-green-600 text-white",
   "Express": "bg-gray-700 text-white",
+  "Express.js": "bg-gray-700 text-white",
   "MongoDB": "bg-green-500 text-white",
   "Docker": "bg-blue-500 text-white",
   "Python": "bg-yellow-600 text-white",
   "Firebase": "bg-orange-500 text-white",
   "PostgreSQL": "bg-blue-800 text-white",
+  "CockroachDB": "bg-blue-900 text-white",
   "Redis": "bg-red-600 text-white",
+  "JavaScript": "bg-yellow-500 text-black",
+  "Swift": "bg-orange-600 text-white",
+  "Bash": "bg-gray-800 text-white",
+  "CSS": "bg-blue-400 text-white",
+  "Prisma": "bg-indigo-600 text-white",
+  "FastAPI": "bg-teal-600 text-white",
+  "GCP": "bg-blue-600 text-white",
+  "Vue.js": "bg-green-500 text-white",
+  "Drizzle ORM": "bg-green-700 text-white",
+  "Clerk": "bg-purple-600 text-white",
+  "Gemini API": "bg-blue-500 text-white",
+  "Chrome Website Development Extensions": "bg-red-500 text-white",
+  "Razorpay": "bg-blue-700 text-white",
+  "Fuse.js": "bg-orange-400 text-white",
+  "React Icons": "bg-cyan-600 text-white",
+  "beautifulsoup4": "bg-yellow-700 text-white",
+  "requests": "bg-green-600 text-white",
+  "pandas": "bg-indigo-500 text-white",
+  "Torch-Vision": "bg-red-700 text-white",
+  "TensorFlow": "bg-orange-500 text-white",
+  "CoreML": "bg-gray-700 text-white",
+  "Arch Linux": "bg-blue-600 text-white",
+  "rsync": "bg-gray-600 text-white",
+  "Threading": "bg-purple-500 text-white",
+  "Syncthing": "bg-blue-500 text-white",
 }
 
 export function ProjectsApp() {
   const { theme } = useTheme()
-  const [filter, setFilter] = useState<"all" | "web" | "app" | "system">("all")
+  const [filter, setFilter] = useState<string>("all")
   const projects = projectsData
 
   const filteredProjects = filter === "all" 
@@ -64,9 +99,9 @@ export function ProjectsApp() {
             All
           </button>
           <button
-            onClick={() => setFilter("web")}
+            onClick={() => setFilter("Website Development")}
             className={`px-3 py-1 rounded text-sm font-medium transition ${
-              filter === "web"
+              filter === "Website Development"
                 ? "bg-blue-600 text-white"
                 : theme === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
@@ -76,9 +111,9 @@ export function ProjectsApp() {
             🌐 Web
           </button>
           <button
-            onClick={() => setFilter("app")}
+            onClick={() => setFilter("App Development")}
             className={`px-3 py-1 rounded text-sm font-medium transition ${
-              filter === "app"
+              filter === "App Development"
                 ? "bg-blue-600 text-white"
                 : theme === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
@@ -98,6 +133,42 @@ export function ProjectsApp() {
             }`}
           >
             💻 System
+          </button>
+          <button
+            onClick={() => setFilter("Extension Development")}
+            className={`px-3 py-1 rounded text-sm font-medium transition ${
+              filter === "Extension Development"
+                ? "bg-blue-600 text-white"
+                : theme === "dark"
+                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            🧩 Extension
+          </button>
+          <button
+            onClick={() => setFilter("Data Science")}
+            className={`px-3 py-1 rounded text-sm font-medium transition ${
+              filter === "Data Science"
+                ? "bg-blue-600 text-white"
+                : theme === "dark"
+                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            📊 Data Science
+          </button>
+          <button
+            onClick={() => setFilter("Machine Learning")}
+            className={`px-3 py-1 rounded text-sm font-medium transition ${
+              filter === "Machine Learning"
+                ? "bg-blue-600 text-white"
+                : theme === "dark"
+                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            🤖 ML
           </button>
         </div>
       </div>

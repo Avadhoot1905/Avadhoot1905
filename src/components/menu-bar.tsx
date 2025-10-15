@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, Moon, Sun, Monitor, Wifi, Battery, BatteryCharging } from "lucide-react"
+import { ChevronDown, Moon, Sun, Monitor, Wifi, Battery, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -16,6 +16,8 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [showNotificationPanel, setShowNotificationPanel] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [brightness, setBrightness] = useState(70)
+  const [volume, setVolume] = useState(60)
   const { theme, setTheme } = useTheme()
 
   // Prevent hydration mismatch
@@ -60,7 +62,7 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
 
     return (
       <>
-        {/* iOS Status Bar - Always visible, draggable to pull down panel */}
+        {/* iOS Status Bar - Fixed position, non-draggable */}
         <motion.div
           className={`flex h-12 w-full items-center px-4 backdrop-blur-xl fixed top-0 left-0 z-[10000] ${
             theme === "dark" 
@@ -74,15 +76,6 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0, bottom: 1 }}
-          onDragEnd={(_event, info) => {
-            // If dragged down more than 50px, open the panel
-            if (info.offset.y > 50) {
-              setShowNotificationPanel(true)
-            }
-          }}
         >
           {/* Time */}
           <div className="text-sm font-semibold">
@@ -97,6 +90,21 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
             <BatteryCharging className="h-4 w-4" />
           </div>
         </motion.div>
+
+        {/* Invisible draggable overlay for pull-down gesture */}
+        <motion.div
+          className="fixed top-0 left-0 w-full h-12 z-[10001]"
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 1 }}
+          onDragEnd={(_event, info) => {
+            // If dragged down more than 50px, open the panel
+            if (info.offset.y > 50) {
+              setShowNotificationPanel(true)
+            }
+          }}
+          style={{ cursor: 'grab' }}
+        />
 
         {/* Notification Panel Shade - Draggable to slide up/down */}
         <AnimatePresence>
@@ -133,86 +141,188 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
                 onDragEnd={handleDragEnd}
                 onClick={(e) => e.stopPropagation()}
               >
-              <div className="p-6 pt-16">
+              <div className="p-4 pt-16 pb-8">
                 {/* Date */}
-                <div className="text-center mb-6">
-                  <div className="text-4xl font-thin mb-1">
+                <div className="text-center mb-5">
+                  <div className="text-3xl font-thin mb-0.5">
                     {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
                   </div>
-                  <div className="text-lg text-gray-500">
+                  <div className="text-base text-gray-500">
                     {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                   </div>
                 </div>
 
-                {/* Quick Settings */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setTheme(theme === 'dark' ? 'light' : 'dark')
-                    }}
-                    className={`p-4 rounded-2xl backdrop-blur-xl border flex flex-col items-start ${
-                      theme === "dark" 
-                        ? "bg-blue-600/50 border-blue-500" 
-                        : "bg-blue-500/50 border-blue-400"
-                    }`}
-                  >
-                    {theme === "dark" ? <Moon className="h-6 w-6 mb-2" /> : <Sun className="h-6 w-6 mb-2" />}
-                    <span className="text-sm font-medium">
-                      {theme === "dark" ? "Dark Mode" : "Light Mode"}
-                    </span>
-                  </button>
+                {/* Main Control Section */}
+                <div className="flex flex-col gap-2 mb-4">
+                  {/* Icon Grid - 1x4 Top, 1x4 Bottom */}
+                  <div className="flex flex-col gap-2">
+                    {/* Top 4 icons - Single Horizontal Row */}
+                    <div className="grid grid-cols-4 gap-2 max-w-[280px] mx-auto">
+                      {/* Airplane Mode */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
+                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Plane className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Airplane</span>
+                      </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onLockScreen?.()
-                      setShowNotificationPanel(false)
-                    }}
-                    className={`p-4 rounded-2xl backdrop-blur-xl border flex flex-col items-start ${
-                      theme === "dark" 
-                        ? "bg-gray-700/50 border-gray-600" 
-                        : "bg-gray-300/50 border-gray-400"
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">🔒</div>
-                    <span className="text-sm font-medium">Lock</span>
-                  </button>
+                      {/* Mobile Data */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
+                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Signal className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Cellular</span>
+                      </button>
 
-                  <button
-                    className={`p-4 rounded-2xl backdrop-blur-xl border flex flex-col items-start ${
-                      theme === "dark" 
-                        ? "bg-blue-600/50 border-blue-500" 
-                        : "bg-blue-500/50 border-blue-400"
-                    }`}
-                  >
-                    <Wifi className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">Wi-Fi</span>
-                  </button>
+                      {/* WiFi */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
+                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Wifi className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Wi-Fi</span>
+                      </button>
 
-                  <button
-                    className={`p-4 rounded-2xl backdrop-blur-xl border flex flex-col items-start ${
-                      theme === "dark" 
-                        ? "bg-green-600/50 border-green-500" 
-                        : "bg-green-500/50 border-green-400"
-                    }`}
-                  >
-                    <Battery className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">Battery</span>
-                  </button>
-                </div>
+                      {/* Bluetooth */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
+                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Bluetooth className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Bluetooth</span>
+                      </button>
+                    </div>
 
-                {/* Notification */}
-                <div 
-                  className={`p-4 rounded-2xl backdrop-blur-xl border ${
-                    theme === "dark" 
-                      ? "bg-gray-800/50 border-gray-700" 
-                      : "bg-gray-200/50 border-gray-300"
-                  }`}
-                >
-                  <div className="font-semibold mb-1">Welcome!</div>
-                  <div className="text-sm opacity-80">
-                    Pull down from the status bar to open. Swipe up to close.
+                    {/* Bottom 4 icons - Single Row */}
+                    <div className="grid grid-cols-4 gap-2 max-w-[280px] mx-auto">
+                      {/* Lock Orientation - Active (Blue) */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
+                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RotateCcw className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Rotation</span>
+                      </button>
+
+                      {/* Flashlight */}
+                      <button
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
+                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Flashlight className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Torch</span>
+                      </button>
+
+                      {/* Theme Toggle */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setTheme(theme === 'dark' ? 'light' : 'dark')
+                        }}
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
+                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                        }`}
+                      >
+                        {theme === "dark" ? <Moon className="h-4 w-4 mb-0.5" /> : <Sun className="h-4 w-4 mb-0.5" />}
+                        <span className="text-[7px] font-medium">
+                          {theme === "dark" ? "Dark" : "Light"}
+                        </span>
+                      </button>
+
+                      {/* Screen Lock */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onLockScreen?.()
+                          setShowNotificationPanel(false)
+                        }}
+                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                          theme === "dark" 
+                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
+                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                        }`}
+                      >
+                        <Lock className="h-4 w-4 mb-0.5" />
+                        <span className="text-[7px] font-medium">Lock</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Sliders */}
+                  <div className="flex flex-col gap-2">
+                    {/* Brightness Slider - Horizontal */}
+                    <div 
+                      className={`rounded-2xl backdrop-blur-xl border p-2 flex items-center justify-between cursor-pointer ${
+                        theme === "dark" 
+                          ? "bg-gray-800/80 border-gray-700" 
+                          : "bg-gray-200/80 border-gray-300"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const x = e.clientX - rect.left
+                        const width = rect.width
+                        const percentage = Math.max(0, Math.min(100, (x / width) * 100))
+                        setBrightness(Math.round(percentage))
+                      }}
+                    >
+                      <Sun className="h-4 w-4 flex-shrink-0 mr-2" />
+                      <div className="flex-1 h-2 bg-gray-400/30 rounded-full overflow-hidden relative">
+                        <div className="absolute left-0 top-0 bottom-0 bg-blue-500 rounded-full transition-all" style={{ width: `${brightness}%` }} />
+                      </div>
+                      <Sun className="h-4 w-4 flex-shrink-0 ml-2" />
+                    </div>
+
+                    {/* Volume Slider - Horizontal */}
+                    <div 
+                      className={`rounded-2xl backdrop-blur-xl border p-2 flex items-center justify-between cursor-pointer ${
+                        theme === "dark" 
+                          ? "bg-gray-800/80 border-gray-700" 
+                          : "bg-gray-200/80 border-gray-300"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const x = e.clientX - rect.left
+                        const width = rect.width
+                        const percentage = Math.max(0, Math.min(100, (x / width) * 100))
+                        setVolume(Math.round(percentage))
+                      }}
+                    >
+                      <Volume2 className="h-4 w-4 flex-shrink-0 mr-2" />
+                      <div className="flex-1 h-2 bg-gray-400/30 rounded-full overflow-hidden relative">
+                        <div className="absolute left-0 top-0 bottom-0 bg-blue-500 rounded-full transition-all" style={{ width: `${volume}%` }} />
+                      </div>
+                      <Volume2 className="h-4 w-4 flex-shrink-0 ml-2" />
+                    </div>
                   </div>
                 </div>
               </div>

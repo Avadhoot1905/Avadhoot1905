@@ -31,16 +31,18 @@ Enhanced the mobile experience for the Finder app and notification panel to prov
 **File**: `/src/components/menu-bar.tsx`
 
 #### Updates:
-- **Draggable Status Bar**: Status bar can be dragged down to pull the notification panel
+- **Fixed Status Bar**: Status bar remains visually fixed while dragging (no position shift)
+- **Invisible Drag Overlay**: Transparent overlay on status bar detects pull-down gestures
 - **Draggable Panel**: Notification panel can be swiped up to close
 - **Gesture Detection**: 
-  - Drag down >50px on status bar = Opens panel
+  - Drag down >50px on status bar area = Opens panel
   - Drag up >100px on panel = Closes panel
 - **Backdrop**: Added semi-transparent backdrop that appears when panel is open
 - **Click Backdrop**: Clicking the backdrop closes the panel
 - **Panel Isolation**: Panel content clicks don't close the panel (stopPropagation)
 - **Smooth Animation**: Panel slides down smoothly with spring physics
 - **Better UX**: Updated welcome message to inform users about drag functionality
+- **Visual Stability**: Status bar content doesn't move during drag interaction
 
 #### Visual Layout:
 ```
@@ -89,15 +91,19 @@ Status Bar Layout:
 
 ### Notification Panel Structure:
 ```tsx
-<StatusBar 
+{/* Fixed status bar */}
+<StatusBar>
+  <Time />
+  <StatusIcons />
+</StatusBar>
+
+{/* Invisible draggable overlay */}
+<InvisibleOverlay
   drag="y"
   onDragEnd={(info) => {
     if (info.offset.y > 50) openPanel()
   }}
->
-  <Time />
-  <StatusIcons />
-</StatusBar>
+/>
 
 <AnimatePresence>
   {panelOpen && (
@@ -214,4 +220,4 @@ Status Bar Layout:
 
 ## Summary
 
-Successfully implemented iOS-style mobile UX improvements for the Finder app and notification panel. The Finder now shows a cleaner, files-only view on mobile, while the notification panel features an intuitive slide-down/up toggle with visual feedback and backdrop overlay. Both changes enhance the mobile experience and align with iOS design patterns.
+Successfully implemented iOS-style mobile UX improvements for the Finder app and notification panel. The Finder now shows a cleaner, files-only view on mobile, while the notification panel features natural drag gestures for opening and closing - pull down the status bar to open, swipe up the panel to close. The implementation uses Framer Motion's drag API for smooth, physics-based interactions that feel native to iOS. Both changes enhance the mobile experience and align with iOS design patterns.

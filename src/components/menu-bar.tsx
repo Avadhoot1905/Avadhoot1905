@@ -121,14 +121,16 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
               
               {/* Draggable Panel */}
               <motion.div
-                className={`fixed top-0 left-0 right-0 z-[9999] backdrop-blur-xl border-b shadow-2xl ${
+                className={`fixed top-0 left-0 right-0 z-[9999] backdrop-blur-2xl shadow-2xl ${
                   theme === "dark" 
-                    ? "bg-black/90 text-white border-white/10" 
-                    : "bg-white/90 text-black border-black/10"
+                    ? "bg-black/40 text-white" 
+                    : "bg-white/40 text-black"
                 }`}
                 style={{
-                  backdropFilter: 'blur(30px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+                  backdropFilter: 'blur(40px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                  borderBottomLeftRadius: '24px',
+                  borderBottomRightRadius: '24px',
                 }}
                 initial={{ y: '-100%' }}
                 animate={{ y: 0 }}
@@ -141,102 +143,126 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
                 onDragEnd={handleDragEnd}
                 onClick={(e) => e.stopPropagation()}
               >
-              <div className="p-4 pt-16 pb-8">
+              <div className="p-6 pt-16 pb-6">
                 {/* Date */}
-                <div className="text-center mb-5">
-                  <div className="text-3xl font-thin mb-0.5">
+                <div className="text-center mb-6">
+                  <div className="text-2xl font-semibold mb-1">
                     {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
                   </div>
-                  <div className="text-base text-gray-500">
+                  <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                     {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                   </div>
                 </div>
 
                 {/* Main Control Section */}
-                <div className="flex flex-col gap-2 mb-4">
+                <div className="flex flex-col gap-3 mb-4">
                   {/* Icon Grid - 1x4 Top, 1x4 Bottom */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     {/* Top 4 icons - Single Horizontal Row */}
-                    <div className="grid grid-cols-4 gap-2 max-w-[280px] mx-auto">
+                    <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
                       {/* Airplane Mode */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
-                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                            ? "bg-white/10 hover:bg-white/15" 
+                            : "bg-black/10 hover:bg-black/15"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Plane className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Airplane</span>
+                        <Plane className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Airplane</span>
                       </button>
 
                       {/* Mobile Data */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
-                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
+                            : "bg-blue-500/30 hover:bg-blue-500/40"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Signal className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Cellular</span>
+                        <Signal className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Cellular</span>
                       </button>
 
                       {/* WiFi */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
-                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
+                            : "bg-blue-500/30 hover:bg-blue-500/40"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Wifi className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Wi-Fi</span>
+                        <Wifi className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Wi-Fi</span>
                       </button>
 
                       {/* Bluetooth */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
-                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
+                            : "bg-blue-500/30 hover:bg-blue-500/40"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Bluetooth className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Bluetooth</span>
+                        <Bluetooth className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Bluetooth</span>
                       </button>
                     </div>
 
                     {/* Bottom 4 icons - Single Row */}
-                    <div className="grid grid-cols-4 gap-2 max-w-[280px] mx-auto">
+                    <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
                       {/* Lock Orientation - Active (Blue) */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-blue-600/80 border-blue-500 hover:bg-blue-500/80" 
-                            : "bg-blue-500/80 border-blue-400 hover:bg-blue-400/80"
+                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
+                            : "bg-blue-500/30 hover:bg-blue-500/40"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <RotateCcw className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Rotation</span>
+                        <RotateCcw className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Rotation</span>
                       </button>
 
                       {/* Flashlight */}
                       <button
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
-                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                            ? "bg-white/10 hover:bg-white/15" 
+                            : "bg-black/10 hover:bg-black/15"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Flashlight className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Torch</span>
+                        <Flashlight className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Torch</span>
                       </button>
 
                       {/* Theme Toggle */}
@@ -245,14 +271,18 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
                           e.stopPropagation()
                           setTheme(theme === 'dark' ? 'light' : 'dark')
                         }}
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
-                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                            ? "bg-white/10 hover:bg-white/15" 
+                            : "bg-black/10 hover:bg-black/15"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                       >
-                        {theme === "dark" ? <Moon className="h-4 w-4 mb-0.5" /> : <Sun className="h-4 w-4 mb-0.5" />}
-                        <span className="text-[7px] font-medium">
+                        {theme === "dark" ? <Moon className="h-5 w-5 mb-1" /> : <Sun className="h-5 w-5 mb-1" />}
+                        <span className="text-[9px] font-medium">
                           {theme === "dark" ? "Dark" : "Light"}
                         </span>
                       </button>
@@ -264,66 +294,99 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
                           onLockScreen?.()
                           setShowNotificationPanel(false)
                         }}
-                        className={`w-16 h-16 rounded-full flex flex-col items-center justify-center backdrop-blur-xl border transition-all ${
+                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
                           theme === "dark" 
-                            ? "bg-gray-700/80 border-gray-600 hover:bg-gray-600/80" 
-                            : "bg-gray-200/80 border-gray-300 hover:bg-gray-300/80"
+                            ? "bg-white/10 hover:bg-white/15" 
+                            : "bg-black/10 hover:bg-black/15"
                         }`}
+                        style={{
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        }}
                       >
-                        <Lock className="h-4 w-4 mb-0.5" />
-                        <span className="text-[7px] font-medium">Lock</span>
+                        <Lock className="h-5 w-5 mb-1" />
+                        <span className="text-[9px] font-medium">Lock</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Horizontal Sliders */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3 max-w-[300px] mx-auto w-full">
                     {/* Brightness Slider - Horizontal */}
                     <div 
-                      className={`rounded-2xl backdrop-blur-xl border p-2 flex items-center justify-between cursor-pointer ${
+                      className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${
                         theme === "dark" 
-                          ? "bg-gray-800/80 border-gray-700" 
-                          : "bg-gray-200/80 border-gray-300"
+                          ? "bg-white/10" 
+                          : "bg-black/10"
                       }`}
+                      style={{
+                        backdropFilter: 'blur(20px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      }}
                       onClick={(e) => {
                         e.stopPropagation()
                         const rect = e.currentTarget.getBoundingClientRect()
-                        const x = e.clientX - rect.left
-                        const width = rect.width
+                        const iconWidth = 20 + 12 // icon + margin
+                        const padding = 16
+                        const x = e.clientX - rect.left - padding - iconWidth
+                        const width = rect.width - (2 * padding) - (2 * iconWidth)
                         const percentage = Math.max(0, Math.min(100, (x / width) * 100))
                         setBrightness(Math.round(percentage))
                       }}
                     >
-                      <Sun className="h-4 w-4 flex-shrink-0 mr-2" />
-                      <div className="flex-1 h-2 bg-gray-400/30 rounded-full overflow-hidden relative">
-                        <div className="absolute left-0 top-0 bottom-0 bg-blue-500 rounded-full transition-all" style={{ width: `${brightness}%` }} />
+                      <Lightbulb className="h-5 w-5 flex-shrink-0 mr-3" />
+                      <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${
+                        theme === "dark" ? "bg-white/10" : "bg-black/10"
+                      }`}>
+                        <div 
+                          className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all" 
+                          style={{ width: `${brightness}%` }} 
+                        />
                       </div>
-                      <Sun className="h-4 w-4 flex-shrink-0 ml-2" />
+                      <Lightbulb className="h-5 w-5 flex-shrink-0 ml-3" />
                     </div>
 
                     {/* Volume Slider - Horizontal */}
                     <div 
-                      className={`rounded-2xl backdrop-blur-xl border p-2 flex items-center justify-between cursor-pointer ${
+                      className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${
                         theme === "dark" 
-                          ? "bg-gray-800/80 border-gray-700" 
-                          : "bg-gray-200/80 border-gray-300"
+                          ? "bg-white/10" 
+                          : "bg-black/10"
                       }`}
+                      style={{
+                        backdropFilter: 'blur(20px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      }}
                       onClick={(e) => {
                         e.stopPropagation()
                         const rect = e.currentTarget.getBoundingClientRect()
-                        const x = e.clientX - rect.left
-                        const width = rect.width
+                        const iconWidth = 20 + 12 // icon + margin
+                        const padding = 16
+                        const x = e.clientX - rect.left - padding - iconWidth
+                        const width = rect.width - (2 * padding) - (2 * iconWidth)
                         const percentage = Math.max(0, Math.min(100, (x / width) * 100))
                         setVolume(Math.round(percentage))
                       }}
                     >
-                      <Volume2 className="h-4 w-4 flex-shrink-0 mr-2" />
-                      <div className="flex-1 h-2 bg-gray-400/30 rounded-full overflow-hidden relative">
-                        <div className="absolute left-0 top-0 bottom-0 bg-blue-500 rounded-full transition-all" style={{ width: `${volume}%` }} />
+                      <Volume2 className="h-5 w-5 flex-shrink-0 mr-3" />
+                      <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${
+                        theme === "dark" ? "bg-white/10" : "bg-black/10"
+                      }`}>
+                        <div 
+                          className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all" 
+                          style={{ width: `${volume}%` }} 
+                        />
                       </div>
-                      <Volume2 className="h-4 w-4 flex-shrink-0 ml-2" />
+                      <Volume2 className="h-5 w-5 flex-shrink-0 ml-3" />
                     </div>
                   </div>
+                </div>
+
+                {/* Drag Handle at Bottom */}
+                <div className="flex justify-center pt-4 pb-2">
+                  <div className={`w-10 h-1 rounded-full ${
+                    theme === "dark" ? "bg-white/30" : "bg-black/30"
+                  }`} />
                 </div>
               </div>
             </motion.div>

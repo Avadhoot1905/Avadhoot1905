@@ -19,6 +19,8 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
   const [isMobile, setIsMobile] = useState(false)
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [commandCache, setCommandCache] = useState<string[]>([])
+  const [typingText, setTypingText] = useState("")
+  const [isTyping, setIsTyping] = useState(true)
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,14 +50,55 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
           "• Git, Docker, AWS, REST APIs",
           "• TensorFlow, PyTorch, ML/AI",
           "",
-          "Type 'help' for commands",
-          "Type 'navigate' for portal guide",
           ""
         ]
       }
     ])
 
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Typing animation effect
+  useEffect(() => {
+    const texts = [
+      "Type 'help' for commands",
+      "Type 'navigate' for portal guide"
+    ]
+    let currentTextIndex = 0
+    let currentCharIndex = 0
+    let isDeleting = false
+    let timeoutId: NodeJS.Timeout
+
+    const type = () => {
+      const currentText = texts[currentTextIndex]
+      
+      if (isDeleting) {
+        setTypingText(currentText.substring(0, currentCharIndex - 1))
+        currentCharIndex--
+        
+        if (currentCharIndex === 0) {
+          isDeleting = false
+          currentTextIndex = (currentTextIndex + 1) % texts.length
+          timeoutId = setTimeout(type, 500) // Pause before typing next text
+        } else {
+          timeoutId = setTimeout(type, 30) // Backspace speed
+        }
+      } else {
+        setTypingText(currentText.substring(0, currentCharIndex + 1))
+        currentCharIndex++
+        
+        if (currentCharIndex === currentText.length) {
+          isDeleting = true
+          timeoutId = setTimeout(type, 2000) // Pause before deleting
+        } else {
+          timeoutId = setTimeout(type, 100) // Typing speed
+        }
+      }
+    }
+
+    timeoutId = setTimeout(type, 1000) // Initial delay
+
+    return () => clearTimeout(timeoutId)
   }, [])
 
   useEffect(() => {
@@ -413,6 +456,7 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
 
   const handleTerminalClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    setIsTyping(false)
     inputRef.current?.focus()
   }
 
@@ -476,20 +520,36 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
           }`}>
             {isMobile ? '$' : 'avadhoot@portfolio:~$'}
           </span>
-          <input
-            ref={inputRef}
-            type="text"
-            className={`flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400 focus:outline-none focus:ring-0 ${
-              isMobile ? 'text-xs' : ''
-            }`}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            autoComplete="off"
-            style={{ WebkitAppearance: 'none' }}
-          />
+          <div className="flex-1 relative">
+            <input
+              ref={inputRef}
+              type="text"
+              className={`w-full bg-transparent outline-none border-none focus:outline-none focus:ring-0 relative z-10 ${
+                isMobile ? 'text-xs' : ''
+              }`}
+              onKeyDown={handleKeyDown}
+              onClick={() => setIsTyping(false)}
+              autoFocus
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              style={{ 
+                WebkitAppearance: 'none',
+                color: isTyping ? 'transparent' : '#86efac',
+                caretColor: isTyping ? 'transparent' : '#4ade80',
+              }}
+            />
+            {isTyping && !inputRef.current?.value && (
+              <div 
+                className={`absolute left-0 top-0 text-green-500 pointer-events-none ${
+                  isMobile ? 'text-xs' : ''
+                }`}
+              >
+                {typingText}
+              </div>
+            )}
+          </div>
         </div>
       </form>
     </div>

@@ -24,7 +24,8 @@ import {
   SiGithub,
   SiLinkedin,
   SiLeetcode,
-  SiMedium
+  SiMedium,
+  SiGmail
 } from "react-icons/si"
 import { FinderApp } from "@/components/apps/FinderApp"
 import { SafariApp } from "@/components/apps/SafariApp"
@@ -97,6 +98,10 @@ export function MacOSDesktop() {
 
   const toggleWindow = (appId: string) => {
     // Handle external links for social media apps
+    if (appId === "gmail") {
+      window.open("mailto:arcsmo19@gmail.com", "_blank")
+      return
+    }
     if (appId === "linkedin") {
       window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank")
       return
@@ -403,6 +408,7 @@ export function MacOSDesktop() {
           { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
           { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
+          { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
           { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
           { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },

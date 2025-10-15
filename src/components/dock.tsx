@@ -29,9 +29,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Filter apps for mobile: only github, linkedin, leetcode, about
+  // Filter apps for mobile: only gmail, github, linkedin, leetcode, about
   const displayApps = isMobile 
-    ? apps.filter(app => ['github', 'linkedin', 'leetcode', 'about'].includes(app.id))
+    ? apps.filter(app => ['gmail', 'github', 'linkedin', 'leetcode', 'about'].includes(app.id))
     : apps
 
   return (

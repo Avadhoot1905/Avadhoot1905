@@ -181,7 +181,10 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
           "⌨️ Terminal",
           "Command-line interface",
           "",
-          "🔗 GitHub",
+          "� Gmail",
+          "Send email",
+          "",
+          "�🔗 GitHub",
           "Code repositories",
           "",
           "💼 LinkedIn",
@@ -216,7 +219,8 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
           "Social & Professional Links (in Dock):",
           "--------------------------------------",
           "",
-          "🔗 GitHub        - View my code repositories and open-source contributions",
+          "� Gmail         - Send me an email at arcsmo19@gmail.com",
+          "�🔗 GitHub        - View my code repositories and open-source contributions",
           "💼 LinkedIn      - Connect professionally and view career details",
           "🧩 LeetCode      - Check out my coding challenge solutions and stats",
           "✍️ Medium        - Read my technical articles and blog posts",
@@ -268,6 +272,7 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
       case "contact":
         output = isMobile ? [
           "Contact:",
+          "• Gmail: arcsmo19@gmail.com",
           "• GitHub: Avadhoot1905",
           "• LinkedIn: /avadhoot-m..",
           "• LeetCode: arcsmo19",
@@ -276,6 +281,7 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
         ] : [
           "Contact Information:",
           "-------------------",
+          "• Gmail: arcsmo19@gmail.com",
           "• GitHub: github.com/Avadhoot1905",
           "• LinkedIn: linkedin.com/in/avadhoot-mahadik-125362295/",
           "• LeetCode: leetcode.com/u/arcsmo19/",

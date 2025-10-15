@@ -8,11 +8,17 @@ type CommandHistory = {
   output: string[]
 }
 
-export function TerminalApp() {
+type TerminalAppProps = {
+  onClose?: () => void
+}
+
+export function TerminalApp({ onClose }: TerminalAppProps = {}) {
   const { theme } = useTheme()
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [commandCache, setCommandCache] = useState<string[]>([])
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -43,6 +49,7 @@ export function TerminalApp() {
           "• TensorFlow, PyTorch, ML/AI",
           "",
           "Type 'help' for commands",
+          "Type 'navigate' for portal guide",
           ""
         ]
       }
@@ -61,7 +68,7 @@ export function TerminalApp() {
 
   // Helper function to highlight command names in output
   const highlightCommands = (text: string) => {
-    const commands = ['help', 'skills', 'about', 'contact', 'projects', 'education', 'experience', 'clear', 'whoami', 'date', 'ls', 'pwd']
+    const commands = ['help', 'skills', 'about', 'contact', 'projects', 'education', 'experience', 'clear', 'whoami', 'date', 'ls', 'pwd', 'navigate', 'exit']
     const parts: React.ReactNode[] = []
     let remainingText = text
     let key = 0
@@ -113,6 +120,7 @@ export function TerminalApp() {
         output = isMobile ? [
           "Commands:",
           "• help - Show commands",
+          "• navigate - Portal guide",
           "• skills - Tech skills",
           "• about - About me",
           "• contact - Contact info",
@@ -120,12 +128,14 @@ export function TerminalApp() {
           "• education - Education",
           "• experience - Experience",
           "• clear - Clear screen",
+          "• exit - Close terminal",
           "• whoami - Current user",
           "• date - Date/time",
           ""
         ] : [
           "Available commands:",
           "  help       - Show this help message",
+          "  navigate   - Guide to the portfolio OS",
           "  skills     - Display technical skills",
           "  about      - About Avadhoot",
           "  contact    - Contact information",
@@ -133,8 +143,85 @@ export function TerminalApp() {
           "  education  - Educational background",
           "  experience - Work experience",
           "  clear      - Clear the terminal",
+          "  exit       - Close the terminal window",
           "  whoami     - Display current user",
           "  date       - Display current date and time",
+          ""
+        ]
+        break
+      case "navigate":
+        output = isMobile ? [
+          "Portfolio OS Guide:",
+          "=================",
+          "",
+          "📁 Finder",
+          "Browse all apps & info",
+          "",
+          "🌐 Safari",
+          "Visit external links",
+          "",
+          "💬 Messages",
+          "Chat with AI assistant",
+          "",
+          "📸 Photos",
+          "View photo gallery",
+          "",
+          "👤 About Me",
+          "Personal background",
+          "",
+          "🚀 Projects",
+          "Portfolio projects",
+          "",
+          "🎓 Education",
+          "Academic journey",
+          "",
+          "💼 Experience",
+          "Work experience",
+          "",
+          "⌨️ Terminal",
+          "Command-line interface",
+          "",
+          "🔗 GitHub",
+          "Code repositories",
+          "",
+          "💼 LinkedIn",
+          "Professional profile",
+          "",
+          "🧩 LeetCode",
+          "Coding challenges",
+          "",
+          "✍️ Medium",
+          "Blog & articles",
+          ""
+        ] : [
+          "Portfolio OS - Navigation Guide",
+          "================================",
+          "",
+          "Welcome to Avadhoot's interactive portfolio! This is a macOS-inspired",
+          "web experience. Click on any app icon to explore different sections.",
+          "",
+          "Available Applications:",
+          "----------------------",
+          "",
+          "📁 Finder        - Browse and navigate through all available apps and information",
+          "🌐 Safari        - Access external links and web resources",
+          "💬 Messages      - Interactive AI-powered chat assistant to learn more about me",
+          "📸 Photos        - View photo gallery and visual content",
+          "👤 About Me      - Personal background, story, and introduction",
+          "🚀 Projects      - Showcase of portfolio projects and technical work",
+          "🎓 Education     - Academic background and educational journey",
+          "💼 Experience    - Professional work experience and career history",
+          "⌨️ Terminal      - Command-line interface for quick information access",
+          "",
+          "Social & Professional Links (in Dock):",
+          "--------------------------------------",
+          "",
+          "🔗 GitHub        - View my code repositories and open-source contributions",
+          "💼 LinkedIn      - Connect professionally and view career details",
+          "🧩 LeetCode      - Check out my coding challenge solutions and stats",
+          "✍️ Medium        - Read my technical articles and blog posts",
+          "",
+          "Tip: Use 'help' to see available terminal commands!",
           ""
         ]
         break
@@ -262,15 +349,59 @@ export function TerminalApp() {
       case "pwd":
         output = ["/Users/avadhoot/portfolio", ""]
         break
+      case "exit":
+        if (onClose) {
+          onClose()
+        } else {
+          output = ["Terminal window cannot be closed from this context", ""]
+        }
+        return
       default:
         output = [`command not found: ${commandText}`, "Type 'help' for available commands", ""]
     }
 
     setCommandHistory([...commandHistory, { command: commandText, output }])
     
+    // Add to command cache for history navigation
+    setCommandCache([...commandCache, commandText])
+    setHistoryIndex(-1)
+    
     // Clear input directly
     if (inputRef.current) {
       inputRef.current.value = ''
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (commandCache.length === 0) return
+      
+      const newIndex = historyIndex === -1 
+        ? commandCache.length - 1 
+        : Math.max(0, historyIndex - 1)
+      
+      setHistoryIndex(newIndex)
+      if (inputRef.current) {
+        inputRef.current.value = commandCache[newIndex]
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (commandCache.length === 0 || historyIndex === -1) return
+      
+      const newIndex = historyIndex + 1
+      
+      if (newIndex >= commandCache.length) {
+        setHistoryIndex(-1)
+        if (inputRef.current) {
+          inputRef.current.value = ''
+        }
+      } else {
+        setHistoryIndex(newIndex)
+        if (inputRef.current) {
+          inputRef.current.value = commandCache[newIndex]
+        }
+      }
     }
   }
 
@@ -345,6 +476,7 @@ export function TerminalApp() {
             className={`flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400 focus:outline-none focus:ring-0 ${
               isMobile ? 'text-xs' : ''
             }`}
+            onKeyDown={handleKeyDown}
             autoFocus
             spellCheck={false}
             autoCapitalize="off"

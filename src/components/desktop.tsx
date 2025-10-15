@@ -74,10 +74,10 @@ export function MacOSDesktop() {
     }
   }, [updateActivity])
 
-  // Auto-lock after 1 minute of inactivity
+  // Auto-lock after 5 minutes of inactivity
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastActivity > 60000) { // 60 seconds
+      if (Date.now() - lastActivity > 300000) { // 300 seconds (5 minutes)
         setIsLocked(true)
       }
     }, 5000) // Check every 5 seconds
@@ -388,7 +388,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 720, y: 80 }}
               initialSize={{ width: 650, height: 550 }}
             >
-              <TerminalApp />
+              <TerminalApp onClose={() => toggleWindow("terminal")} />
             </Window>
           )}
         </AnimatePresence>

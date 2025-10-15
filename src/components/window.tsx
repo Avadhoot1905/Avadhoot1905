@@ -168,7 +168,7 @@ export function Window({
       dragHandleClassName="window-drag-handle"
       onMouseDown={onActivate}
       style={{ 
-        zIndex: isActive ? 10 : 5 
+        zIndex: isActive ? 20 : 10 
       }}
     >
       <motion.div

@@ -21,24 +21,21 @@ export function AboutApp() {
       </div>
       <div className="space-y-4">
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I am a hardworking and persevering individual who believes in continuous improvement. 
-          Patience and resilience drive my approach to problem-solving, and I am always eager to 
-          refine my skills, adapt to new challenges, and push my boundaries.
-        </p>
-        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          Passionate about competitive programming, I actively solve LeetCode and DSA problems to 
-          enhance my algorithmic thinking. My goal is to be able to reach a level of enlightenment 
-          where coding becomes second nature—where I only need to think about the algorithm, and the 
-          code flows effortlessly without conscious effort. Alongside this, I build full-stack 
-          applications using industry-standard technologies like Next.js, Prisma, Docker, Git, etc., 
-          ensuring scalability and efficiency in my projects. My aim is to bridge the gap between 
-          theoretical knowledge and real-world application, creating solutions that are both impactful 
-          and innovative.
-        </p>
-        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          My journey is one of continuous learning, building, and problem-solving, and I look forward 
-          to embracing new challenges and opportunities that help me grow.
-        </p>
+  I’m someone who just likes figuring things out — whether it’s code, design, or how things connect.  
+  I don’t really chase perfection, I just keep tweaking and learning till it feels right. I take my time 
+  with stuff, but I always get there eventually, and that’s kind of my thing.
+</p>
+<p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+  I’m big on problem-solving and I spend a lot of time on LeetCode or DSA stuff, just trying to train 
+  my brain to think better. The dream’s to reach that stage where code just flows — like you think 
+  the logic, and your hands already know what to do. I also love building full-stack projects using 
+  Next.js, Prisma, Docker, Git and all that, making sure they actually work well and not just look 
+  fancy. It’s more about connecting what I learn with what I build.
+</p>
+<p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+  I’m still figuring things out, learning a bit every day, and building stuff that makes sense to me.  
+  Just trying to keep growing, one idea at a time.
+</p>
       </div>
     </div>
   )

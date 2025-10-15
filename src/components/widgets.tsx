@@ -115,7 +115,7 @@ export function Widgets() {
         <div className="flex items-center justify-center">
           <span className={`font-bold ${
             theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-          } ${isMobile ? 'text-xs' : 'text-base'}`}>
+          } ${isMobile ? 'text-sm' : 'text-lg'}`}>
             {getDayName()} {getMonthName()}
           </span>
         </div>

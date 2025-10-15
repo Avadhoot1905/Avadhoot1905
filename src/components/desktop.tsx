@@ -38,6 +38,7 @@ import { PhotosApp } from "@/components/apps/PhotosApp"
 import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
 import { Game2048App } from "@/components/apps/Game2048App"
 import { TerminalApp } from "@/components/apps/TerminalApp"
+import { Widgets } from "@/components/widgets"
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>(["terminal", "about"])
@@ -158,7 +159,7 @@ export function MacOSDesktop() {
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
         <motion.div
-          className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto"
+          className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, staggerChildren: 0.1 }}
@@ -397,6 +398,9 @@ export function MacOSDesktop() {
             </Window>
           )}
         </AnimatePresence>
+
+        {/* Widgets */}
+        <Widgets />
       </div>
 
       <Dock

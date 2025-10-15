@@ -2,24 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { WiDaySunny, WiCloudy, WiFog, WiRain, WiSnow, WiThunderstorm, WiDayCloudy } from "react-icons/wi"
 
 export function Widgets() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [weather, setWeather] = useState<{
-    temp: number
-    condition: string
-    high: number
-    low: number
-    icon: React.ReactNode
-  }>({
+  const [weather, setWeather] = useState({
     temp: 28,
     condition: "Sunny",
     high: 32,
     low: 24,
-    icon: <WiDaySunny />
+    icon: "☀️"
   })
   const [isMobile, setIsMobile] = useState(false)
 
@@ -73,14 +66,14 @@ export function Widgets() {
 
   const getWeatherCondition = (code: number) => {
     // WMO Weather interpretation codes
-    if (code === 0) return { text: "Clear", icon: <WiDaySunny /> }
-    if (code <= 3) return { text: "Partly Cloudy", icon: <WiDayCloudy /> }
-    if (code <= 48) return { text: "Foggy", icon: <WiFog /> }
-    if (code <= 67) return { text: "Rainy", icon: <WiRain /> }
-    if (code <= 77) return { text: "Snowy", icon: <WiSnow /> }
-    if (code <= 82) return { text: "Rainy", icon: <WiRain /> }
-    if (code <= 86) return { text: "Snowy", icon: <WiSnow /> }
-    return { text: "Stormy", icon: <WiThunderstorm /> }
+    if (code === 0) return { text: "Clear", icon: "☀️" }
+    if (code <= 3) return { text: "Partly Cloudy", icon: "⛅" }
+    if (code <= 48) return { text: "Foggy", icon: "🌫️" }
+    if (code <= 67) return { text: "Rainy", icon: "🌧️" }
+    if (code <= 77) return { text: "Snowy", icon: "🌨️" }
+    if (code <= 82) return { text: "Rainy", icon: "🌧️" }
+    if (code <= 86) return { text: "Snowy", icon: "🌨️" }
+    return { text: "Stormy", icon: "⛈️" }
   }
 
   const getDayName = () => {
@@ -151,11 +144,9 @@ export function Widgets() {
           Bangalore
         </span>
         <div className="flex-1 flex flex-col items-center justify-center mt-1">
-          <div className={`${isMobile ? 'text-3xl' : 'text-5xl'} mb-1 ${
-            theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-          }`}>
+          <span className={`${isMobile ? 'text-3xl' : 'text-5xl'} mb-1`}>
             {weather.icon}
-          </div>
+          </span>
           <span className={`font-bold ${
             theme === 'dark' ? 'text-white/80' : 'text-gray-800'
           } ${isMobile ? 'text-[10px]' : 'text-sm'}`}>

@@ -134,6 +134,17 @@ export function MacOSDesktop() {
     setActiveWindow(appId)
   }
 
+  const openOrActivateWindow = (appId: string) => {
+    // If window is already open, just bring it to front
+    if (openWindows.includes(appId)) {
+      setActiveWindow(appId)
+    } else {
+      // Otherwise open it and make it active
+      setOpenWindows([...openWindows, appId])
+      setActiveWindow(appId)
+    }
+  }
+
   if (!mounted) return null
 
   return (
@@ -394,7 +405,10 @@ export function MacOSDesktop() {
               initialPosition={{ x: 720, y: 80 }}
               initialSize={{ width: 650, height: 550 }}
             >
-              <TerminalApp onClose={() => toggleWindow("terminal")} />
+              <TerminalApp 
+                onClose={() => toggleWindow("terminal")} 
+                onOpenApp={openOrActivateWindow}
+              />
             </Window>
           )}
         </AnimatePresence>

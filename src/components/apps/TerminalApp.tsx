@@ -10,9 +10,10 @@ type CommandHistory = {
 
 type TerminalAppProps = {
   onClose?: () => void
+  onOpenApp?: (appId: string) => void
 }
 
-export function TerminalApp({ onClose }: TerminalAppProps = {}) {
+export function TerminalApp({ onClose, onOpenApp }: TerminalAppProps = {}) {
   const { theme } = useTheme()
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [mounted, setMounted] = useState(false)
@@ -294,24 +295,6 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
           ""
         ]
         break
-      case "about":
-        output = isMobile ? [
-          "About Avadhoot",
-          "==============",
-          "Full-Stack Developer",
-          "AI Enthusiast 🚀",
-          "Building innovative",
-          "solutions",
-          ""
-        ] : [
-          "About Avadhoot Ganesh Mahadik",
-          "==============================",
-          "Passionate Full-Stack Developer and AI Enthusiast",
-          "Building innovative solutions with modern technologies",
-          "Always learning, always growing 🚀",
-          ""
-        ]
-        break
       case "contact":
         output = isMobile ? [
           "Contact:",
@@ -333,46 +316,84 @@ export function TerminalApp({ onClose }: TerminalAppProps = {}) {
         ]
         break
       case "projects":
-        output = isMobile ? [
-          "Projects:",
-          "Open Projects app",
-          "for details",
-          ""
-        ] : [
-          "Notable Projects:",
-          "----------------",
-          "Open the Projects app to see detailed information",
-          "about my work and contributions.",
-          ""
-        ]
+        if (onOpenApp) {
+          onOpenApp("projects")
+          output = ["Displayed in the Projects app", ""]
+        } else {
+          output = isMobile ? [
+            "Projects:",
+            "Open Projects app",
+            "for details",
+            ""
+          ] : [
+            "Notable Projects:",
+            "----------------",
+            "Open the Projects app to see detailed information",
+            "about my work and contributions.",
+            ""
+          ]
+        }
         break
       case "education":
-        output = isMobile ? [
-          "Education:",
-          "Open Education app",
-          "for details",
-          ""
-        ] : [
-          "Education:",
-          "---------",
-          "Open the Education app for detailed information",
-          "about my academic background.",
-          ""
-        ]
+        if (onOpenApp) {
+          onOpenApp("education")
+          output = ["Displayed in the Education app", ""]
+        } else {
+          output = isMobile ? [
+            "Education:",
+            "Open Education app",
+            "for details",
+            ""
+          ] : [
+            "Education:",
+            "---------",
+            "Open the Education app for detailed information",
+            "about my academic background.",
+            ""
+          ]
+        }
         break
       case "experience":
-        output = isMobile ? [
-          "Experience:",
-          "Open Experience app",
-          "for details",
-          ""
-        ] : [
-          "Work Experience:",
-          "---------------",
-          "Open the Experience app for detailed information",
-          "about my professional journey.",
-          ""
-        ]
+        if (onOpenApp) {
+          onOpenApp("experience")
+          output = ["Displayed in the Experience app", ""]
+        } else {
+          output = isMobile ? [
+            "Experience:",
+            "Open Experience app",
+            "for details",
+            ""
+          ] : [
+            "Work Experience:",
+            "---------------",
+            "Open the Experience app for detailed information",
+            "about my professional journey.",
+            ""
+          ]
+        }
+        break
+      case "about":
+        if (onOpenApp) {
+          onOpenApp("about")
+          output = ["Displayed in the About Me app", ""]
+        } else {
+          output = isMobile ? [
+            "About Avadhoot",
+            "==============",
+            "Full-Stack Developer",
+            "AI Enthusiast 🚀",
+            "Building innovative",
+            "solutions",
+            ""
+          ] : [
+            "About Avadhoot Ganesh Mahadik",
+            "==============================",
+            "Passionate Full-Stack Developer and AI Enthusiast",
+            "Building innovative solutions with modern technologies",
+            "Always learning, always growing 🚀",
+            ""
+          ]
+        }
         break
       case "clear":
         setCommandHistory([])

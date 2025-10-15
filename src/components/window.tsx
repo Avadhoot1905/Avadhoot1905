@@ -142,7 +142,9 @@ export function Window({
             className={`flex-1 overflow-auto ${
               theme === "dark" ? "text-gray-200" : "text-gray-900"
             }`}
+            style={{ pointerEvents: 'auto', userSelect: 'auto' }}
             onTouchStart={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             {children}
           </div>
@@ -209,9 +211,13 @@ export function Window({
           }`}>{title}</div>
           <div className="w-16"></div>
         </div>
-        <div className={`h-[calc(100%-2rem)] overflow-auto ${
-          theme === "dark" ? "text-gray-200" : "text-gray-900"
-        }`}>{children}</div>
+        <div 
+          className={`h-[calc(100%-2rem)] overflow-auto ${
+            theme === "dark" ? "text-gray-200" : "text-gray-900"
+          }`}
+          style={{ pointerEvents: 'auto', userSelect: 'auto' }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >{children}</div>
       </motion.div>
     </Rnd>
   )

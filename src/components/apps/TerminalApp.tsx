@@ -13,33 +13,43 @@ export function TerminalApp() {
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [currentCommand, setCurrentCommand] = useState("")
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setMounted(true)
+    
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
     // Display welcome message and skills on mount
     setCommandHistory([
       {
         command: "",
         output: [
           "Welcome to Avadhoot's Terminal",
-          "========================================",
+          "==============================",
           "",
           "💻 Technical Skills:",
-          "-------------------",
-          "• Languages: Python, JavaScript, TypeScript, Java, C++, SQL",
-          "• Frontend: React, Next.js, HTML5, CSS3, Tailwind CSS",
-          "• Backend: Node.js, Express, Django, Flask",
-          "• Databases: MongoDB, PostgreSQL, MySQL, Firebase",
-          "• Tools & Tech: Git, Docker, AWS, REST APIs, GraphQL",
-          "• AI/ML: TensorFlow, PyTorch, Scikit-learn, NLP",
+          "• Python, JavaScript, TypeScript",
+          "• React, Next.js, Tailwind CSS",
+          "• Node.js, Express, Django",
+          "• MongoDB, PostgreSQL, MySQL",
+          "• Git, Docker, AWS, REST APIs",
+          "• TensorFlow, PyTorch, ML/AI",
           "",
-          "Type 'help' for available commands",
+          "Type 'help' for commands",
           ""
         ]
       }
     ])
+
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   useEffect(() => {
@@ -59,7 +69,20 @@ export function TerminalApp() {
 
     switch (cmd) {
       case "help":
-        output = [
+        output = isMobile ? [
+          "Commands:",
+          "• help - Show commands",
+          "• skills - Tech skills",
+          "• about - About me",
+          "• contact - Contact info",
+          "• projects - Projects",
+          "• education - Education",
+          "• experience - Experience",
+          "• clear - Clear screen",
+          "• whoami - Current user",
+          "• date - Date/time",
+          ""
+        ] : [
           "Available commands:",
           "  help       - Show this help message",
           "  skills     - Display technical skills",
@@ -75,7 +98,16 @@ export function TerminalApp() {
         ]
         break
       case "skills":
-        output = [
+        output = isMobile ? [
+          "Technical Skills:",
+          "• Python, JS, TypeScript",
+          "• React, Next.js, Tailwind",
+          "• Node.js, Express, Django",
+          "• MongoDB, PostgreSQL",
+          "• Git, Docker, AWS",
+          "• TensorFlow, PyTorch",
+          ""
+        ] : [
           "Technical Skills:",
           "-------------------",
           "• Languages: Python, JavaScript, TypeScript, Java, C++, SQL",
@@ -88,7 +120,15 @@ export function TerminalApp() {
         ]
         break
       case "about":
-        output = [
+        output = isMobile ? [
+          "About Avadhoot",
+          "==============",
+          "Full-Stack Developer",
+          "AI Enthusiast 🚀",
+          "Building innovative",
+          "solutions",
+          ""
+        ] : [
           "About Avadhoot Ganesh Mahadik",
           "==============================",
           "Passionate Full-Stack Developer and AI Enthusiast",
@@ -98,7 +138,14 @@ export function TerminalApp() {
         ]
         break
       case "contact":
-        output = [
+        output = isMobile ? [
+          "Contact:",
+          "• GitHub: Avadhoot1905",
+          "• LinkedIn: /avadhoot-m..",
+          "• LeetCode: arcsmo19",
+          "• Medium: @arcsmo19",
+          ""
+        ] : [
           "Contact Information:",
           "-------------------",
           "• GitHub: github.com/Avadhoot1905",
@@ -109,7 +156,12 @@ export function TerminalApp() {
         ]
         break
       case "projects":
-        output = [
+        output = isMobile ? [
+          "Projects:",
+          "Open Projects app",
+          "for details",
+          ""
+        ] : [
           "Notable Projects:",
           "----------------",
           "Open the Projects app to see detailed information",
@@ -118,7 +170,12 @@ export function TerminalApp() {
         ]
         break
       case "education":
-        output = [
+        output = isMobile ? [
+          "Education:",
+          "Open Education app",
+          "for details",
+          ""
+        ] : [
           "Education:",
           "---------",
           "Open the Education app for detailed information",
@@ -127,7 +184,12 @@ export function TerminalApp() {
         ]
         break
       case "experience":
-        output = [
+        output = isMobile ? [
+          "Experience:",
+          "Open Experience app",
+          "for details",
+          ""
+        ] : [
           "Work Experience:",
           "---------------",
           "Open the Experience app for detailed information",
@@ -172,21 +234,34 @@ export function TerminalApp() {
 
   return (
     <div
-      className="h-full w-full bg-black text-green-400 font-mono text-sm overflow-hidden flex flex-col cursor-text"
+      className={`h-full w-full bg-black text-green-400 font-mono overflow-hidden flex flex-col cursor-text ${
+        isMobile ? 'text-xs' : 'text-sm'
+      }`}
       onClick={handleTerminalClick}
       style={{ fontFamily: "'Courier New', Courier, monospace" }}
     >
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className={`flex-1 overflow-y-auto space-y-1 ${
+        isMobile ? 'p-2 text-[11px]' : 'p-4 space-y-2'
+      }`}>
         {commandHistory.map((entry, index) => (
-          <div key={index}>
+          <div key={index} className={isMobile ? 'space-y-0.5' : ''}>
             {entry.command && (
-              <div className="flex items-center space-x-2">
-                <span className="text-green-500">avadhoot@portfolio:~$</span>
-                <span className="text-green-300">{entry.command}</span>
+              <div className={`flex items-start ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
+                <span className={`text-green-500 ${isMobile ? 'text-[10px] flex-shrink-0' : ''}`}>
+                  {isMobile ? '$' : 'avadhoot@portfolio:~$'}
+                </span>
+                <span className={`text-green-300 ${isMobile ? 'break-all' : ''}`}>
+                  {entry.command}
+                </span>
               </div>
             )}
             {entry.output.map((line, lineIndex) => (
-              <div key={lineIndex} className="text-green-400 pl-0">
+              <div 
+                key={lineIndex} 
+                className={`text-green-400 ${
+                  isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
+                }`}
+              >
                 {line}
               </div>
             ))}
@@ -195,17 +270,30 @@ export function TerminalApp() {
         <div ref={terminalEndRef} />
       </div>
 
-      <form onSubmit={handleCommand} className="border-t border-green-900 p-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-green-500">avadhoot@portfolio:~$</span>
+      <form 
+        onSubmit={handleCommand} 
+        className={`border-t border-green-900 ${
+          isMobile ? 'p-2' : 'p-4'
+        }`}
+      >
+        <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
+          <span className={`text-green-500 flex-shrink-0 ${
+            isMobile ? 'text-[10px]' : ''
+          }`}>
+            {isMobile ? '$' : 'avadhoot@portfolio:~$'}
+          </span>
           <input
             ref={inputRef}
             type="text"
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
-            className="flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400"
+            className={`flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400 ${
+              isMobile ? 'text-xs' : ''
+            }`}
             autoFocus
             spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
           />
         </div>
       </form>

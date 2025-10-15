@@ -151,9 +151,9 @@ export function MacOSDesktop() {
         <>
           <MenuBar onLockScreen={handleLockScreen} />
 
-          <div className="relative h-screen w-full overflow-hidden p-4 pt-14">
+          <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
         <motion.div
-          className="grid grid-cols-6 gap-4 p-4"
+          className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, staggerChildren: 0.1 }}

@@ -214,6 +214,68 @@ export function Game2048App() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [move])
 
+  // Handle touch/swipe gestures
+  useEffect(() => {
+    let touchStartX = 0
+    let touchStartY = 0
+    let touchEndX = 0
+    let touchEndY = 0
+
+    const minSwipeDistance = 50
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX
+      touchStartY = e.touches[0].clientY
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndX = e.touches[0].clientX
+      touchEndY = e.touches[0].clientY
+    }
+
+    const handleTouchEnd = () => {
+      const deltaX = touchEndX - touchStartX
+      const deltaY = touchEndY - touchStartY
+      const absDeltaX = Math.abs(deltaX)
+      const absDeltaY = Math.abs(deltaY)
+
+      // Determine if it's a valid swipe
+      if (Math.max(absDeltaX, absDeltaY) > minSwipeDistance) {
+        if (absDeltaX > absDeltaY) {
+          // Horizontal swipe
+          if (deltaX > 0) {
+            move("right")
+          } else {
+            move("left")
+          }
+        } else {
+          // Vertical swipe
+          if (deltaY > 0) {
+            move("down")
+          } else {
+            move("up")
+          }
+        }
+      }
+
+      // Reset values
+      touchStartX = 0
+      touchStartY = 0
+      touchEndX = 0
+      touchEndY = 0
+    }
+
+    window.addEventListener("touchstart", handleTouchStart)
+    window.addEventListener("touchmove", handleTouchMove)
+    window.addEventListener("touchend", handleTouchEnd)
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart)
+      window.removeEventListener("touchmove", handleTouchMove)
+      window.removeEventListener("touchend", handleTouchEnd)
+    }
+  }, [move])
+
   // Initialize game
   useEffect(() => {
     const savedHighScore = localStorage.getItem("2048-highscore")
@@ -262,7 +324,8 @@ export function Game2048App() {
             2048
           </h1>
           <p className="text-yellow-200 text-sm mb-3 font-mono">
-            Use arrow keys to play
+            <span className="hidden md:inline">Use arrow keys</span>
+            <span className="md:hidden">Swipe to play</span>
           </p>
         </div>
 
@@ -371,7 +434,10 @@ export function Game2048App() {
 
         {/* Instructions */}
         <div className="mt-4 text-center text-yellow-200 text-xs font-mono bg-black/30 backdrop-blur-sm p-3 rounded-lg border border-yellow-600">
-          <p className="mb-1">🎮 Use arrow keys to move tiles</p>
+          <p className="mb-1">
+            <span className="hidden md:inline">🎮 Use arrow keys to move tiles</span>
+            <span className="md:hidden">🎮 Swipe in any direction to move tiles</span>
+          </p>
           <p>🎯 Combine same numbers to reach 2048!</p>
         </div>
       </div>

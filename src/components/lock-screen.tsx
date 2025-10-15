@@ -12,6 +12,7 @@ interface LockScreenProps {
 export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
 
   useEffect(() => {
@@ -21,7 +22,17 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
       setCurrentTime(new Date())
     }, 1000)
 
-    return () => clearInterval(timer)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
   const handleClick = () => {
@@ -52,7 +63,9 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
     <motion.div
       className="fixed inset-0 z-[20000] flex flex-col items-center justify-center cursor-pointer"
       style={{
-        backgroundImage: 'url(/assets/tahoejpg.webp)',
+        backgroundImage: isMobile 
+          ? 'url(/assets/lock-screen-phone.jpeg)' 
+          : 'url(/assets/tahoejpg.webp)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
@@ -71,23 +84,31 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/20" />
       
-      {/* Time display at top */}
+      {/* Time display at top - iOS style */}
       <motion.div
-        className="absolute top-16 left-1/2 transform -translate-x-1/2 text-center z-10"
+        className={`absolute left-1/2 transform -translate-x-1/2 text-center z-10 ${
+          isMobile ? 'top-24' : 'top-16'
+        }`}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        <div className="text-8xl font-bold tracking-wide text-white/80 mb-2">
+        <div className={`font-thin tracking-tight text-white mb-1 ${
+          isMobile ? 'text-7xl' : 'text-8xl font-bold'
+        }`}>
           {formatTime(currentTime)}
         </div>
-        <div className="text-2xl font-bold text-white/70">
+        <div className={`font-medium text-white/90 ${
+          isMobile ? 'text-lg' : 'text-2xl font-bold text-white/70'
+        }`}>
           {formatDate(currentTime)}
         </div>
       </motion.div>
 
-      {/* Bottom section with unlock prompt and macOS branding */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center text-white z-10">
+      {/* Bottom section with unlock prompt */}
+      <div className={`absolute left-1/2 transform -translate-x-1/2 text-center text-white z-10 ${
+        isMobile ? 'bottom-32' : 'bottom-8'
+      }`}>
         {/* Unlock instruction */}
         <motion.div
           className="mb-6"
@@ -95,34 +116,63 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.5 }}
         >
-          <div className="text-lg font-light mb-2">
-            Click anywhere to unlock
+          <div className={`font-light mb-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
+            {isMobile ? 'Swipe up to unlock' : 'Click anywhere to unlock'}
           </div>
-          <motion.div
-            className="inline-block"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
-            }}
-          >
-            <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-white/60 rounded-full mt-2" />
-            </div>
-          </motion.div>
+          {!isMobile && (
+            <motion.div
+              className="inline-block"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+            >
+              <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
+                <div className="w-1 h-3 bg-white/60 rounded-full mt-2" />
+              </div>
+            </motion.div>
+          )}
+          {isMobile && (
+            <motion.div
+              className="flex justify-center"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ 
+                duration: 1.5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+            >
+              <svg 
+                width="40" 
+                height="40" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="text-white/70"
+              >
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Glassmorphic branding panel */}
         <div 
-          className="px-6 py-3 rounded-2xl backdrop-blur-xl border border-white/20"
+          className={`px-6 py-3 rounded-2xl backdrop-blur-xl border border-white/20 ${
+            isMobile ? 'rounded-full' : ''
+          }`}
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(20px) saturate(180%)',
             WebkitBackdropFilter: 'blur(20px) saturate(180%)'
           }}
         >
-          <div className="text-white/80 text-sm font-light">
+          <div className={`text-white/80 font-light ${isMobile ? 'text-xs' : 'text-sm'}`}>
             Avadhoot Ganesh Mahadik
           </div>
         </div>

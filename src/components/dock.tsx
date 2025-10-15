@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import { ReactElement } from "react"
@@ -16,16 +16,34 @@ interface DockProps {
 
 export function Dock({ apps, onAppClick }: DockProps) {
   const [hoveredApp, setHoveredApp] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Filter apps for mobile: only github, linkedin, leetcode, about
+  const displayApps = isMobile 
+    ? apps.filter(app => ['github', 'linkedin', 'leetcode', 'about'].includes(app.id))
+    : apps
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex h-16 items-end justify-center z-50">
+    <div className={`fixed bottom-0 left-0 right-0 flex items-end justify-center z-50 ${
+      isMobile ? 'h-20 pb-2' : 'h-16'
+    }`}>
       <motion.div
-        className={`mb-2 flex h-16 items-end rounded-2xl p-1 backdrop-blur-xl border ${
+        className={`flex items-end backdrop-blur-xl border ${
           theme === "dark" 
             ? "bg-black/20 border-white/10" 
             : "bg-white/20 border-black/10"
-        }`}
+        } ${isMobile ? 'rounded-3xl px-4 py-2 mb-2' : 'rounded-2xl p-1 mb-2 h-16'}`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -36,11 +54,14 @@ export function Dock({ apps, onAppClick }: DockProps) {
         transition={{ duration: 0.3 }}
       >
         <AnimatePresence>
-          {apps.map((app) => (
+          {displayApps.map((app) => (
             <motion.div
               key={app.id}
-              className="relative mx-1 flex items-center justify-center"
-              whileHover={{ scale: 1.2, y: -10 }}
+              className={`relative flex items-center justify-center ${
+                isMobile ? 'mx-2' : 'mx-1'
+              }`}
+              whileHover={{ scale: isMobile ? 1.1 : 1.2, y: isMobile ? -5 : -10 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => onAppClick(app.id)}
               onMouseEnter={() => setHoveredApp(app.id)}
               onMouseLeave={() => setHoveredApp(null)}
@@ -50,11 +71,11 @@ export function Dock({ apps, onAppClick }: DockProps) {
             >
               <div className="relative">
                 <div 
-                  className={`h-12 w-12 rounded-xl flex items-center justify-center text-3xl backdrop-blur-xl border ${
+                  className={`flex items-center justify-center backdrop-blur-xl border ${
                     theme === "dark" 
                       ? "bg-black/30 border-white/20" 
                       : "bg-white/30 border-black/20"
-                  }`}
+                  } ${isMobile ? 'h-14 w-14 rounded-2xl text-2xl' : 'h-12 w-12 rounded-xl text-3xl'}`}
                   style={{
                     backdropFilter: 'blur(15px) saturate(160%)',
                     WebkitBackdropFilter: 'blur(15px) saturate(160%)'
@@ -66,7 +87,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
                   <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gray-400"></div>
                 )}
               </div>
-              {hoveredApp === app.id && (
+              {!isMobile && hoveredApp === app.id && (
                 <motion.div
                   className={`absolute -top-8 whitespace-nowrap rounded px-2 py-1 text-xs backdrop-blur-xl border ${
                     theme === "dark" 

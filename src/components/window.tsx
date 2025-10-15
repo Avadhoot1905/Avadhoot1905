@@ -40,15 +40,118 @@ export function Window({
   initialSize,
 }: WindowProps) {
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [dragY, setDragY] = useState(0)
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
+    
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Handle drag to dismiss on mobile
+  const handleDragEnd = (_event: any, info: any) => {
+    // If dragged down more than 150px, close the modal
+    if (info.offset.y > 150) {
+      onClose()
+    } else {
+      // Reset position if not enough drag
+      setDragY(0)
+    }
+  }
 
   if (!mounted) return null
 
+  // Mobile iOS-style modal
+  if (isMobile) {
+    return (
+      <motion.div
+        className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        
+        {/* Modal Content */}
+        <motion.div
+          className={`relative w-full h-[90vh] flex flex-col backdrop-blur-xl border-t ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-900/95"
+              : "border-gray-300 bg-white/95"
+          }`}
+          style={{
+            borderTopLeftRadius: '20px',
+            borderTopRightRadius: '20px',
+            backdropFilter: 'blur(30px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+          }}
+          initial={{ y: '100%' }}
+          animate={{ y: dragY }}
+          exit={{ y: '100%' }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.5 }}
+          dragMomentum={false}
+          onDragEnd={handleDragEnd}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* iOS-style handle - Draggable area */}
+          <div className="flex justify-center pt-2 pb-3 cursor-grab active:cursor-grabbing touch-none">
+            <div className={`w-10 h-1 rounded-full ${
+              theme === "dark" ? "bg-gray-600" : "bg-gray-400"
+            }`} />
+          </div>
+          
+          {/* Header */}
+          <div
+            className={`flex h-12 items-center px-4 border-b flex-shrink-0 ${
+              theme === "dark" ? "border-gray-800" : "border-gray-200"
+            }`}
+          >
+            <div className="flex-1"></div>
+            <div className={`text-base font-semibold ${
+              theme === "dark" ? "text-white" : "text-gray-900"
+            }`}>{title}</div>
+            <div className="flex-1 flex justify-end">
+              <button
+                onClick={onClose}
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  theme === "dark" 
+                    ? "bg-gray-800 hover:bg-gray-700 text-white" 
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-900"
+                }`}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Content - Non-draggable */}
+          <div 
+            className={`flex-1 overflow-auto ${
+              theme === "dark" ? "text-gray-200" : "text-gray-900"
+            }`}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            {children}
+          </div>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  // Desktop window
   return (
     <Rnd
       default={{

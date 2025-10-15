@@ -61,6 +61,7 @@ interface MediumArticle {
 export function SafariApp() {
   const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium">("github")
   const { theme } = useTheme()
+  const [isMobile, setIsMobile] = useState(false)
   
   const [githubUser, setGithubUser] = useState<GitHubUser | null>(null)
   const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
@@ -70,6 +71,17 @@ export function SafariApp() {
   const [mediumArticles, setMediumArticles] = useState<MediumArticle[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Fetch GitHub data using server action (with Redis caching)
   useEffect(() => {
@@ -197,12 +209,14 @@ export function SafariApp() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Tab Bar */}
-      <div className={`flex items-center border-b ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
-        <div className="flex space-x-1 p-2">
+      {/* Tab Bar - Always visible with scrolling on mobile */}
+      <div className={`flex items-center border-b flex-shrink-0 ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
+        <div className={`flex ${isMobile ? 'overflow-x-auto space-x-0.5 p-1 scrollbar-hide' : 'space-x-1 p-2'} w-full`}>
           <button
             onClick={() => setActiveSafariTab("github")}
-            className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
+            className={`flex items-center rounded-t whitespace-nowrap ${
+              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+            } ${
               activeSafariTab === "github"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
@@ -212,12 +226,14 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiGithub />
+            <SiGithub className={isMobile ? 'text-sm' : ''} />
             <span>GitHub</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("linkedin")}
-            className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
+            className={`flex items-center rounded-t whitespace-nowrap ${
+              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+            } ${
               activeSafariTab === "linkedin"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
@@ -227,12 +243,14 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiLinkedin className="text-blue-500" />
+            <SiLinkedin className={`text-blue-500 ${isMobile ? 'text-sm' : ''}`} />
             <span>LinkedIn</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("leetcode")}
-            className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
+            className={`flex items-center rounded-t whitespace-nowrap ${
+              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+            } ${
               activeSafariTab === "leetcode"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
@@ -242,12 +260,14 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiLeetcode className="text-orange-500" />
+            <SiLeetcode className={`text-orange-500 ${isMobile ? 'text-sm' : ''}`} />
             <span>LeetCode</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("medium")}
-            className={`flex items-center space-x-2 rounded-t px-3 py-1.5 text-sm ${
+            className={`flex items-center rounded-t whitespace-nowrap ${
+              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+            } ${
               activeSafariTab === "medium"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
@@ -257,14 +277,14 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiMedium />
+            <SiMedium className={isMobile ? 'text-sm' : ''} />
             <span>Medium</span>
           </button>
         </div>
       </div>
 
       {/* Address Bar */}
-      <div className={`flex items-center border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
+      <div className={`flex items-center border-b p-2 flex-shrink-0 ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
         <div
           className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
         >

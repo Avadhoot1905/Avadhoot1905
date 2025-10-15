@@ -51,7 +51,8 @@ export async function clearChatHistory(userId: string): Promise<void> {
 
 export async function sendMessageToGemini(message: string): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+    // Use gemini-2.5-flash - stable model (released June 2025)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
     
     const result = await model.generateContent(message)
     const response = await result.response
@@ -74,7 +75,8 @@ export async function sendMessageWithHistory(
   userMessage: string
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+    // Use gemini-2.5-flash - stable model (released June 2025)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
     
     // Get existing chat history for this user
     const existingHistory = await getChatHistory(userId)

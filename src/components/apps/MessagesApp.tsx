@@ -176,7 +176,7 @@ export function MessagesApp() {
     <div className="flex h-full">
       {/* Sidebar - Hidden on mobile */}
       {!isMobile && (
-        <div className={`w-1/3 border-r ${theme === "dark" ? "border-gray-700" : ""}`}>
+        <div className={`w-1/4 border-r ${theme === "dark" ? "border-gray-700" : ""}`}>
           <div className={`border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
             <input
               type="text"

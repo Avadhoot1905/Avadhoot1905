@@ -93,8 +93,8 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        <div className={`font-thin tracking-tight text-white mb-1 ${
-          isMobile ? 'text-7xl' : 'text-8xl font-bold'
+        <div className={`font-bold tracking-tight text-white mb-1 ${
+          isMobile ? 'text-7xl' : 'text-8xl'
         }`}>
           {formatTime(currentTime)}
         </div>

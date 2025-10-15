@@ -74,3 +74,101 @@ html, body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Custom markdown styles for chat messages */
+.prose {
+  color: inherit;
+}
+
+.prose p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose ul, .prose ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 1.25rem;
+}
+
+.prose li {
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
+}
+
+.prose blockquote {
+  border-left: 3px solid currentColor;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  opacity: 0.8;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: inherit;
+}
+
+.prose h1 { font-size: 1.25rem; }
+.prose h2 { font-size: 1.125rem; }
+.prose h3 { font-size: 1rem; }
+
+.prose pre {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.prose code {
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.prose hr {
+  border-color: currentColor;
+  opacity: 0.3;
+  margin: 0.5rem 0;
+}
+
+.prose table {
+  width: 100%;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.prose th {
+  font-weight: 600;
+  padding: 0.25rem;
+  border-bottom: 1px solid currentColor;
+}
+
+.prose td {
+  padding: 0.25rem;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.8;
+}
+
+/* Keep text white in user messages */
+.prose-user p,
+.prose-user strong,
+.prose-user em,
+.prose-user li,
+.prose-user h1,
+.prose-user h2,
+.prose-user h3,
+.prose-user h4,
+.prose-user h5,
+.prose-user h6 {
+  color: white !important;
+}

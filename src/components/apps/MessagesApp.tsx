@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { sendMessageWithHistory, clearChatHistory, getUserChatHistory } from "@/actions/gemini"
 import { FaPaperPlane, FaTrash } from "react-icons/fa"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 type Message = {
   role: "user" | "assistant"
@@ -251,7 +253,55 @@ export function MessagesApp() {
                     : "bg-gray-100 text-gray-900"
                 }`}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+                  {message.role === "user" ? (
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                  ) : (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Custom styles for code blocks
+                        code: ({node, className, children, ...props}: any) => {
+                          const isInline = !className?.includes('language-')
+                          return isInline ? (
+                            <code
+                              className={`${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} px-1 py-0.5 rounded text-xs`}
+                              {...props}
+                            >
+                              {children}
+                            </code>
+                          ) : (
+                            <code
+                              className={`block ${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} p-2 rounded text-xs overflow-x-auto`}
+                              {...props}
+                            >
+                              {children}
+                            </code>
+                          )
+                        },
+                        // Custom styles for links
+                        a: ({node, children, ...props}) => (
+                          <a
+                            className="text-blue-400 hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        ),
+                        // Override paragraph styling for user role
+                        p: ({node, children, ...props}) => (
+                          <p className={message.role === "user" ? "text-white" : ""} {...props}>
+                            {children}
+                          </p>
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  )}
+                </div>
                 <div
                   className={`mt-1 text-xs ${
                     message.role === "user"

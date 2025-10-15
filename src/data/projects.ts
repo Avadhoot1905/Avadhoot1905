@@ -11,12 +11,12 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: 1,
-    name: "Portfolio Website Developmentsite",
-    description: "A responsive macOS-inspired portfolio Website Developmentsite built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
+    name: "Portfolio Website Development",
+    description: "A responsive macOS-inspired portfolio Website Development built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS", "React Icons","Redis"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/Avadhoot1905",
-    live: "https://avadhootmahadik.os.in"
+    live: "https://avadhoot.dev"
   },
   {
     id: 2,
@@ -55,7 +55,7 @@ export const projects: Project[] = [
   {
     id: 6,
     name: "SecureLink",
-    description: "Real-time chat application with WebSocket support, file sharing, and end-to-end encryption for users in the same subnet",
+    description: "Real-time chat application with WebSocket support, file sharing, and end-to-end encryption for users in the same subnet. It uses UDP for peer discovery and AES for encryption.",
     techStack: ["Python"],
     domain: "system",
     github: "https://github.com/Avadhoot1905/SecureLink"

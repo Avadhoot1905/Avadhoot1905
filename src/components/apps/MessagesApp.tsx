@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { sendMessageWithHistory, clearChatHistory, getUserChatHistory } from "@/actions/gemini"
-import { FaPaperPlane, FaTrash } from "react-icons/fa"
+import { FaPaperPlane, FaUndo } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -214,7 +214,7 @@ export function MessagesApp() {
             }`}
             title="Clear chat history"
           >
-            <FaTrash className="text-sm" />
+            <FaUndo className="text-sm" />
           </button>
         </div>
         <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>

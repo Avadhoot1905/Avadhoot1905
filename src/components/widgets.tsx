@@ -97,7 +97,7 @@ export function Widgets() {
       className={`fixed z-30 flex gap-3 ${
         isMobile 
           ? 'top-16 left-0 right-0 px-4 justify-between' 
-          : 'bottom-6 right-6 flex-col'
+          : 'bottom-6 right-6 flex-col lg:bottom-6 md:bottom-24'
       }`}
     >
       {/* Date & Time Widget */}

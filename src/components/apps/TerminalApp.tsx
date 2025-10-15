@@ -11,7 +11,6 @@ type CommandHistory = {
 export function TerminalApp() {
   const { theme } = useTheme()
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
-  const [currentCommand, setCurrentCommand] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const terminalEndRef = useRef<HTMLDivElement>(null)
@@ -60,11 +59,53 @@ export function TerminalApp() {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  // Helper function to highlight command names in output
+  const highlightCommands = (text: string) => {
+    const commands = ['help', 'skills', 'about', 'contact', 'projects', 'education', 'experience', 'clear', 'whoami', 'date', 'ls', 'pwd']
+    const parts: React.ReactNode[] = []
+    let remainingText = text
+    let key = 0
+
+    while (remainingText.length > 0) {
+      let foundCommand = false
+      
+      for (const cmd of commands) {
+        const index = remainingText.toLowerCase().indexOf(cmd)
+        if (index !== -1) {
+          // Add text before command
+          if (index > 0) {
+            parts.push(<span key={key++}>{remainingText.substring(0, index)}</span>)
+          }
+          // Add highlighted command
+          parts.push(
+            <span key={key++} className="text-yellow-400">
+              {remainingText.substring(index, index + cmd.length)}
+            </span>
+          )
+          remainingText = remainingText.substring(index + cmd.length)
+          foundCommand = true
+          break
+        }
+      }
+      
+      if (!foundCommand) {
+        parts.push(<span key={key++}>{remainingText}</span>)
+        break
+      }
+    }
+    
+    return parts.length > 0 ? <>{parts}</> : <>{text}</>
+  }
+
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentCommand.trim()) return
+    
+    // Get value from ref instead of state
+    const commandText = inputRef.current?.value?.trim() || ''
+    
+    if (!commandText) return
 
-    const cmd = currentCommand.trim().toLowerCase()
+    const cmd = commandText.toLowerCase()
     let output: string[] = []
 
     switch (cmd) {
@@ -199,7 +240,10 @@ export function TerminalApp() {
         break
       case "clear":
         setCommandHistory([])
-        setCurrentCommand("")
+        // Clear input directly
+        if (inputRef.current) {
+          inputRef.current.value = ''
+        }
         return
       case "whoami":
         output = ["avadhoot@portfolio:~$", "Avadhoot Ganesh Mahadik", ""]
@@ -219,14 +263,19 @@ export function TerminalApp() {
         output = ["/Users/avadhoot/portfolio", ""]
         break
       default:
-        output = [`command not found: ${currentCommand}`, "Type 'help' for available commands", ""]
+        output = [`command not found: ${commandText}`, "Type 'help' for available commands", ""]
     }
 
-    setCommandHistory([...commandHistory, { command: currentCommand, output }])
-    setCurrentCommand("")
+    setCommandHistory([...commandHistory, { command: commandText, output }])
+    
+    // Clear input directly
+    if (inputRef.current) {
+      inputRef.current.value = ''
+    }
   }
 
-  const handleTerminalClick = () => {
+  const handleTerminalClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     inputRef.current?.focus()
   }
 
@@ -240,31 +289,39 @@ export function TerminalApp() {
       onClick={handleTerminalClick}
       style={{ fontFamily: "'Courier New', Courier, monospace" }}
     >
-      <div className={`flex-1 overflow-y-auto space-y-1 ${
-        isMobile ? 'p-2 text-[11px]' : 'p-4 space-y-2'
-      }`}>
+      <div 
+        className={`flex-1 overflow-y-auto space-y-1 ${
+          isMobile ? 'p-2 text-[11px]' : 'p-4 space-y-2'
+        }`}
+        onClick={handleTerminalClick}
+      >
         {commandHistory.map((entry, index) => (
           <div key={index} className={isMobile ? 'space-y-0.5' : ''}>
             {entry.command && (
               <div className={`flex items-start ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
-                <span className={`text-green-500 ${isMobile ? 'text-[10px] flex-shrink-0' : ''}`}>
+                <span className={`text-cyan-400 ${isMobile ? 'text-[10px] flex-shrink-0' : ''}`}>
                   {isMobile ? '$' : 'avadhoot@portfolio:~$'}
                 </span>
-                <span className={`text-green-300 ${isMobile ? 'break-all' : ''}`}>
+                <span className={`text-yellow-400 ${isMobile ? 'break-all' : ''}`}>
                   {entry.command}
                 </span>
               </div>
             )}
-            {entry.output.map((line, lineIndex) => (
-              <div 
-                key={lineIndex} 
-                className={`text-green-400 ${
-                  isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
-                }`}
-              >
-                {line}
-              </div>
-            ))}
+            {entry.command && <div className="h-1"></div>}
+            {entry.output.length > 0 && (
+              <>
+                {entry.output.map((line, lineIndex) => (
+                  <div 
+                    key={lineIndex} 
+                    className={`text-green-400 ${
+                      isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
+                    }`}
+                  >
+                    {highlightCommands(line)}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         ))}
         <div ref={terminalEndRef} />
@@ -274,10 +331,10 @@ export function TerminalApp() {
         onSubmit={handleCommand} 
         className={`border-t border-green-900 ${
           isMobile ? 'p-2' : 'p-4'
-        }`}
+        } relative z-10`}
       >
         <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
-          <span className={`text-green-500 flex-shrink-0 ${
+          <span className={`text-cyan-400 flex-shrink-0 ${
             isMobile ? 'text-[10px]' : ''
           }`}>
             {isMobile ? '$' : 'avadhoot@portfolio:~$'}
@@ -285,15 +342,15 @@ export function TerminalApp() {
           <input
             ref={inputRef}
             type="text"
-            value={currentCommand}
-            onChange={(e) => setCurrentCommand(e.target.value)}
-            className={`flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400 ${
+            className={`flex-1 bg-transparent text-green-300 outline-none border-none caret-green-400 focus:outline-none focus:ring-0 ${
               isMobile ? 'text-xs' : ''
             }`}
             autoFocus
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
+            autoComplete="off"
+            style={{ WebkitAppearance: 'none' }}
           />
         </div>
       </form>

@@ -217,7 +217,10 @@ export function Window({
             theme === "dark" ? "text-gray-200" : "text-gray-900"
           }`}
           style={{ pointerEvents: 'auto', userSelect: 'auto' }}
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onActivate()
+          }}
         >{children}</div>
       </motion.div>
     </Rnd>

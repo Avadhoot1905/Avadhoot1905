@@ -47,8 +47,11 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+  const [typingMessage, setTypingMessage] = useState<string>("")
+  const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -100,7 +103,16 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, typingMessage])
+
+  // Cleanup typing interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -111,6 +123,33 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Typing animation function
+  const typeMessage = (fullMessage: string, onComplete: () => void) => {
+    setIsTyping(true)
+    setTypingMessage("")
+    
+    let currentIndex = 0
+    const typingSpeed = 20 // milliseconds per character
+    
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current)
+    }
+    
+    typingIntervalRef.current = setInterval(() => {
+      if (currentIndex < fullMessage.length) {
+        setTypingMessage((prev) => prev + fullMessage[currentIndex])
+        currentIndex++
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current)
+          typingIntervalRef.current = null
+        }
+        setIsTyping(false)
+        onComplete()
+      }
+    }, typingSpeed)
+  }
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -180,25 +219,30 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
         }
       }
 
-      const aiMessage: Message = {
-        role: "assistant",
-        content: cleanResponse,
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, aiMessage])
-      
-      // Open the app if a marker was detected
-      if (appToOpen && onOpenApp) {
-        // Small delay to let the message render first
-        setTimeout(() => {
-          if (projectFilter) {
-            onOpenApp(appToOpen, { filter: projectFilter })
-          } else {
-            onOpenApp(appToOpen)
-          }
-        }, 500)
-      }
+      // Start typing animation
+      typeMessage(cleanResponse, () => {
+        // After typing is complete, add the message to the messages array
+        const aiMessage: Message = {
+          role: "assistant",
+          content: cleanResponse,
+          timestamp: new Date(),
+        }
+        
+        setMessages((prev) => [...prev, aiMessage])
+        setTypingMessage("")
+        
+        // Open the app if a marker was detected
+        if (appToOpen && onOpenApp) {
+          // Small delay to let the message render first
+          setTimeout(() => {
+            if (projectFilter) {
+              onOpenApp(appToOpen, { filter: projectFilter })
+            } else {
+              onOpenApp(appToOpen)
+            }
+          }, 300)
+        }
+      })
     } catch (error) {
       console.error("Error sending message:", error)
       const errorMessage: Message = {
@@ -292,7 +336,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
             <>
               {messages.map((message, index) => (
             <div
-              key={index}
+              key={`message-${index}`}
               className={`mb-3 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
@@ -376,7 +420,64 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
               </div>
             </div>
           ))}
-              {isLoading && (
+              
+              {/* Typing message animation */}
+              {isTyping && typingMessage && (
+                <div className="mb-3 flex justify-start">
+                  <div
+                    className={`${isMobile ? 'max-w-[80%]' : 'max-w-[70%]'} rounded-lg p-3 text-sm ${
+                      theme === "dark"
+                        ? isMobile
+                          ? "bg-gray-700 text-gray-200 rounded-bl-md"
+                          : "bg-gray-700 text-gray-200"
+                        : isMobile
+                        ? "bg-gray-200 text-gray-900 rounded-bl-md"
+                        : "bg-gray-100 text-gray-900"
+                    }`}
+                  >
+                    <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code: ({node, className, children, ...props}: any) => {
+                            const isInline = !className?.includes('language-')
+                            return isInline ? (
+                              <code
+                                className={`${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} px-1 py-0.5 rounded text-xs`}
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            ) : (
+                              <code
+                                className={`block ${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} p-2 rounded text-xs overflow-x-auto`}
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            )
+                          },
+                          a: ({node, children, ...props}) => (
+                            <a
+                              className="text-blue-400 hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              {...props}
+                            >
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
+                        {typingMessage}
+                      </ReactMarkdown>
+                      <span className="inline-block w-1 h-4 bg-current animate-pulse ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {isLoading && !isTyping && (
                 <div className="mb-4 flex justify-start">
                   <div
                     className={`max-w-[70%] rounded-lg p-3 text-sm ${
@@ -405,7 +506,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
               ref={inputRef}
               type="text"
               placeholder={isLoadingHistory ? "Loading..." : (isMobile ? "Text Message" : "iMessage")}
-              disabled={isLoading || isLoadingHistory}
+              disabled={isLoading || isLoadingHistory || isTyping}
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
@@ -413,17 +514,17 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                 theme === "dark" 
                   ? "bg-gray-700 text-white placeholder:text-gray-400" 
                   : "bg-gray-100 text-gray-900 placeholder:text-gray-500"
-              } ${(isLoading || isLoadingHistory) ? "opacity-50 cursor-not-allowed" : ""} ${
+              } ${(isLoading || isLoadingHistory || isTyping) ? "opacity-50 cursor-not-allowed" : ""} ${
                 isMobile ? 'border-2 border-gray-300 dark:border-gray-600' : ''
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
             <button
               type="submit"
-              disabled={isLoading || isLoadingHistory}
+              disabled={isLoading || isLoadingHistory || isTyping}
               className={`rounded-full transition-all ${
                 isMobile ? 'p-2.5' : 'p-2'
               } ${
-                isLoading || isLoadingHistory
+                isLoading || isLoadingHistory || isTyping
                   ? "cursor-not-allowed opacity-50 bg-blue-400"
                   : "hover:bg-blue-600 active:scale-95"
               } bg-blue-500 text-white shadow-lg`}

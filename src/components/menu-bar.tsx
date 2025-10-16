@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, Moon, Sun, Monitor, Wifi, Battery, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane } from "lucide-react"
+import { ChevronDown, Moon, Sun, Monitor, Wifi, Battery, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -18,6 +18,7 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [brightness, setBrightness] = useState(70)
   const [volume, setVolume] = useState(60)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const { theme, setTheme } = useTheme()
 
   // Prevent hydration mismatch
@@ -35,11 +36,27 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
+    // Check fullscreen state
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+
     return () => {
       clearInterval(timer)
       window.removeEventListener('resize', checkMobile)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
   }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   const toggleMenu = (menu: string) => {
     if (activeMenu === menu) {
@@ -714,6 +731,28 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
       </div>
 
       <div className="flex-1"></div>
+
+      <div className="relative mr-2">
+        <button
+          onClick={toggleFullscreen}
+          className={`flex items-center rounded-full p-1 backdrop-blur-xl border transition-all duration-200 ${
+            theme === "dark"
+              ? "bg-white/10 border-white/20 text-gray-200 hover:bg-white/15 hover:border-white/30"
+              : "bg-black/10 border-black/20 text-gray-700 hover:bg-black/15 hover:border-black/30"
+          }`}
+          style={{
+            backdropFilter: 'blur(15px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
+          }}
+          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+        >
+          {isFullscreen ? (
+            <Minimize className="h-4 w-4" />
+          ) : (
+            <Maximize className="h-4 w-4" />
+          )}
+        </button>
+      </div>
 
       <div className="relative mr-4">
         <button

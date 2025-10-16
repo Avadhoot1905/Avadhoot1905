@@ -144,39 +144,74 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Helper function to highlight command names in output
-  const highlightCommands = (text: string) => {
-    const commands = ['help', 'skills', 'about', 'contact', 'projects', 'education', 'experience', 'clear', 'whoami', 'date', 'ls', 'pwd', 'navigate', 'exit']
+  // Helper function to convert URLs and emails in text to clickable links
+  const linkifyText = (text: string) => {
+    // Regular expressions for matching URLs and emails
+    const urlPattern = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/g
+    const emailPattern = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/g
+    
     const parts: React.ReactNode[] = []
-    let remainingText = text
+    let lastIndex = 0
     let key = 0
 
-    while (remainingText.length > 0) {
-      let foundCommand = false
-      
-      for (const cmd of commands) {
-        const index = remainingText.toLowerCase().indexOf(cmd)
-        if (index !== -1) {
-          // Add text before command
-          if (index > 0) {
-            parts.push(<span key={key++}>{remainingText.substring(0, index)}</span>)
-          }
-          // Add highlighted command
-          parts.push(
-            <span key={key++} className="text-yellow-400">
-              {remainingText.substring(index, index + cmd.length)}
-            </span>
-          )
-          remainingText = remainingText.substring(index + cmd.length)
-          foundCommand = true
-          break
-        }
+    // Find all URLs and emails
+    const matches: Array<{ index: number; length: number; text: string; isEmail: boolean }> = []
+    
+    let match
+    while ((match = urlPattern.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        text: match[0],
+        isEmail: false
+      })
+    }
+    
+    while ((match = emailPattern.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        text: match[0],
+        isEmail: true
+      })
+    }
+    
+    // Sort matches by index
+    matches.sort((a, b) => a.index - b.index)
+    
+    // Build the result with links
+    matches.forEach((match) => {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>)
       }
       
-      if (!foundCommand) {
-        parts.push(<span key={key++}>{remainingText}</span>)
-        break
-      }
+      // Add the link
+      const href = match.isEmail 
+        ? `mailto:${match.text}` 
+        : match.text.startsWith('http') 
+          ? match.text 
+          : `https://${match.text}`
+      
+      parts.push(
+        <a
+          key={key++}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {match.text}
+        </a>
+      )
+      
+      lastIndex = match.index + match.length
+    })
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(<span key={key++}>{text.substring(lastIndex)}</span>)
     }
     
     return parts.length > 0 ? <>{parts}</> : <>{text}</>
@@ -553,7 +588,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
                       isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
                     }`}
                   >
-                    {highlightCommands(line)}
+                    {linkifyText(line)}
                   </div>
                 ))}
               </>

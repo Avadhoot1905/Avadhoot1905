@@ -46,6 +46,7 @@ export function MacOSDesktop() {
   const [mounted, setMounted] = useState(false)
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
+  const [projectsFilter, setProjectsFilter] = useState<string>("all")
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
@@ -134,7 +135,12 @@ export function MacOSDesktop() {
     setActiveWindow(appId)
   }
 
-  const openOrActivateWindow = (appId: string) => {
+  const openOrActivateWindow = (appId: string, params?: { filter?: string }) => {
+    // Handle projects filter if provided
+    if (appId === 'projects' && params?.filter) {
+      setProjectsFilter(params.filter)
+    }
+    
     // If window is already open, just bring it to front
     if (openWindows.includes(appId)) {
       setActiveWindow(appId)
@@ -331,7 +337,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 200, y: 120 }}
               initialSize={{ width: 700, height: 550 }}
             >
-              <ProjectsApp />
+              <ProjectsApp initialFilter={projectsFilter} />
             </Window>
           )}
 

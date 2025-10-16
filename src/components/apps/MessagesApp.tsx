@@ -14,7 +14,7 @@ type Message = {
 }
 
 type MessagesAppProps = {
-  onOpenApp?: (appId: string) => void
+  onOpenApp?: (appId: string, params?: { filter?: string }) => void
 }
 
 /**
@@ -141,19 +141,42 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
 
       // Check if response contains app opening markers
       let cleanResponse = response
-      const markers = {
-        '[OPEN:EDUCATION]': 'education',
-        '[OPEN:EXPERIENCE]': 'experience',
-        '[OPEN:PROJECTS]': 'projects'
+      let appToOpen: string | null = null
+      let projectFilter: string | undefined = undefined
+      
+      // Check for filtered project markers first (more specific)
+      const filteredProjectMarkers = [
+        { pattern: '[OPEN:PROJECTS:Website Development]', app: 'projects', filter: 'Website Development' },
+        { pattern: '[OPEN:PROJECTS:App Development]', app: 'projects', filter: 'App Development' },
+        { pattern: '[OPEN:PROJECTS:Machine Learning]', app: 'projects', filter: 'Machine Learning' },
+        { pattern: '[OPEN:PROJECTS:Data Science]', app: 'projects', filter: 'Data Science' },
+        { pattern: '[OPEN:PROJECTS:Extension Development]', app: 'projects', filter: 'Extension Development' },
+        { pattern: '[OPEN:PROJECTS:system]', app: 'projects', filter: 'system' },
+      ]
+      
+      for (const { pattern, app, filter } of filteredProjectMarkers) {
+        if (response.includes(pattern)) {
+          cleanResponse = response.replace(pattern, '').trim()
+          appToOpen = app
+          projectFilter = filter
+          break
+        }
       }
       
-      let appToOpen: string | null = null
-      
-      for (const [marker, appId] of Object.entries(markers)) {
-        if (response.includes(marker)) {
-          cleanResponse = response.replace(marker, '').trim()
-          appToOpen = appId
-          break
+      // If no filtered marker found, check for general markers
+      if (!appToOpen) {
+        const generalMarkers = {
+          '[OPEN:EDUCATION]': 'education',
+          '[OPEN:EXPERIENCE]': 'experience',
+          '[OPEN:PROJECTS]': 'projects'
+        }
+        
+        for (const [marker, appId] of Object.entries(generalMarkers)) {
+          if (response.includes(marker)) {
+            cleanResponse = response.replace(marker, '').trim()
+            appToOpen = appId
+            break
+          }
         }
       }
 
@@ -169,7 +192,11 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
       if (appToOpen && onOpenApp) {
         // Small delay to let the message render first
         setTimeout(() => {
-          onOpenApp(appToOpen)
+          if (projectFilter) {
+            onOpenApp(appToOpen, { filter: projectFilter })
+          } else {
+            onOpenApp(appToOpen)
+          }
         }, 500)
       }
     } catch (error) {

@@ -2,8 +2,12 @@
 
 import { FaCode, FaGithub, FaExternalLinkAlt, FaGlobe, FaMobile, FaLaptopCode } from "react-icons/fa"
 import { useTheme } from "next-themes"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { projects as projectsData, type Project } from "@/data/projects"
+
+type ProjectsAppProps = {
+  initialFilter?: string
+}
 
 const domainIcons: { [key: string]: any } = {
   "Website Development": FaGlobe,
@@ -67,10 +71,17 @@ const techColors: { [key: string]: string } = {
   "Syncthing": "bg-blue-500 text-white",
 }
 
-export function ProjectsApp() {
+export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
   const { theme } = useTheme()
-  const [filter, setFilter] = useState<string>("all")
+  const [filter, setFilter] = useState<string>(initialFilter)
   const projects = projectsData
+
+  // Update filter when initialFilter changes
+  useEffect(() => {
+    if (initialFilter) {
+      setFilter(initialFilter)
+    }
+  }, [initialFilter])
 
   const filteredProjects = filter === "all" 
     ? projects 

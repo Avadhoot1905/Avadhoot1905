@@ -212,7 +212,7 @@ export function MacOSDesktop() {
       </AnimatePresence>
       {!isLocked && (
         <>
-          <MenuBar onLockScreen={handleLockScreen} />
+          <MenuBar onLockScreen={handleLockScreen} activeApp={activeWindow} />
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
         <motion.div

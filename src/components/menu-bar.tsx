@@ -8,9 +8,10 @@ import { SiApple } from "react-icons/si"
 
 interface MenuBarProps {
   onLockScreen?: () => void
+  activeApp?: string | null
 }
 
-export function MenuBar({ onLockScreen }: MenuBarProps) {
+export function MenuBar({ onLockScreen, activeApp }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -20,6 +21,21 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
   const [volume, setVolume] = useState(60)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const { theme, setTheme } = useTheme()
+
+  // Map app IDs to display names
+  const appNames: Record<string, string> = {
+    finder: "Finder",
+    safari: "Safari",
+    messages: "Messages",
+    photos: "Photos",
+    about: "About Me",
+    projects: "Projects",
+    education: "Education",
+    experience: "Experience",
+    tictactoe: "Tic Tac Toe",
+    "2048": "2048",
+    terminal: "Terminal"
+  }
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -534,6 +550,11 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
             </div>
           </motion.div>
         )}
+      </div>
+
+      {/* Active App Name */}
+      <div className="mr-4 text-sm font-semibold">
+        {activeApp && appNames[activeApp] ? appNames[activeApp] : "Finder"}
       </div>
 
       <div className="relative mr-4">

@@ -286,7 +286,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 200, y: 200 }}
               initialSize={{ width: 500, height: 400 }}
             >
-              <MessagesApp />
+              <MessagesApp onOpenApp={openOrActivateWindow} />
             </Window>
           )}
 

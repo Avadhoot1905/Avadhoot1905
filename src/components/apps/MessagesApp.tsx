@@ -13,6 +13,10 @@ type Message = {
   timestamp: Date
 }
 
+type MessagesAppProps = {
+  onOpenApp?: (appId: string) => void
+}
+
 /**
  * Generate a unique session ID that persists during the page session
  * but is cleared on page refresh
@@ -30,7 +34,7 @@ function getSessionId(): string {
   return sessionId
 }
 
-export function MessagesApp() {
+export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
   const [sessionId, setSessionId] = useState<string>("")
@@ -135,13 +139,39 @@ export function MessagesApp() {
       // Send message with session ID for context tracking
       const response = await sendMessageWithHistory(sessionId, messageText)
 
+      // Check if response contains app opening markers
+      let cleanResponse = response
+      const markers = {
+        '[OPEN:EDUCATION]': 'education',
+        '[OPEN:EXPERIENCE]': 'experience',
+        '[OPEN:PROJECTS]': 'projects'
+      }
+      
+      let appToOpen: string | null = null
+      
+      for (const [marker, appId] of Object.entries(markers)) {
+        if (response.includes(marker)) {
+          cleanResponse = response.replace(marker, '').trim()
+          appToOpen = appId
+          break
+        }
+      }
+
       const aiMessage: Message = {
         role: "assistant",
-        content: response,
+        content: cleanResponse,
         timestamp: new Date(),
       }
 
       setMessages((prev) => [...prev, aiMessage])
+      
+      // Open the app if a marker was detected
+      if (appToOpen && onOpenApp) {
+        // Small delay to let the message render first
+        setTimeout(() => {
+          onOpenApp(appToOpen)
+        }, 500)
+      }
     } catch (error) {
       console.error("Error sending message:", error)
       const errorMessage: Message = {

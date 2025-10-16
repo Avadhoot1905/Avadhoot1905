@@ -74,7 +74,14 @@ export function ProjectsApp() {
 
   const filteredProjects = filter === "all" 
     ? projects 
-    : projects.filter(p => p.domain === filter)
+    : projects.filter(p => {
+        // Check if project has multiple domains
+        if (p.domains && p.domains.length > 0) {
+          return p.domains.includes(filter as any)
+        }
+        // Fall back to single domain check
+        return p.domain === filter
+      })
 
   return (
     <div className="p-6 overflow-y-auto">
@@ -176,6 +183,7 @@ export function ProjectsApp() {
       <div className="grid gap-4">
         {filteredProjects.map((project) => {
           const DomainIcon = domainIcons[project.domain]
+          const displayDomains = project.domains || [project.domain]
           return (
             <div
               key={project.id}
@@ -184,9 +192,29 @@ export function ProjectsApp() {
               }`}
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <DomainIcon className={`${domainColors[project.domain]} text-lg`} />
-                  <h3 className="text-lg font-semibold">{project.name}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <DomainIcon className={`${domainColors[project.domain]} text-lg`} />
+                    <h3 className="text-lg font-semibold">{project.name}</h3>
+                  </div>
+                  {displayDomains.length > 1 && (
+                    <div className="flex gap-1">
+                      {displayDomains.map((d, idx) => {
+                        const Icon = domainIcons[d]
+                        return (
+                          <span 
+                            key={idx}
+                            className={`text-xs px-2 py-0.5 rounded ${
+                              theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                            }`}
+                            title={d}
+                          >
+                            <Icon className={`${domainColors[d]} inline-block`} />
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   {project.github && (

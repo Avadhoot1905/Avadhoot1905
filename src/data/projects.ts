@@ -4,6 +4,7 @@ export interface Project {
   description: string
   techStack: string[]
   domain: "Website Development" | "App Development" | "system" | "Extension Development" | "Data Science" | "Machine Learning" | ""
+  domains?: ("Website Development" | "App Development" | "system" | "Extension Development" | "Data Science" | "Machine Learning")[]
   github?: string
   live?: string
 }
@@ -42,6 +43,7 @@ export const projects: Project[] = [
     description: "An iOS based mobile application that leverages machine learning to identify diseases in the eye in real-time using the device camera",
     techStack: ["Swift", "Python", "Torch-Vision", "TensorFlow", "CoreML"],
     domain: "App Development",
+    domains: ["App Development", "Machine Learning"],
     github: "https://github.com/Avadhoot1905/iVision-App"
   },
   {
@@ -50,6 +52,7 @@ export const projects: Project[] = [
     description: "Study resource tool with AI integration for personalized learning paths and content recommendations",
     techStack: ["Next.js", "TypeScript", "Gemini API", "Tailwind CSS"],
     domain: "Website Development",
+    domains: ["Website Development", "Machine Learning"],
     github: "https://github.com/Avadhoot1905/study-resource-allocator"
   },
   {

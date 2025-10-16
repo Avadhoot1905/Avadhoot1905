@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PERSONALITY_PROMPT } from "@/data/personality-prompt"
 import redis from "@/lib/redis"
+import { saveMessage, getSessionMessages } from "./messages"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
@@ -16,15 +17,36 @@ const MAX_HISTORY_MESSAGES = 30
 
 /**
  * Get chat history for a specific user from Redis cache
+ * Falls back to database if Redis is unavailable
  */
 async function getChatHistory(userId: string): Promise<{ role: string; content: string }[]> {
   try {
     const cacheKey = `chat:${userId}`
     const cached = await redis.get<{ role: string; content: string }[]>(cacheKey)
-    return cached || []
+    
+    if (cached && cached.length > 0) {
+      return cached
+    }
+    
+    // Fallback to database
+    const dbMessages = await getSessionMessages(userId)
+    return dbMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }))
   } catch (error) {
     console.error("Error getting chat history:", error)
-    return []
+    // Try database as last resort
+    try {
+      const dbMessages = await getSessionMessages(userId)
+      return dbMessages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    } catch (dbError) {
+      console.error("Error getting chat history from database:", dbError)
+      return []
+    }
   }
 }
 
@@ -49,6 +71,10 @@ export async function clearChatHistory(userId: string): Promise<void> {
     const cacheKey = `chat:${userId}`
     await redis.del(cacheKey)
     console.log(`🗑️  Cleared chat history for user: ${userId}`)
+    
+    // Also clear from database
+    const { clearSessionMessages } = await import("./messages")
+    await clearSessionMessages(userId)
   } catch (error) {
     console.error("Error clearing chat history:", error)
   }
@@ -139,6 +165,15 @@ export async function sendMessageWithHistory(
     // 🔧 FIX 5: Trim history before saving to prevent unbounded growth
     const trimmedHistory = updatedHistory.slice(-MAX_HISTORY_MESSAGES)
     await saveChatHistory(userId, trimmedHistory)
+    
+    // 💾 Save messages to database for persistence
+    try {
+      await saveMessage(userId, "user", userMessage)
+      await saveMessage(userId, "assistant", text)
+    } catch (dbError) {
+      console.error("Error saving messages to database:", dbError)
+      // Continue anyway - Redis cache is still updated
+    }
     
     return text
   } catch (error) {

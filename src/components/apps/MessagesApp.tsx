@@ -316,7 +316,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                 <span className="text-lg flex-shrink-0">⚠️</span>
                 <div className="text-xs leading-relaxed">
                   <strong className="block mb-1">AI Assistant Notice</strong>
-                  You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person's current views or availability. 
+                  You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person&apos;s current views or availability. 
                 </div>
               </div>
             </div>
@@ -339,7 +339,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                 <div>
                   <strong className="block mb-2 text-base">AI Assistant Notice</strong>
                   <p className="text-sm leading-relaxed">
-                    You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person's current views or availability.
+                    You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person&apos;s current views or availability.
                   </p>
                 </div>
               </div>

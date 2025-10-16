@@ -146,27 +146,26 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
 
   // Helper function to convert URLs and emails in text to clickable links
   const linkifyText = (text: string) => {
+    // List of technology names to exclude from linkification
+    const excludedTerms = [
+      'next.js', 'node.js', 'express.js', 'vue.js', 'react.js', 'angular.js',
+      'nest.js', 'nuxt.js', 'gatsby.js', 'svelte.js', 'ember.js', 'backbone.js',
+      'fastapi', 'flask.py', 'django.py'
+    ]
+    
     // Regular expressions for matching URLs and emails
-    const urlPattern = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/g
     const emailPattern = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/g
+    const urlPattern = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g
     
     const parts: React.ReactNode[] = []
     let lastIndex = 0
     let key = 0
 
-    // Find all URLs and emails
+    // Find all matches (emails first to prioritize them over URLs)
     const matches: Array<{ index: number; length: number; text: string; isEmail: boolean }> = []
     
+    // First, find all emails
     let match
-    while ((match = urlPattern.exec(text)) !== null) {
-      matches.push({
-        index: match.index,
-        length: match[0].length,
-        text: match[0],
-        isEmail: false
-      })
-    }
-    
     while ((match = emailPattern.exec(text)) !== null) {
       matches.push({
         index: match.index,
@@ -176,11 +175,47 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
       })
     }
     
+    // Then find URLs, but skip if they overlap with emails or are excluded terms
+    while ((match = urlPattern.exec(text)) !== null) {
+      const matchStart = match.index
+      const matchEnd = match.index + match[0].length
+      const matchText = match[0].toLowerCase()
+      
+      // Check if this is an excluded technology term
+      const isExcludedTerm = excludedTerms.some(term => matchText === term)
+      
+      // Check if this URL overlaps with any email
+      const overlapsWithEmail = matches.some(m => {
+        const emailStart = m.index
+        const emailEnd = m.index + m.length
+        return (matchStart < emailEnd && matchEnd > emailStart)
+      })
+      
+      if (!overlapsWithEmail && !isExcludedTerm) {
+        matches.push({
+          index: match.index,
+          length: match[0].length,
+          text: match[0],
+          isEmail: false
+        })
+      }
+    }
+    
     // Sort matches by index
     matches.sort((a, b) => a.index - b.index)
     
-    // Build the result with links
+    // Remove any remaining overlaps (keep the first match)
+    const filteredMatches: typeof matches = []
+    let lastEnd = 0
     matches.forEach((match) => {
+      if (match.index >= lastEnd) {
+        filteredMatches.push(match)
+        lastEnd = match.index + match.length
+      }
+    })
+    
+    // Build the result with links
+    filteredMatches.forEach((match) => {
       // Add text before the match
       if (match.index > lastIndex) {
         parts.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>)

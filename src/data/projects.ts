@@ -25,6 +25,7 @@ export const projects: Project[] = [
     description: "A scalable Website Development application for exam management and preparation, built with modern development practices and collaborative workflows",
     techStack: ["Next.js", "TypeScript", "CockroachDB", "Redis", "Python", "Prisma", "FastAPI","TailwindCSS","GCP"],
     domain: "Website Development",
+    domains: ["Website Development", "Machine Learning"],
     github: "https://github.com/ACM-VIT/ExamCooker-2024",
     live:"https://examcooker.acmvit.in"
   },

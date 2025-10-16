@@ -226,7 +226,7 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiGithub className={isMobile ? 'text-sm' : ''} />
+            <SiGithub className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
             <span>GitHub</span>
           </button>
           <button
@@ -277,7 +277,7 @@ export function SafariApp() {
                 : "bg-gray-200 text-gray-600 hover:bg-gray-300"
             }`}
           >
-            <SiMedium className={isMobile ? 'text-sm' : ''} />
+            <SiMedium className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
             <span>Medium</span>
           </button>
         </div>

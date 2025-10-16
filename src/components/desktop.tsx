@@ -434,10 +434,10 @@ export function MacOSDesktop() {
           { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
           { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
           { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
-          { id: "github", icon: <SiGithub className="text-gray-800 dark:text-white" />, isOpen: false },
+          { id: "github", icon: <SiGithub className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
           { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
           { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
-          { id: "medium", icon: <SiMedium className="text-gray-800 dark:text-white" />, isOpen: false },
+          { id: "medium", icon: <SiMedium className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
         ]}
         onAppClick={toggleWindow}
       />

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useTheme } from "next-themes"
 
 type CommandHistory = {
   command: string
@@ -15,7 +14,6 @@ type TerminalAppProps = {
 }
 
 export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppProps = {}) {
-  const { theme } = useTheme()
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)

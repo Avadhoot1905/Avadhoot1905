@@ -5,13 +5,12 @@ import { useTheme } from "next-themes"
 import { ReactElement, useState, useEffect } from "react"
 
 interface AppIconProps {
-  id: string
   name: string
   icon: ReactElement
   onClick: () => void
 }
 
-export function AppIcon({ id, name, icon, onClick }: AppIconProps) {
+export function AppIcon({ name, icon, onClick }: AppIconProps) {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
 

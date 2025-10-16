@@ -39,8 +39,9 @@ export async function getGithubData() {
     )
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error) {
     console.error('GitHub API error:', error)
-    return { success: false, error: error.message || 'Failed to fetch GitHub data' }
+    const message = error instanceof Error ? error.message : 'Failed to fetch GitHub data'
+    return { success: false, error: message }
   }
 }

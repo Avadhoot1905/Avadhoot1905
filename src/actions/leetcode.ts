@@ -28,7 +28,7 @@ export async function getLeetcodeData() {
         
         try {
           stats = JSON.parse(statsText)
-        } catch (parseError) {
+        } catch {
           console.error('Failed to parse LeetCode stats:', statsText)
           throw new Error('Invalid JSON from LeetCode stats API')
         }
@@ -56,7 +56,7 @@ export async function getLeetcodeData() {
             
             // Filter for accepted submissions only
             recentProblems = submissions
-              .filter((sub: any) => sub.statusDisplay === "Accepted")
+              .filter((sub: { statusDisplay: string }) => sub.statusDisplay === "Accepted")
               .slice(0, 5)
             
             console.log(`Found ${recentProblems.length} recent accepted submissions`)
@@ -71,7 +71,7 @@ export async function getLeetcodeData() {
             if (altResponse.ok) {
               const altData = await altResponse.json()
               recentProblems = (altData.recentSubmissions || [])
-                .filter((sub: any) => sub.statusDisplay === "Accepted")
+                .filter((sub: { statusDisplay: string }) => sub.statusDisplay === "Accepted")
                 .slice(0, 5)
             }
           }
@@ -88,8 +88,9 @@ export async function getLeetcodeData() {
     )
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error) {
     console.error('LeetCode API error:', error)
-    return { success: false, error: error.message || 'Failed to fetch LeetCode data' }
+    const message = error instanceof Error ? error.message : 'Failed to fetch LeetCode data'
+    return { success: false, error: message }
   }
 }

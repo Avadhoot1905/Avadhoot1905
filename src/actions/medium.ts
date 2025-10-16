@@ -20,7 +20,7 @@ export async function getMediumData() {
         )
 
         return {
-          items: feed.items.slice(0, 5).map((item: any) => ({
+          items: feed.items.slice(0, 5).map((item: { title?: string; link?: string; pubDate?: string; 'content:encodedSnippet'?: string; contentSnippet?: string; content?: string }) => ({
             title: item.title,
             link: item.link,
             pubDate: item.pubDate,
@@ -31,8 +31,9 @@ export async function getMediumData() {
     )
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Medium RSS error:', error)
-    return { success: false, error: error.message || 'Failed to fetch Medium posts' }
+    const message = error instanceof Error ? error.message : 'Failed to fetch Medium posts'
+    return { success: false, error: message }
   }
 }

@@ -18,7 +18,6 @@ interface Size {
 }
 
 interface WindowProps {
-  id: string
   title: string
   children: React.ReactNode
   isActive: boolean
@@ -30,7 +29,6 @@ interface WindowProps {
 }
 
 export function Window({
-  id,
   title,
   children,
   isActive,
@@ -58,7 +56,7 @@ export function Window({
   }, [])
 
   // Handle drag to dismiss on mobile
-  const handleDragEnd = (_event: any, info: any) => {
+  const handleDragEnd = (_event: unknown, info: { offset: { y: number } }) => {
     // If dragged down more than 150px, close the modal
     if (info.offset.y > 150) {
       onClose()

@@ -30,7 +30,7 @@ export function EducationApp() {
               I also engage in cultural and fitness activities through Yuva Marathi and the Cycling Club.
             </p>
             <p>
-              Passionate about hackathons, I've participated in Yantra'25, DevJams, and Caterpillar Hackathon. 
+              Passionate about hackathons, I&apos;ve participated in Yantra&apos;25, DevJams, and Caterpillar Hackathon. 
               With a strong learning mindset, I balance projects, competitions, and academics, maintaining 
               a GPA of 8.38/10 (3.37/4).
             </p>
@@ -63,7 +63,7 @@ export function EducationApp() {
               logical reasoning, which now aids me in algorithm design and coding.
             </p>
             <p>
-              Beyond academics, Deens Academy's house system fostered teamwork and camaraderie. As part of 
+              Beyond academics, Deens Academy&apos;s house system fostered teamwork and camaraderie. As part of 
               Flavus House (Yellow House), I developed leadership, a competitive spirit, and a strong sense 
               of belonging.
             </p>

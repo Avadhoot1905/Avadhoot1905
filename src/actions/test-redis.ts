@@ -33,11 +33,12 @@ export async function testRedisConnection() {
         hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN,
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Redis connection error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return {
       success: false,
-      error: error.message,
+      error: message,
       environment: {
         hasRedisUrl: !!process.env.UPSTASH_REDIS_REST_URL,
         hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN,

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useTheme } from "next-themes"
 
 interface LockScreenProps {
   isLocked: boolean
@@ -13,7 +12,6 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isMobile, setIsMobile] = useState(false)
-  const { theme } = useTheme()
 
   useEffect(() => {
     setMounted(true)

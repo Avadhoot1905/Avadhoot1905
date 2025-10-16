@@ -222,67 +222,56 @@ export function MacOSDesktop() {
           transition={{ duration: 0.5, staggerChildren: 0.1 }}
         >
           <AppIcon
-            id="finder"
             name="Finder"
             icon={<FaFolder className="text-blue-500" />}
             onClick={() => toggleWindow("finder")}
           />
           <AppIcon
-            id="safari"
             name="Safari"
             icon={<FaSafari className="text-blue-600" />}
             onClick={() => toggleWindow("safari")}
           />
           <AppIcon
-            id="messages"
             name="Messages"
             icon={<FaCommentDots className="text-green-500" />}
             onClick={() => toggleWindow("messages")}
           />
           <AppIcon
-            id="photos"
             name="Photos"
             icon={<FaImages className="text-yellow-500" />}
             onClick={() => toggleWindow("photos")}
           />
           <AppIcon
-            id="about"
             name="About Me"
             icon={<FaUser className="text-purple-500" />}
             onClick={() => toggleWindow("about")}
           />
           <AppIcon
-            id="projects"
             name="Projects"
             icon={<FaCode className="text-green-600" />}
             onClick={() => toggleWindow("projects")}
           />
           <AppIcon
-            id="education"
             name="Education"
             icon={<FaGraduationCap className="text-blue-700" />}
             onClick={() => toggleWindow("education")}
           />
           <AppIcon
-            id="experience"
             name="Experience"
             icon={<FaBriefcase className="text-gray-700" />}
             onClick={() => toggleWindow("experience")}
           />
           <AppIcon
-            id="tictactoe"
             name="Tic Tac Toe"
             icon={<FaGamepad className="text-pink-500" />}
             onClick={() => toggleWindow("tictactoe")}
           />
           <AppIcon
-            id="2048"
             name="2048"
             icon={<FaGamepad className="text-amber-500" />}
             onClick={() => toggleWindow("2048")}
           />
           <AppIcon
-            id="terminal"
             name="Terminal"
             icon={<FaTerminal className="text-gray-300" />}
             onClick={() => toggleWindow("terminal")}
@@ -293,7 +282,6 @@ export function MacOSDesktop() {
           {openWindows.includes("finder") && (
             <Window
               key="finder"
-              id="finder"
               title="Finder"
               isActive={activeWindow === "finder"}
               onActivate={() => activateWindow("finder")}
@@ -308,7 +296,6 @@ export function MacOSDesktop() {
           {openWindows.includes("safari") && (
             <Window
               key="safari"
-              id="safari"
               title="Safari"
               isActive={activeWindow === "safari"}
               onActivate={() => activateWindow("safari")}
@@ -323,7 +310,6 @@ export function MacOSDesktop() {
           {openWindows.includes("messages") && (
             <Window
               key="messages"
-              id="messages"
               title="Messages"
               isActive={activeWindow === "messages"}
               onActivate={() => activateWindow("messages")}
@@ -338,7 +324,6 @@ export function MacOSDesktop() {
           {openWindows.includes("photos") && (
             <Window
               key="photos"
-              id="photos"
               title="Photos"
               isActive={activeWindow === "photos"}
               onActivate={() => activateWindow("photos")}
@@ -353,7 +338,6 @@ export function MacOSDesktop() {
           {openWindows.includes("about") && (
             <Window
               key="about"
-              id="about"
               title="About Me"
               isActive={activeWindow === "about"}
               onActivate={() => activateWindow("about")}
@@ -368,7 +352,6 @@ export function MacOSDesktop() {
           {openWindows.includes("projects") && (
             <Window
               key="projects"
-              id="projects"
               title="Projects"
               isActive={activeWindow === "projects"}
               onActivate={() => activateWindow("projects")}
@@ -383,7 +366,6 @@ export function MacOSDesktop() {
           {openWindows.includes("education") && (
             <Window
               key="education"
-              id="education"
               title="Education"
               isActive={activeWindow === "education"}
               onActivate={() => activateWindow("education")}
@@ -398,7 +380,6 @@ export function MacOSDesktop() {
           {openWindows.includes("experience") && (
             <Window
               key="experience"
-              id="experience"
               title="Experience"
               isActive={activeWindow === "experience"}
               onActivate={() => activateWindow("experience")}
@@ -413,7 +394,6 @@ export function MacOSDesktop() {
           {openWindows.includes("tictactoe") && (
             <Window
               key="tictactoe"
-              id="tictactoe"
               title="Tic Tac Toe"
               isActive={activeWindow === "tictactoe"}
               onActivate={() => activateWindow("tictactoe")}
@@ -428,7 +408,6 @@ export function MacOSDesktop() {
           {openWindows.includes("2048") && (
             <Window
               key="2048"
-              id="2048"
               title="2048"
               isActive={activeWindow === "2048"}
               onActivate={() => activateWindow("2048")}
@@ -443,7 +422,6 @@ export function MacOSDesktop() {
           {openWindows.includes("terminal") && (
             <Window
               key="terminal"
-              id="terminal"
               title="Terminal"
               isActive={activeWindow === "terminal"}
               onActivate={() => activateWindow("terminal")}

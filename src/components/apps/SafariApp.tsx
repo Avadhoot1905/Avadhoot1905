@@ -47,10 +47,6 @@ interface LeetCodeSubmission {
   lang: string
 }
 
-interface LeetCodeCalendar {
-  [date: string]: number
-}
-
 interface MediumArticle {
   title: string
   link: string
@@ -67,7 +63,6 @@ export function SafariApp() {
   const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
   const [leetcodeStats, setLeetcodeStats] = useState<LeetCodeStats | null>(null)
   const [leetcodeSubmissions, setLeetcodeSubmissions] = useState<LeetCodeSubmission[]>([])
-  const [leetcodeCalendar, setLeetcodeCalendar] = useState<LeetCodeCalendar>({})
   const [mediumArticles, setMediumArticles] = useState<MediumArticle[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -134,7 +129,7 @@ export function SafariApp() {
             if (result.data.recentProblems && result.data.recentProblems.length > 0) {
               const recentSolved = result.data.recentProblems
                 .slice(0, 5)
-                .map((sub: any) => ({
+                .map((sub: { title?: string; titleSlug?: string; timestamp?: string; statusDisplay?: string; lang?: string; language?: string }) => ({
                   title: sub.title || sub.titleSlug || 'Unknown Problem',
                   titleSlug: sub.titleSlug || '',
                   timestamp: sub.timestamp || Date.now().toString(),
@@ -186,10 +181,10 @@ export function SafariApp() {
         .then(result => {
           console.log('Medium result:', result)
           if (result.success && result.data && result.data.items) {
-            const articles = result.data.items.map((item: any) => ({
-              title: item.title,
-              link: item.link,
-              pubDate: item.pubDate,
+            const articles = result.data.items.map((item: { title?: string; link?: string; pubDate?: string; contentSnippet?: string }) => ({
+              title: item.title || '',
+              link: item.link || '',
+              pubDate: item.pubDate || '',
               content: item.contentSnippet || ""
             }))
             setMediumArticles(articles)
@@ -375,6 +370,7 @@ export function SafariApp() {
               <>
                 {/* Profile Header */}
                 <div className="flex items-start space-x-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={githubUser.avatar_url} 
                     alt={githubUser.name}

@@ -3,13 +3,13 @@
 import { FaCode, FaGithub, FaExternalLinkAlt, FaGlobe, FaMobile, FaLaptopCode } from "react-icons/fa"
 import { useTheme } from "next-themes"
 import { useState, useEffect } from "react"
-import { projects as projectsData, type Project } from "@/data/projects"
+import { projects as projectsData } from "@/data/projects"
 
 type ProjectsAppProps = {
   initialFilter?: string
 }
 
-const domainIcons: { [key: string]: any } = {
+const domainIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Website Development": FaGlobe,
   "App Development": FaMobile,
   "system": FaLaptopCode,
@@ -88,7 +88,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
     : projects.filter(p => {
         // Check if project has multiple domains
         if (p.domains && p.domains.length > 0) {
-          return p.domains.includes(filter as any)
+          return p.domains.some(domain => domain === filter)
         }
         // Fall back to single domain check
         return p.domain === filter

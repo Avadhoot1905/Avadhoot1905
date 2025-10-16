@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, Moon, Sun, Monitor, Wifi, Battery, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize } from "lucide-react"
+import { Moon, Sun, Monitor, Wifi, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -70,7 +70,7 @@ export function MenuBar({ onLockScreen }: MenuBarProps) {
 
   // Mobile Notification Panel
   if (isMobile) {
-    const handleDragEnd = (_event: any, info: any) => {
+    const handleDragEnd = (_event: unknown, info: { offset: { y: number } }) => {
       // If dragged up more than 100px, close the panel
       if (info.offset.y < -100) {
         setShowNotificationPanel(false)

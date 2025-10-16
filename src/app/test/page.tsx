@@ -1,28 +1,57 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { getGithubData } from '@/actions/github'
 import { getLeetcodeData } from '@/actions/leetcode'
 import { getMediumData } from '@/actions/medium'
 import { testRedisConnection } from '@/actions/test-redis'
 
+type TestResults = {
+  redis?: { success: boolean; error?: string; [key: string]: unknown }
+  github?: { 
+    success: boolean
+    error?: string
+    data?: { 
+      user: { name: string; login: string }
+      repos: unknown[]
+    }
+  }
+  leetcode?: { 
+    success: boolean
+    error?: string
+    data?: { 
+      stats: { totalSolved: number; easySolved: number; mediumSolved: number; hardSolved: number }
+      recentProblems?: unknown[]
+    }
+  }
+  medium?: { 
+    success: boolean
+    error?: string
+    data?: { 
+      items: { title?: string; link?: string; pubDate?: string; contentSnippet?: string }[]
+    }
+  }
+}
+
 export default function TestPage() {
-  const [results, setResults] = useState<any>({})
+  const [results, setResults] = useState<TestResults>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function test() {
       console.log('🧪 Starting server actions test...')
-      const testResults: any = {}
+      const testResults: TestResults = {}
 
       try {
         console.log('Testing Redis connection...')
         const redis = await testRedisConnection()
         console.log('Redis result:', redis)
         testResults.redis = redis
-      } catch (error: any) {
+      } catch (error) {
         console.error('Redis test error:', error)
-        testResults.redis = { error: error.message }
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        testResults.redis = { success: false, error: message }
       }
 
       try {
@@ -30,9 +59,10 @@ export default function TestPage() {
         const github = await getGithubData()
         console.log('GitHub result:', github)
         testResults.github = github
-      } catch (error: any) {
+      } catch (error) {
         console.error('GitHub test error:', error)
-        testResults.github = { error: error.message }
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        testResults.github = { success: false, error: message }
       }
 
       try {
@@ -40,9 +70,10 @@ export default function TestPage() {
         const leetcode = await getLeetcodeData()
         console.log('LeetCode result:', leetcode)
         testResults.leetcode = leetcode
-      } catch (error: any) {
+      } catch (error) {
         console.error('LeetCode test error:', error)
-        testResults.leetcode = { error: error.message }
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        testResults.leetcode = { success: false, error: message }
       }
 
       try {
@@ -50,9 +81,10 @@ export default function TestPage() {
         const medium = await getMediumData()
         console.log('Medium result:', medium)
         testResults.medium = medium
-      } catch (error: any) {
+      } catch (error) {
         console.error('Medium test error:', error)
-        testResults.medium = { error: error.message }
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        testResults.medium = { success: false, error: message }
       }
 
       console.log('✅ All tests complete')
@@ -171,12 +203,12 @@ export default function TestPage() {
               >
                 🔄 Rerun Tests
               </button>
-              <a
+              <Link
                 href="/"
                 className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium"
               >
                 ← Back to Portfolio
-              </a>
+              </Link>
             </div>
           </div>
         )}

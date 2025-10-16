@@ -57,19 +57,19 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
       </div>
       <div className="space-y-4">
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I'm someone who just likes figuring things out — whether it's code, design, or how things connect.  
-          I don't really chase perfection, I just keep tweaking and learning till it feels right. I take my time 
-          with stuff, but I always get there eventually, and that's kind of my thing.
+          I&apos;m someone who just likes figuring things out — whether it&apos;s code, design, or how things connect.  
+          I don&apos;t really chase perfection, I just keep tweaking and learning till it feels right. I take my time 
+          with stuff, but I always get there eventually, and that&apos;s kind of my thing.
         </p>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I'm big on problem-solving and I spend a lot of time on LeetCode or DSA stuff, just trying to train 
-          my brain to think better. The dream's to reach that stage where code just flows — like you think 
+          I&apos;m big on problem-solving and I spend a lot of time on LeetCode or DSA stuff, just trying to train 
+          my brain to think better. The dream&apos;s to reach that stage where code just flows — like you think 
           the logic, and your hands already know what to do. I also love building full-stack projects using 
           Next.js, Prisma, Docker, Git and all that, making sure they actually work well and not just look 
-          fancy. It's more about connecting what I learn with what I build.
+          fancy. It&apos;s more about connecting what I learn with what I build.
         </p>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I'm still figuring things out, learning a bit every day, and building stuff that makes sense to me.  
+          I&apos;m still figuring things out, learning a bit every day, and building stuff that makes sense to me.  
           Just trying to keep growing, one idea at a time.
         </p>
 

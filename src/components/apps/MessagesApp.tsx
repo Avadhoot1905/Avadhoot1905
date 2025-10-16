@@ -362,7 +362,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                       remarkPlugins={[remarkGfm]}
                       components={{
                         // Custom styles for code blocks
-                        code: ({node, className, children, ...props}: any) => {
+                        code: ({className, children, ...props}: { className?: string; children?: React.ReactNode }) => {
                           const isInline = !className?.includes('language-')
                           return isInline ? (
                             <code
@@ -381,7 +381,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                           )
                         },
                         // Custom styles for links
-                        a: ({node, children, ...props}) => (
+                        a: ({children, ...props}) => (
                           <a
                             className="text-blue-400 hover:underline"
                             target="_blank"
@@ -392,7 +392,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                           </a>
                         ),
                         // Override paragraph styling for user role
-                        p: ({node, children, ...props}) => (
+                        p: ({children, ...props}) => (
                           <p className={message.role === "user" ? "text-white" : ""} {...props}>
                             {children}
                           </p>
@@ -439,7 +439,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          code: ({node, className, children, ...props}: any) => {
+                          code: ({className, children, ...props}: { className?: string; children?: React.ReactNode }) => {
                             const isInline = !className?.includes('language-')
                             return isInline ? (
                               <code
@@ -457,7 +457,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                               </code>
                             )
                           },
-                          a: ({node, children, ...props}) => (
+                          a: ({children, ...props}) => (
                             <a
                               className="text-blue-400 hover:underline"
                               target="_blank"

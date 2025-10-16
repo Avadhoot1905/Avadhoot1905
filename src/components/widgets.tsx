@@ -32,49 +32,56 @@ export function Widgets() {
     }, 1000)
 
     // Fetch weather data for Bangalore
-    fetchWeather()
+    const fetchWeatherData = async () => {
+      try {
+        // Using Open-Meteo API (free, no API key required) for Bangalore coordinates
+        const response = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Kolkata'
+        )
+        const data = await response.json()
+        
+        const temp = Math.round(data.current.temperature_2m)
+        const high = Math.round(data.daily.temperature_2m_max[0])
+        const low = Math.round(data.daily.temperature_2m_min[0])
+        const weatherCode = data.current.weather_code
+        
+        // Map weather codes to conditions
+        let condition = "Clear"
+        let icon = "☀️"
+        
+        if (weatherCode === 0) {
+          condition = "Clear"
+          icon = "☀️"
+        } else if (weatherCode <= 3) {
+          condition = "Partly Cloudy"
+          icon = "⛅"
+        } else if (weatherCode <= 67) {
+          condition = "Rainy"
+          icon = "🌧️"
+        } else if (weatherCode <= 77) {
+          condition = "Snowy"
+          icon = "❄️"
+        } else if (weatherCode <= 82) {
+          condition = "Rainy"
+          icon = "🌧️"
+        } else {
+          condition = "Stormy"
+          icon = "⛈️"
+        }
+        
+        setWeather({ temp, condition, high, low, icon })
+      } catch (error) {
+        console.error('Failed to fetch weather:', error)
+      }
+    }
+
+    fetchWeatherData()
 
     return () => {
       window.removeEventListener('resize', checkMobile)
       clearInterval(timer)
     }
   }, [])
-
-  const fetchWeather = async () => {
-    try {
-      // Using Open-Meteo API (free, no API key required) for Bangalore coordinates
-      const response = await fetch(
-        'https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Kolkata'
-      )
-      const data = await response.json()
-      
-      const weatherCode = data.current.weather_code
-      const condition = getWeatherCondition(weatherCode)
-      
-      setWeather({
-        temp: Math.round(data.current.temperature_2m),
-        condition: condition.text,
-        high: Math.round(data.daily.temperature_2m_max[0]),
-        low: Math.round(data.daily.temperature_2m_min[0]),
-        icon: condition.icon
-      })
-    } catch (error) {
-      console.error('Failed to fetch weather:', error)
-      // Keep default values
-    }
-  }
-
-  const getWeatherCondition = (code: number) => {
-    // WMO Weather interpretation codes
-    if (code === 0) return { text: "Clear", icon: "☀️" }
-    if (code <= 3) return { text: "Partly Cloudy", icon: "⛅" }
-    if (code <= 48) return { text: "Foggy", icon: "🌫️" }
-    if (code <= 67) return { text: "Rainy", icon: "🌧️" }
-    if (code <= 77) return { text: "Snowy", icon: "🌨️" }
-    if (code <= 82) return { text: "Rainy", icon: "🌧️" }
-    if (code <= 86) return { text: "Snowy", icon: "🌨️" }
-    return { text: "Stormy", icon: "⛈️" }
-  }
 
   const getDayName = () => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']

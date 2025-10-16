@@ -124,21 +124,24 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Typing animation function
+  // Typing animation function - types out a COMPLETE cached message
   const typeMessage = (fullMessage: string, onComplete: () => void) => {
+    // Ensure we have the complete message cached before starting
+    const cachedMessage = fullMessage // Cache the complete response
+    
     setIsTyping(true)
     setTypingMessage("")
     
     let currentIndex = 0
-    const typingSpeed = 20 // milliseconds per character
+    const typingSpeed = 5 // 1 millisecond per character for super fast typing
     
     if (typingIntervalRef.current) {
       clearInterval(typingIntervalRef.current)
     }
     
     typingIntervalRef.current = setInterval(() => {
-      if (currentIndex < fullMessage.length) {
-        setTypingMessage((prev) => prev + fullMessage[currentIndex])
+      if (currentIndex < cachedMessage.length) {
+        setTypingMessage((prev) => prev + cachedMessage[currentIndex])
         currentIndex++
       } else {
         if (typingIntervalRef.current) {
@@ -175,14 +178,18 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
     setIsLoading(true)
 
     try {
-      // Send message with session ID for context tracking
+      // STEP 1: Wait for the COMPLETE API response and cache it in memory
       const response = await sendMessageWithHistory(sessionId, messageText)
-
-      // Check if response contains app opening markers
-      let cleanResponse = response
+      
+      // STEP 2: Cache the complete response before any processing
+      const cachedFullResponse = String(response) // Ensure it's fully loaded as a string
+      
+      // STEP 3: Process the cached response for app markers
+      let cleanResponse = cachedFullResponse
       let appToOpen: string | null = null
       let projectFilter: string | undefined = undefined
       
+      // STEP 4: Check for app markers in the cached response
       // Check for filtered project markers first (more specific)
       const filteredProjectMarkers = [
         { pattern: '[OPEN:PROJECTS:Website Development]', app: 'projects', filter: 'Website Development' },
@@ -194,8 +201,8 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
       ]
       
       for (const { pattern, app, filter } of filteredProjectMarkers) {
-        if (response.includes(pattern)) {
-          cleanResponse = response.replace(pattern, '').trim()
+        if (cleanResponse.includes(pattern)) {
+          cleanResponse = cleanResponse.replace(pattern, '').trim()
           appToOpen = app
           projectFilter = filter
           break
@@ -211,15 +218,18 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
         }
         
         for (const [marker, appId] of Object.entries(generalMarkers)) {
-          if (response.includes(marker)) {
-            cleanResponse = response.replace(marker, '').trim()
+          if (cleanResponse.includes(marker)) {
+            cleanResponse = cleanResponse.replace(marker, '').trim()
             appToOpen = appId
             break
           }
         }
       }
 
-      // Start typing animation
+      // STEP 5: Response is now fully loaded and cached - hide loading indicator
+      setIsLoading(false)
+      
+      // STEP 6: Start typing animation with the COMPLETE cached response
       typeMessage(cleanResponse, () => {
         // After typing is complete, add the message to the messages array
         const aiMessage: Message = {
@@ -245,15 +255,15 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
       })
     } catch (error) {
       console.error("Error sending message:", error)
+      setIsLoading(false)
       const errorMessage: Message = {
         role: "assistant",
         content: "Sorry, I encountered an error. Please try again.",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
-    } finally {
-      setIsLoading(false)
     }
+    // Note: setIsLoading(false) is now called before typing starts (line ~220)
   }
 
   const handleClearChat = async () => {

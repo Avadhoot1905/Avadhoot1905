@@ -38,6 +38,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
   const [sessionId, setSessionId] = useState<string>("")
+  const [showMobileNotice, setShowMobileNotice] = useState(true)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -287,7 +288,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
     <div className="flex h-full">
       {/* Sidebar - Hidden on mobile */}
       {!isMobile && (
-        <div className={`w-1/4 border-r ${theme === "dark" ? "border-gray-700" : ""}`}>
+        <div className={`w-1/4 border-r flex flex-col ${theme === "dark" ? "border-gray-700" : ""}`}>
           <div className={`border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
             <input
               type="text"
@@ -295,11 +296,28 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
               className={`w-full rounded-full px-3 py-1 text-sm ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
             />
           </div>
-          <div className="p-2">
+          <div className="p-2 flex-1 overflow-y-auto">
             <div className={`mb-2 rounded p-2 ${theme === "dark" ? "bg-gray-700" : "bg-blue-50"}`}>
               <div className="font-semibold">Avadhoot Ganesh Mahadik</div>
               <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                 Active now
+              </div>
+            </div>
+          </div>
+          
+          {/* AI Advisory Notice - Fixed at bottom */}
+          <div className="p-2 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}">
+            <div className={`rounded-lg p-3 border-l-4 ${
+              theme === "dark" 
+                ? "bg-yellow-900/30 border-yellow-500 text-yellow-200" 
+                : "bg-yellow-50 border-yellow-500 text-yellow-800"
+            }`}>
+              <div className="flex items-start gap-2">
+                <span className="text-lg flex-shrink-0">⚠️</span>
+                <div className="text-xs leading-relaxed">
+                  <strong className="block mb-1">AI Assistant Notice</strong>
+                  You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person's current views or availability. 
+                </div>
               </div>
             </div>
           </div>
@@ -308,6 +326,37 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
       
       {/* Messages Area */}
       <div className="flex flex-1 flex-col">
+        {/* Mobile AI Notice Popup */}
+        {isMobile && showMobileNotice && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className={`rounded-2xl p-4 max-w-sm w-full shadow-2xl border-l-4 ${
+              theme === "dark" 
+                ? "bg-gray-800 border-yellow-500 text-yellow-200" 
+                : "bg-white border-yellow-500 text-yellow-800"
+            }`}>
+              <div className="flex items-start gap-3 mb-3">
+                <span className="text-2xl flex-shrink-0">⚠️</span>
+                <div>
+                  <strong className="block mb-2 text-base">AI Assistant Notice</strong>
+                  <p className="text-sm leading-relaxed">
+                    You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person's current views or availability.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMobileNotice(false)}
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                  theme === "dark"
+                    ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                    : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                }`}
+              >
+                I Understand
+              </button>
+            </div>
+          </div>
+        )}
+        
         <div className={`border-b p-3 flex items-center justify-between ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
           <div className="flex-1 text-center">
             <div className="font-semibold">Avadhoot Mahadik</div>

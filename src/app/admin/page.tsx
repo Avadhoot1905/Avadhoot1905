@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { verifyAdminPassword, getDatabaseStats, getAllSessionsWithMessages, clearAllData, deleteSessionAdmin } from '@/actions/admin'
 import { getGithubData } from '@/actions/github'
@@ -99,6 +99,7 @@ export default function AdminPage() {
         setAuthError('Invalid password')
       }
     } catch (error) {
+      console.error('Authentication error:', error)
       setAuthError('Authentication failed')
     } finally {
       setLoading(false)
@@ -181,6 +182,7 @@ export default function AdminPage() {
         alert(`Error: ${result.error}`)
       }
     } catch (error) {
+      console.error('Clear data error:', error)
       alert('Failed to clear data')
     } finally {
       setDbLoading(false)
@@ -202,6 +204,7 @@ export default function AdminPage() {
         alert(`Error: ${result.error}`)
       }
     } catch (error) {
+      console.error('Delete session error:', error)
       alert('Failed to delete session')
     } finally {
       setDbLoading(false)

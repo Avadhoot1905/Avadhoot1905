@@ -359,7 +359,7 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("about")}
               onClose={() => toggleWindow("about")}
               initialPosition={{ x: 50, y: 80 }}
-              initialSize={{ width: 650, height: 550 }}
+              initialSize={{ width: 650, height: 600 }}
             >
               <AboutApp onOpenApp={openOrActivateWindow} />
             </Window>
@@ -452,7 +452,7 @@ export function MacOSDesktop() {
                 setTerminalCommand(undefined)
               }}
               initialPosition={{ x: 720, y: 80 }}
-              initialSize={{ width: 650, height: 550 }}
+              initialSize={{ width: 650, height: 600 }}
             >
               <TerminalApp 
                 onClose={() => {

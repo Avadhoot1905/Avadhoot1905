@@ -11,9 +11,10 @@ type CommandHistory = {
 type TerminalAppProps = {
   onClose?: () => void
   onOpenApp?: (appId: string) => void
+  initialCommand?: string
 }
 
-export function TerminalApp({ onClose, onOpenApp }: TerminalAppProps = {}) {
+export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppProps = {}) {
   const { theme } = useTheme()
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [mounted, setMounted] = useState(false)
@@ -58,6 +59,41 @@ export function TerminalApp({ onClose, onOpenApp }: TerminalAppProps = {}) {
 
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Execute initial command if provided
+  useEffect(() => {
+    console.log('TerminalApp initialCommand effect:', { initialCommand, mounted })
+    
+    if (initialCommand && mounted) {
+      console.log('Executing initial command:', initialCommand)
+      // Simulate command execution
+      const cmd = initialCommand.toLowerCase()
+      let output: string[] = []
+
+      switch (cmd) {
+        case "contact":
+          output = [
+            "Contact Information:",
+            "===================",
+            "",
+            "📧 Email: arcsmo19@gmail.com",
+            "🔗 LinkedIn: linkedin.com/in/avadhoot-mahadik-125362295/",
+            "🐙 GitHub: github.com/Avadhoot1905",
+            "📝 Medium: medium.com/@arcsmo19",
+            "💻 LeetCode: leetcode.com/u/arcsmo19/",
+            ""
+          ]
+          break
+        default:
+          break
+      }
+
+      if (output.length > 0) {
+        console.log('Adding command to history:', { command: initialCommand, outputLines: output.length })
+        setCommandHistory(prev => [...prev, { command: initialCommand, output }])
+      }
+    }
+  }, [initialCommand, mounted])
 
   // Typing animation effect
   useEffect(() => {

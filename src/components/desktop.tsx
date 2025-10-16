@@ -47,12 +47,24 @@ export function MacOSDesktop() {
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [projectsFilter, setProjectsFilter] = useState<string>("all")
+  const [terminalCommand, setTerminalCommand] = useState<string | undefined>(undefined)
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Reset terminal command after it's been processed
+  useEffect(() => {
+    if (openWindows.includes("terminal") && terminalCommand) {
+      // Reset after a short delay to ensure the command is processed
+      const timer = setTimeout(() => {
+        setTerminalCommand(undefined)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [terminalCommand, openWindows])
 
   // Activity tracking
   const updateActivity = useCallback(() => {
@@ -135,22 +147,49 @@ export function MacOSDesktop() {
     setActiveWindow(appId)
   }
 
-  const openOrActivateWindow = (appId: string, params?: { filter?: string }) => {
+  const openOrActivateWindow = useCallback((appId: string, params?: { filter?: string; command?: string }) => {
+    console.log('🚀 openOrActivateWindow called!')
+    console.log('  appId:', appId)
+    console.log('  params:', params)
+    
     // Handle projects filter if provided
     if (appId === 'projects' && params?.filter) {
+      console.log('  Setting projects filter:', params.filter)
       setProjectsFilter(params.filter)
     }
     
-    // If window is already open, just bring it to front
-    if (openWindows.includes(appId)) {
-      setActiveWindow(appId)
-    } else {
-      // Otherwise open it and make it active immediately
-      // React will batch these updates and render them together
-      setOpenWindows((prev) => [...prev, appId])
-      setActiveWindow(appId)
+    // Handle terminal command if provided
+    if (appId === 'terminal' && params?.command) {
+      console.log('  Setting terminal command:', params.command)
+      setTerminalCommand(params.command)
     }
-  }
+    
+    // Use functional update to avoid stale closure
+    setOpenWindows((prevWindows) => {
+      console.log('  prevWindows:', prevWindows)
+      
+      // If window is already open, just bring it to front
+      if (prevWindows.includes(appId)) {
+        console.log('  Window already open, activating:', appId)
+        setActiveWindow(appId)
+        // If terminal command provided and window is already open, update the command
+        if (appId === 'terminal' && params?.command) {
+          setTerminalCommand(params.command)
+        }
+        return prevWindows // No change to openWindows
+      } else {
+        console.log('  Opening new window:', appId)
+        setActiveWindow(appId)
+        return [...prevWindows, appId]
+      }
+    })
+  }, []) // Remove dependency on openWindows
+
+  useEffect(() => {
+    console.log('✅ Desktop component mounted')
+    console.log('  openOrActivateWindow type:', typeof openOrActivateWindow)
+    console.log('  openOrActivateWindow value:', openOrActivateWindow)
+  }, [openOrActivateWindow])
 
   if (!mounted) return null
 
@@ -322,7 +361,7 @@ export function MacOSDesktop() {
               initialPosition={{ x: 50, y: 80 }}
               initialSize={{ width: 650, height: 550 }}
             >
-              <AboutApp />
+              <AboutApp onOpenApp={openOrActivateWindow} />
             </Window>
           )}
 
@@ -408,13 +447,20 @@ export function MacOSDesktop() {
               title="Terminal"
               isActive={activeWindow === "terminal"}
               onActivate={() => activateWindow("terminal")}
-              onClose={() => toggleWindow("terminal")}
+              onClose={() => {
+                toggleWindow("terminal")
+                setTerminalCommand(undefined)
+              }}
               initialPosition={{ x: 720, y: 80 }}
               initialSize={{ width: 650, height: 550 }}
             >
               <TerminalApp 
-                onClose={() => toggleWindow("terminal")} 
+                onClose={() => {
+                  toggleWindow("terminal")
+                  setTerminalCommand(undefined)
+                }} 
                 onOpenApp={openOrActivateWindow}
+                initialCommand={terminalCommand}
               />
             </Window>
           )}

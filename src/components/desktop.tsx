@@ -290,7 +290,7 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("messages")}
               onClose={() => toggleWindow("messages")}
               initialPosition={{ x: 200, y: 200 }}
-              initialSize={{ width: 500, height: 400 }}
+              initialSize={{ width: 900, height: 600 }}
             >
               <MessagesApp onOpenApp={openOrActivateWindow} />
             </Window>

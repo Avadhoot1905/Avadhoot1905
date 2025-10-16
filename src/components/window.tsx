@@ -74,7 +74,8 @@ export function Window({
   if (isMobile) {
     return (
       <motion.div
-        className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0"
+        className="fixed inset-0 flex items-end md:items-center justify-center p-0"
+        style={{ zIndex: isActive ? 100 : 90 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

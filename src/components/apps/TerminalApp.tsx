@@ -44,12 +44,12 @@ export function TerminalApp({ onClose, onOpenApp }: TerminalAppProps = {}) {
           "==============================",
           "",
           "💻 Technical Skills:",
-          "• C/C++, Java, Python, JavaScript, TypeScript, Golang",
+          "• C/C++, Java, Python, JavaScript, TypeScript, Golang, Swift, Shell",
           "• React, Next.js, Tailwind CSS",
           "• Node.js, Express",
           "• CockroachDB, PostgreSQL, SQLite",
-          "• Git, Docker, Kubernetes, REST APIs",
-          "• BeautifulSoup, CoreML, Pandas, ",
+          "• Git, Docker, Kubernetes, REST APIs, Fast API, GitHub",
+          "• BeautifulSoup, CoreML, Pandas, NumPy",
           "",
           ""
         ]

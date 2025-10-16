@@ -139,8 +139,9 @@ export function MacOSDesktop() {
     if (openWindows.includes(appId)) {
       setActiveWindow(appId)
     } else {
-      // Otherwise open it and make it active
-      setOpenWindows([...openWindows, appId])
+      // Otherwise open it and make it active immediately
+      // React will batch these updates and render them together
+      setOpenWindows((prev) => [...prev, appId])
       setActiveWindow(appId)
     }
   }

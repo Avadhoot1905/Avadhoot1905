@@ -6,6 +6,8 @@
 - 😄 Pronouns: he/him<br/>
 - ⚡ Fun fact: Java is underrated.<br/>
 
+[Portfolio](avadhootgm.in)
+
 ## 🌐 Socials:
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)]([https://linkedin.com/in/Avadhoot Mahadik](https://www.linkedin.com/in/avadhoot-mahadik-125362295/)) 
 

@@ -452,19 +452,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("apple")}
-          className={`flex h-6 w-6 items-center justify-center rounded-full text-xl font-bold backdrop-blur-xl border transition-all duration-200 ${
-            activeMenu === "apple"
-              ? theme === "dark" 
-                ? "bg-white/20 border-white/30" 
-                : "bg-black/20 border-black/30"
-              : theme === "dark"
-                ? "hover:bg-white/10 hover:border-white/20 border-transparent"
-                : "hover:bg-black/10 hover:border-black/20 border-transparent"
-          }`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex h-6 w-6 items-center justify-center rounded-full text-xl font-bold transition-all duration-200"
         >
           <SiApple className="h-4 w-4" />
         </button>
@@ -562,17 +550,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("file")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
-            activeMenu === "file"
-              ? theme === "dark" 
-                ? "bg-white/20 border-white/30 text-white" 
-                : "bg-black/20 border-black/30 text-black"
-              : "border-transparent hover:bg-white/10 hover:border-white/20"
-          }`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex items-center rounded px-2 py-1 text-sm font-medium transition-all duration-200"
         >
           File
         </button>
@@ -623,17 +601,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("edit")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
-            activeMenu === "edit"
-              ? theme === "dark" 
-                ? "bg-white/20 border-white/30 text-white" 
-                : "bg-black/20 border-black/30 text-black"
-              : "border-transparent hover:bg-white/10 hover:border-white/20"
-          }`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex items-center rounded px-2 py-1 text-sm font-medium transition-all duration-200"
         >
           Edit
         </button>
@@ -695,17 +663,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
       <div className="relative mr-4">
         <button
           onClick={() => toggleMenu("view")}
-          className={`flex items-center rounded px-2 py-1 text-sm font-medium backdrop-blur-xl border transition-all duration-200 ${
-            activeMenu === "view"
-              ? theme === "dark" 
-                ? "bg-white/20 border-white/30 text-white" 
-                : "bg-black/20 border-black/30 text-black"
-              : "border-transparent hover:bg-white/10 hover:border-white/20"
-          }`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex items-center rounded px-2 py-1 text-sm font-medium transition-all duration-200"
         >
           View
         </button>

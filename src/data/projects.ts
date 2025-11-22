@@ -17,7 +17,7 @@ export const projects: Project[] = [
     techStack: ["Next.js", "TypeScript", "Tailwind CSS", "React Icons","Redis"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/Avadhoot1905",
-    live: "https://avadhoot.dev"
+    live: "https://avadhootgm.in"
   },
   {
     id: 2,

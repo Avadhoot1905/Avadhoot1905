@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { SiApple } from "react-icons/si"
+import imagesLoaded from "imagesloaded"
+import NProgress from "nprogress"
 
 interface LoadingScreenProps {
   onLoadingComplete: () => void
@@ -11,6 +13,7 @@ interface LoadingScreenProps {
 export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [isImagesLoaded, setIsImagesLoaded] = useState(false)
 
   useEffect(() => {
     // Check if mobile
@@ -21,7 +24,18 @@ export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
-    // Preload background images and other assets
+    // Configure NProgress
+    NProgress.configure({ 
+      showSpinner: false,
+      minimum: 0.1,
+      easing: 'ease',
+      speed: 500 
+    })
+
+    // Start NProgress
+    NProgress.start()
+
+    // Images to preload and track
     const imagesToPreload = [
       '/assets/v-dark.jpg',
       '/assets/v-light.jpg',
@@ -29,33 +43,84 @@ export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
       '/assets/tahoejpg.webp'
     ]
 
+    // Create container for images
+    const imageContainer = document.createElement('div')
+    imageContainer.style.position = 'absolute'
+    imageContainer.style.top = '-9999px'
+    imageContainer.style.left = '-9999px'
+    document.body.appendChild(imageContainer)
+
+    // Load images and add to container
     imagesToPreload.forEach(src => {
-      const img = new Image()
+      const img = document.createElement('img')
       img.src = src
+      img.style.width = '1px'
+      img.style.height = '1px'
+      imageContainer.appendChild(img)
     })
 
-    // Progress animation
-    const progressTimer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressTimer)
-          return 100
-        }
-        return prev + 2 // Increase by 2% every 160ms to reach 100% in ~8 seconds
-      })
-    }, 160)
+    // Track image loading progress
+    const imgLoad = imagesLoaded(imageContainer)
+    let loadedCount = 0
+    const totalImages = imagesToPreload.length
 
-    // Complete loading after 8 seconds
-    const loadingTimer = setTimeout(() => {
-      onLoadingComplete()
-    }, 8000)
+    imgLoad.on('progress', () => {
+      loadedCount++
+      const progressPercent = Math.round((loadedCount / totalImages) * 100)
+      setProgress(progressPercent)
+      NProgress.set(progressPercent / 100)
+    })
+
+    imgLoad.on('done', () => {
+      setProgress(100)
+      setIsImagesLoaded(true)
+      NProgress.done()
+
+      // Small delay to show 100% completion
+      setTimeout(() => {
+        onLoadingComplete()
+        if (document.body.contains(imageContainer)) {
+            document.body.removeChild(imageContainer)
+        }
+      }, 500)
+    })
+
+    imgLoad.on('fail', (_error) => {
+      // If some images fail to load, still proceed
+      console.warn('Some images failed to load', _error)
+      setProgress(100)
+      setIsImagesLoaded(true)
+      NProgress.done()
+      
+      setTimeout(() => {
+        onLoadingComplete()
+        document.body.removeChild(imageContainer)
+      }, 500)
+    })
+
+    // Fallback timer - complete loading after max 15 seconds regardless
+    const fallbackTimer = setTimeout(() => {
+      if (!isImagesLoaded) {
+        console.warn('Loading timeout reached, proceeding anyway')
+        setProgress(100)
+        setIsImagesLoaded(true)
+        NProgress.done()
+        onLoadingComplete()
+        if (document.body.contains(imageContainer)) {
+          document.body.removeChild(imageContainer)
+        }
+      }
+    }, 15000)
 
     return () => {
-      clearInterval(progressTimer)
-      clearTimeout(loadingTimer)
       window.removeEventListener('resize', checkMobile)
+      clearTimeout(fallbackTimer)
+      if (document.body.contains(imageContainer)) {
+        document.body.removeChild(imageContainer)
+      }
+      NProgress.done()
     }
-  }, [onLoadingComplete])
+  }, [onLoadingComplete, isImagesLoaded])
 
   return (
     <motion.div
@@ -110,10 +175,12 @@ export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 2 }}
       >
-        {progress < 30 && "Initializing System..."}
-        {progress >= 30 && progress < 60 && "Loading Resources..."}
-        {progress >= 60 && progress < 90 && "Preparing Interface..."}
-        {progress >= 90 && "Starting macOS..."}
+        {progress === 0 && "Initializing System..."}
+        {progress > 0 && progress < 25 && "Loading Assets..."}
+        {progress >= 25 && progress < 50 && "Caching Images..."}
+        {progress >= 50 && progress < 75 && "Preparing Interface..."}
+        {progress >= 75 && progress < 100 && "Finalizing Setup..."}
+        {progress === 100 && isImagesLoaded && "Ready to Start!"}
       </motion.div>
 
       {/* Progress Percentage */}

@@ -8,10 +8,12 @@ import { SiApple } from "react-icons/si"
 
 interface MenuBarProps {
   onLockScreen?: () => void
+  onShutdown?: () => void
+  onRestart?: () => void
   activeApp?: string | null
 }
 
-export function MenuBar({ onLockScreen, activeApp }: MenuBarProps) {
+export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -316,7 +318,7 @@ export function MenuBar({ onLockScreen, activeApp }: MenuBarProps) {
                       >
                         {theme === "dark" ? <Moon className="h-5 w-5 mb-1" /> : <Sun className="h-5 w-5 mb-1" />}
                         <span className="text-[9px] font-medium">
-                          {theme === "dark" ? "Dark" : "Light"}
+                          {theme === "dark" ? "Dark" : theme === "light" ? "Light" : "Auto"}
                         </span>
                       </button>
 
@@ -513,7 +515,7 @@ export function MenuBar({ onLockScreen, activeApp }: MenuBarProps) {
               <button
                 onClick={() => {
                   setActiveMenu(null)
-                  onLockScreen?.()
+                  onRestart?.()
                 }}
                 className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >
@@ -522,7 +524,7 @@ export function MenuBar({ onLockScreen, activeApp }: MenuBarProps) {
               <button
                 onClick={() => {
                   setActiveMenu(null)
-                  onLockScreen?.()
+                  onShutdown?.()
                 }}
                 className={`w-full text-left rounded px-3 py-1 ${theme === "dark" ? "hover:bg-blue-600" : "hover:bg-blue-500 hover:text-white"}`}
               >

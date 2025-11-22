@@ -5,6 +5,8 @@ import { MenuBar } from "@/components/menu-bar"
 import { Dock } from "@/components/dock"
 import { Window } from "@/components/window"
 import { AppIcon } from "@/components/app-icon"
+import { LoadingScreen } from "@/components/loading-screen"
+import { ShutdownScreen } from "@/components/shutdown-screen"
 import { LockScreen } from "@/components/lock-screen"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
@@ -44,6 +46,9 @@ export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>(["terminal", "about"])
   const [activeWindow, setActiveWindow] = useState<string | null>("about")
   const [mounted, setMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isShuttingDown, setIsShuttingDown] = useState(false)
+  const [shutdownAction, setShutdownAction] = useState<'shutdown' | 'restart'>('shutdown')
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [projectsFilter, setProjectsFilter] = useState<string>("all")
@@ -108,6 +113,31 @@ export function MacOSDesktop() {
   const handleLockScreen = () => {
     setIsLocked(true)
     setLastActivity(Date.now())
+  }
+
+  const handleShutdown = () => {
+    setShutdownAction('shutdown')
+    setIsShuttingDown(true)
+  }
+
+  const handleRestart = () => {
+    setShutdownAction('restart')
+    setIsShuttingDown(true)
+  }
+
+  const handleShutdownComplete = () => {
+    if (shutdownAction === 'restart') {
+      // For restart, show loading screen again
+      setIsShuttingDown(false)
+      setIsLoading(true)
+      setIsLocked(true)
+    } else {
+      // For shutdown, you could redirect or show a different screen
+      // For now, we'll just restart the loading sequence
+      setIsShuttingDown(false)
+      setIsLoading(true)
+      setIsLocked(true)
+    }
   }
 
   const toggleWindow = (appId: string) => {
@@ -193,6 +223,27 @@ export function MacOSDesktop() {
 
   if (!mounted) return null
 
+  // Show loading screen first
+  if (isLoading) {
+    return (
+      <AnimatePresence>
+        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+      </AnimatePresence>
+    )
+  }
+
+  // Show shutdown screen
+  if (isShuttingDown) {
+    return (
+      <AnimatePresence>
+        <ShutdownScreen 
+          action={shutdownAction}
+          onShutdownComplete={handleShutdownComplete} 
+        />
+      </AnimatePresence>
+    )
+  }
+
   return (
     <div
       className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative"
@@ -212,7 +263,12 @@ export function MacOSDesktop() {
       </AnimatePresence>
       {!isLocked && (
         <>
-          <MenuBar onLockScreen={handleLockScreen} activeApp={activeWindow} />
+          <MenuBar 
+            onLockScreen={handleLockScreen} 
+            onShutdown={handleShutdown}
+            onRestart={handleRestart}
+            activeApp={activeWindow} 
+          />
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
         <motion.div

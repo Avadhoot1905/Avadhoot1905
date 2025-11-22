@@ -1,7 +1,12 @@
 "use server"
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { PERSONALITY_PROMPT } from "@/data/personality-prompt"
+import { 
+  PERSONALITY_PROMPT,
+  CONTEXT_INTEGRATION,
+  CORE_IDENTITY,
+  COMMUNICATION_STYLE
+} from "@/data/personality-prompt"
 import redis from "@/lib/redis"
 import { saveMessage, getSessionMessages } from "./messages"
 
@@ -14,6 +19,61 @@ const SESSION_TTL = 3600
 // Each message pair (user + assistant) = 2 messages
 // 30 messages = ~15 conversation exchanges
 const MAX_HISTORY_MESSAGES = 30
+
+/**
+ * Detect conversation type based on user message for context-aware prompting
+ */
+function getConversationType(message: string): string[] {
+  const lowerMessage = message.toLowerCase()
+  const contexts = ['communication'] // Always include communication style
+  
+  // Technical keywords
+  if (lowerMessage.match(/(code|programming|technical|development|react|next|typescript|javascript|python|tech|build|framework|library|api|backend|frontend|database)/)) {
+    contexts.push('technical', 'projects')
+  }
+  
+  // Project-specific keywords
+  if (lowerMessage.match(/(project|portfolio|built|created|developed|examcooker|study\.ai|ivision|kathuria|securelink)/)) {
+    contexts.push('projects')
+    if (!contexts.includes('technical')) contexts.push('technical')
+  }
+  
+  // Leadership/personal keywords
+  if (lowerMessage.match(/(leader|leadership|team|manage|conflict|motivation|philosophy|personal|growth)/)) {
+    contexts.push('leadership', 'examples')
+  }
+  
+  // Navigation keywords (always include navigation for these)
+  if (lowerMessage.match(/(education|experience|work|job|university|degree|show me|tell me about)/)) {
+    contexts.push('navigation')
+    if (lowerMessage.match(/(project|portfolio|built)/)) {
+      contexts.push('projects', 'technical')
+    }
+  }
+  
+  return contexts
+}
+
+/**
+ * Get optimized personality context based on conversation type
+ */
+function getOptimizedPersonalityContext(userMessage: string, isFirstMessage: boolean = false): string {
+  // For first message or if unsure, use full context
+  if (isFirstMessage || userMessage.length < 10) {
+    return PERSONALITY_PROMPT
+  }
+  
+  // Get conversation type and create targeted context
+  const contextTypes = getConversationType(userMessage)
+  
+  // If it's a simple greeting or unclear, use minimal context
+  if (contextTypes.length === 1 && contextTypes[0] === 'communication') {
+    return CORE_IDENTITY + '\n\n' + COMMUNICATION_STYLE
+  }
+  
+  // Otherwise use context-aware selection
+  return CONTEXT_INTEGRATION.getPersonalityContext(contextTypes)
+}
 
 /**
  * Get chat history for a specific user from Redis cache
@@ -116,14 +176,17 @@ export async function sendMessageWithHistory(
     // Keep only the most recent messages to stay within token limits
     const recentHistory = existingHistory.slice(-MAX_HISTORY_MESSAGES)
     
-    // 🔧 FIX 2: Only add system prompt if history is empty (saves tokens)
-    // After the first exchange, the model already knows the personality
-    const history = recentHistory.length === 0 
+    // 🔧 FIX 2: Intelligent context-aware system prompt
+    // Use optimized context based on conversation type to save tokens
+    const isFirstMessage = recentHistory.length === 0
+    const optimizedPrompt = getOptimizedPersonalityContext(userMessage, isFirstMessage)
+    
+    const history = isFirstMessage 
       ? [
-          // First time: Include full system prompt
+          // First time: Include context-aware system prompt
           {
             role: "user",
-            parts: [{ text: PERSONALITY_PROMPT }],
+            parts: [{ text: optimizedPrompt }],
           },
           {
             role: "model",

@@ -175,11 +175,11 @@ export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 2 }}
       >
-        {progress === 0 && "Initializing System..."}
-        {progress > 0 && progress < 25 && "Loading Assets..."}
-        {progress >= 25 && progress < 50 && "Caching Images..."}
-        {progress >= 50 && progress < 75 && "Preparing Interface..."}
-        {progress >= 75 && progress < 100 && "Finalizing Setup..."}
+        {progress === 0 && "Powering Up the System..."}
+        {progress > 0 && progress < 25 && "Loading Profile..."}
+        {progress >= 25 && progress < 50 && "Loading Projects..."}
+        {progress >= 50 && progress < 75 && "Loading User..."}
+        {progress >= 75 && progress < 100 && "Launching OS..."}
         {progress === 100 && isImagesLoaded && "Ready to Start!"}
       </motion.div>
 

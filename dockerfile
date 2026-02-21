@@ -16,6 +16,9 @@ RUN npm install
 # Copy the rest of the project files
 COPY . .
 
+# Copy environment variables
+COPY .env .env
+
 # Generate Prisma client explicitly (in case postinstall was skipped)
 RUN npx prisma generate || echo "Skipping prisma generate (no schema found)"
 
@@ -38,6 +41,7 @@ COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/.next ./.next
 COPY --from=base /app/public ./public
 COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/.env .env
 
 # Expose port
 EXPOSE 3000

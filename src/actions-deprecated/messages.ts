@@ -1,5 +1,14 @@
 "use server"
 
+// ===================================================
+// DYNAMIC SERVER ACTION - Message Persistence
+// Uses Neon (Postgres) for storing chat messages
+// This MUST remain dynamic - will be deployed to AWS Lambda
+// ===================================================
+// Note: Server actions are inherently dynamic and cannot be
+// statically exported. This file requires Node.js runtime.
+// ===================================================
+
 import { prisma } from "@/lib/prisma"
 
 type MessageRole = "user" | "assistant"

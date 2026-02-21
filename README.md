@@ -1,6 +1,34 @@
 # 💫 About Me:
 Hi, I’m Avadhoot 👋 — a CS major exploring through code, constraints, and real-world experiments. I enjoy building systems that make me think deeply, from React/Next.js full-stack apps and MERN projects to ML experiments and blockchain fundamentals. I like starting with algorithmic thinking before coding, understanding tradeoffs, and focusing on clean architecture over quick hacks. Here you’ll find full-stack builds, ML experiments, and system design explorations as I work toward shipping production-grade projects and strengthening my system design skills.
+---
 
+## 🏗️ Portfolio Architecture
+
+This portfolio uses a **hybrid static/dynamic Next.js architecture** optimized for deployment to AWS:
+
+### 📦 Static Pages (S3 + CloudFront)
+- GitHub profile & repositories
+- LeetCode stats & submissions
+- Medium blog posts
+- Uses **ISR (Incremental Static Regeneration)** with automatic revalidation
+- No server required - pure static HTML/CSS/JS
+
+### ⚡ Dynamic Features (AWS Lambda)
+- AI-powered chat using Google Gemini
+- Real-time message persistence (Neon Postgres)
+- Session management (Upstash Redis)
+
+### 🚀 Tech Stack
+- **Frontend:** Next.js 15, React, TailwindCSS, TypeScript
+- **Backend:** Next.js Server Actions, Prisma ORM
+- **Database:** Neon (Serverless Postgres)
+- **Cache:** Upstash Redis
+- **AI:** Google Gemini 2.5 Flash
+- **Deployment:** Ready for AWS (S3 + CloudFront + Lambda)
+
+**📖 [View Deployment Guide](DEPLOYMENT.md)** | **📝 [View Change Log](CHANGES.md)**
+
+---
 
 ## 🌐 Socials:
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/avadhoot-mahadik) [![Medium](https://img.shields.io/badge/Medium-12100E?logo=medium&logoColor=white)](https://medium.com/@@arcsmo19) [![email](https://img.shields.io/badge/Email-D14836?logo=gmail&logoColor=white)](mailto:arcsmo19@gmail.com) 

@@ -4,9 +4,15 @@ import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { FaChevronLeft, FaChevronRight, FaStar, FaCodeBranch, FaBook } from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
-import { getGithubData } from "@/actions/github"
-import { getLeetcodeData } from "@/actions/leetcode"
-import { getMediumData } from "@/actions/medium"
+
+// ===================================================
+// STATIC DATA IMPORTS
+// Data is fetched at BUILD TIME, not runtime
+// See: scripts/fetch-build-data.ts
+// ===================================================
+import githubData from '@/../public/data/github.json'
+import leetcodeData from '@/../public/data/leetcode.json'
+import mediumData from '@/../public/data/medium.json'
 
 interface GitHubRepo {
   id: number
@@ -78,87 +84,77 @@ export function SafariApp() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Fetch GitHub data using server action (with Redis caching)
+  // Load GitHub data from static JSON (fetched at build time)
   useEffect(() => {
     if (activeSafariTab === "github" && !githubUser) {
       setLoading(true)
       setError(null)
-      console.log('Fetching GitHub data...')
-      getGithubData()
-        .then(result => {
-          console.log('GitHub result:', result)
-          if (result.success && result.data) {
-            setGithubUser(result.data.user)
-            setGithubRepos(result.data.repos)
-          } else {
-            const errorMsg = result.error || 'Failed to fetch GitHub data'
-            console.error("GitHub API error:", errorMsg)
-            setError(errorMsg)
-          }
-        })
-        .catch(error => {
-          console.error("GitHub API error:", error)
-          setError(error.message || 'Unknown error')
-        })
-        .finally(() => setLoading(false))
+      
+      try {
+        const data = githubData as unknown as { 
+          success: boolean
+          user?: GitHubUser
+          repos?: GitHubRepo[]
+          error?: string
+        }
+        
+        if (data.success && data.user && data.repos) {
+          setGithubUser(data.user)
+          setGithubRepos(data.repos)
+        } else {
+          setError(data.error || 'No GitHub data available')
+        }
+      } catch (err) {
+        console.error("GitHub data error:", err)
+        setError('Failed to load GitHub data')
+      } finally {
+        setLoading(false)
+      }
     }
   }, [activeSafariTab, githubUser])
 
-  // Fetch LeetCode data using server action (with Redis caching)
+  // Load LeetCode data from static JSON (fetched at build time)
   useEffect(() => {
     if (activeSafariTab === "leetcode" && !leetcodeStats) {
       setLoading(true)
       setError(null)
-      console.log('Fetching LeetCode data...')
-      getLeetcodeData()
-        .then(result => {
-          console.log('LeetCode result:', result)
-          if (result.success && result.data) {
-            const stats = result.data.stats
-            setLeetcodeStats({
-              totalSolved: stats.totalSolved || 0,
-              easySolved: stats.easySolved || 0,
-              mediumSolved: stats.mediumSolved || 0,
-              hardSolved: stats.hardSolved || 0,
-              ranking: stats.ranking || 0,
-              contributionPoints: stats.contributionPoints || 0
-            })
-            
-            // Set recent problems if available
-            console.log('Recent problems data:', result.data.recentProblems)
-            if (result.data.recentProblems && result.data.recentProblems.length > 0) {
-              const recentSolved = result.data.recentProblems
-                .slice(0, 5)
-                .map((sub: { title?: string; titleSlug?: string; timestamp?: string; statusDisplay?: string; lang?: string; language?: string }) => ({
-                  title: sub.title || sub.titleSlug || 'Unknown Problem',
-                  titleSlug: sub.titleSlug || '',
-                  timestamp: sub.timestamp || Date.now().toString(),
-                  statusDisplay: sub.statusDisplay || 'Accepted',
-                  lang: sub.lang || sub.language || 'N/A'
-                }))
-              console.log('Setting submissions:', recentSolved)
-              setLeetcodeSubmissions(recentSolved)
-            } else {
-              console.log('No recent problems found in response')
-              setLeetcodeSubmissions([])
-            }
+      
+      try {
+        const data = leetcodeData as unknown as {
+          success: boolean
+          stats?: LeetCodeStats
+          recentProblems?: LeetCodeSubmission[]
+          error?: string
+        }
+        
+        if (data.success && data.stats) {
+          const stats = data.stats
+          setLeetcodeStats({
+            totalSolved: stats.totalSolved || 0,
+            easySolved: stats.easySolved || 0,
+            mediumSolved: stats.mediumSolved || 0,
+            hardSolved: stats.hardSolved || 0,
+            ranking: stats.ranking || 0,
+            contributionPoints: stats.contributionPoints || 0
+          })
+          
+          // Set recent problems if available
+          if (data.recentProblems && data.recentProblems.length > 0) {
+            const recentSolved = data.recentProblems
+              .slice(0, 5)
+              .map((sub: LeetCodeSubmission) => ({
+                title: sub.title || sub.titleSlug || 'Unknown Problem',
+                titleSlug: sub.titleSlug || '',
+                timestamp: sub.timestamp || Date.now().toString(),
+                statusDisplay: sub.statusDisplay || 'Accepted',
+                lang: sub.lang || 'N/A'
+              }))
+            setLeetcodeSubmissions(recentSolved)
           } else {
-            const errorMsg = result.error || 'Failed to fetch LeetCode data'
-            console.error("LeetCode API error:", errorMsg)
-            setError(errorMsg)
-            // Set empty stats so the UI still renders
-            setLeetcodeStats({
-              totalSolved: 0,
-              easySolved: 0,
-              mediumSolved: 0,
-              hardSolved: 0,
-              ranking: 0
-            })
+            setLeetcodeSubmissions([])
           }
-        })
-        .catch(error => {
-          console.error("LeetCode API error:", error)
-          setError(error.message || 'Unknown error')
+        } else {
+          setError(data.error || 'No LeetCode data available')
           setLeetcodeStats({
             totalSolved: 0,
             easySolved: 0,
@@ -166,39 +162,53 @@ export function SafariApp() {
             hardSolved: 0,
             ranking: 0
           })
+        }
+      } catch (err) {
+        console.error("LeetCode data error:", err)
+        setError('Failed to load LeetCode data')
+        setLeetcodeStats({
+          totalSolved: 0,
+          easySolved: 0,
+          mediumSolved: 0,
+          hardSolved: 0,
+          ranking: 0
         })
-        .finally(() => setLoading(false))
+      } finally {
+        setLoading(false)
+      }
     }
   }, [activeSafariTab, leetcodeStats])
 
-  // Fetch Medium data using server action (with Redis caching)
+  // Load Medium data from static JSON (fetched at build time)
   useEffect(() => {
     if (activeSafariTab === "medium" && mediumArticles.length === 0) {
       setLoading(true)
       setError(null)
-      console.log('Fetching Medium data...')
-      getMediumData()
-        .then(result => {
-          console.log('Medium result:', result)
-          if (result.success && result.data && result.data.items) {
-            const articles = result.data.items.map((item: { title?: string; link?: string; pubDate?: string; contentSnippet?: string }) => ({
-              title: item.title || '',
-              link: item.link || '',
-              pubDate: item.pubDate || '',
-              content: item.contentSnippet || ""
-            }))
-            setMediumArticles(articles)
-          } else {
-            const errorMsg = result.error || 'Failed to fetch Medium posts'
-            console.error("Medium API error:", errorMsg)
-            setError(errorMsg)
-          }
-        })
-        .catch(error => {
-          console.error("Medium API error:", error)
-          setError(error.message || 'Unknown error')
-        })
-        .finally(() => setLoading(false))
+      
+      try {
+        const data = mediumData as unknown as {
+          success: boolean
+          items?: MediumArticle[]
+          error?: string
+        }
+        
+        if (data.success && data.items) {
+          const articles = data.items.map((item: MediumArticle) => ({
+            title: item.title || '',
+            link: item.link || '',
+            pubDate: item.pubDate || '',
+            content: item.content || ""
+          }))
+          setMediumArticles(articles)
+        } else {
+          setError((mediumData as { error?: string }).error || 'No Medium data available')
+        }
+      } catch (err) {
+        console.error("Medium data error:", err)
+        setError('Failed to load Medium data')
+      } finally {
+        setLoading(false)
+      }
     }
   }, [activeSafariTab, mediumArticles.length])
 

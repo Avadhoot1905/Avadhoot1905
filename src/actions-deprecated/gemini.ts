@@ -1,5 +1,14 @@
 "use server"
 
+// ===================================================
+// DYNAMIC SERVER ACTION - Chat with Gemini AI
+// Uses Redis for session caching and Neon for persistence
+// This MUST remain dynamic - will be deployed to AWS Lambda
+// ===================================================
+// Note: Server actions are inherently dynamic and cannot be
+// statically exported. This file requires Node.js runtime.
+// ===================================================
+
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { 
   PERSONALITY_PROMPT,

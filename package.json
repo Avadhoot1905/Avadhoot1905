@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run fetch-data && next build",
     "start": "next start",
     "lint": "next lint",
+    "fetch-data": "tsx scripts/fetch-build-data.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.17.1",
     "@upstash/redis": "^1.35.6",
     "dotenv": "^17.2.3",
@@ -45,6 +47,7 @@
     "eslint-config-next": "15.3.1",
     "prisma": "^6.17.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

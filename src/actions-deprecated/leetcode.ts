@@ -1,23 +1,40 @@
+// ===================================================
+// ⚠️ DEPRECATED - DO NOT USE IN STATIC BUILD
+// ===================================================
+// This file is DEPRECATED for static export builds.
+// Use: import leetcodeData from '@/../public/data/leetcode.json'
+// 
+// Data is now fetched at BUILD TIME by:
+// scripts/fetch-build-data.ts
+// 
+// This file remains for backwards compatibility only.
+// It will NOT work in static export mode (output: 'export')
+// ===================================================
+
 'use server'
 
-import { getCachedData } from '@/lib/redis'
+// ===================================================
+// STATIC DATA FETCHER - No Redis, No Dynamic APIs
+// Uses Next.js ISR (Incremental Static Regeneration)
+// Safe for static export and S3 deployment
+// ===================================================
 
 const LEETCODE_USERNAME = 'arcsmo19'
-const CACHE_TTL = 1800 // 30 minutes in seconds
+const REVALIDATE_SECONDS = 1800 // 30 minutes - ISR revalidation period
 
+/**
+ * @deprecated Use static data from public/data/leetcode.json instead
+ * This function will NOT work in static export mode
+ */
 export async function getLeetcodeData() {
   try {
-    const data = await getCachedData(
-      'leetcode-profile',
-      CACHE_TTL,
-      async () => {
-        console.log('Fetching fresh LeetCode data')
-        
-        // Fetch user stats
-        const statsResponse = await fetch(
-          `https://leetcode-stats-api.herokuapp.com/${LEETCODE_USERNAME}`,
-          { next: { revalidate: CACHE_TTL } }
-        )
+    console.log('Fetching LeetCode data (static-friendly)')
+    
+    // Fetch user stats
+    const statsResponse = await fetch(
+      `https://leetcode-stats-api.herokuapp.com/${LEETCODE_USERNAME}`,
+      { next: { revalidate: REVALIDATE_SECONDS } } // Next.js ISR caching
+    )
         
         if (!statsResponse.ok) {
           throw new Error('LeetCode stats API request failed')
@@ -42,7 +59,7 @@ export async function getLeetcodeData() {
           const submissionsResponse = await fetch(
             `https://alfa-leetcode-api.onrender.com/${LEETCODE_USERNAME}/submission?limit=10`,
             { 
-              next: { revalidate: CACHE_TTL },
+              next: { revalidate: REVALIDATE_SECONDS }, // Next.js ISR caching
               headers: { 'Content-Type': 'application/json' }
             }
           )
@@ -65,7 +82,7 @@ export async function getLeetcodeData() {
             // Try alternative endpoint
             const altResponse = await fetch(
               `https://leetcode-stats-api.herokuapp.com/${LEETCODE_USERNAME}/submission`,
-              { next: { revalidate: CACHE_TTL } }
+              { next: { revalidate: REVALIDATE_SECONDS } } // Next.js ISR caching
             )
             
             if (altResponse.ok) {
@@ -80,14 +97,12 @@ export async function getLeetcodeData() {
           // Continue without recent problems
         }
 
-        return {
+        const data = {
           stats,
           recentProblems,
         }
-      }
-    )
-
-    return { success: true, data }
+        
+        return { success: true, data }
   } catch (error) {
     console.error('LeetCode API error:', error)
     const message = error instanceof Error ? error.message : 'Failed to fetch LeetCode data'

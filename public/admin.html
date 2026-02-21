@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Chat Logs</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: #1e1e2e;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+    }
+
+    .auth-section {
+      padding: 2rem;
+      border-bottom: 1px solid #2a2a3e;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #a0a0b0;
+      font-weight: 500;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #2a2a3e;
+      border: 2px solid #3a3a4e;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 1rem;
+      margin: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .message.success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .spinner {
+      display: none;
+      margin: 2rem auto;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #2a2a3e;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner.show {
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .table-wrapper {
+      padding: 2rem;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      display: none;
+    }
+
+    table.show {
+      display: table;
+    }
+
+    thead {
+      background: #2a2a3e;
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #a0a0b0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #2a2a3e;
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: #252535;
+    }
+
+    td {
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .timestamp {
+      color: #a0a0b0;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .message-text {
+      max-width: 400px;
+      word-wrap: break-word;
+    }
+
+    .user-message {
+      color: #93c5fd;
+    }
+
+    .bot-reply {
+      color: #a78bfa;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #6a6a7a;
+      display: none;
+    }
+
+    .empty-state.show {
+      display: block;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      table {
+        font-size: 0.8rem;
+      }
+
+      th, td {
+        padding: 0.75rem 0.5rem;
+      }
+
+      .message-text {
+        max-width: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔐 Admin Dashboard</h1>
+      <p>Chat Logs Viewer</p>
+    </div>
+
+    <div class="auth-section">
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label for="adminSecret">Admin Secret</label>
+          <input 
+            type="password" 
+            id="adminSecret" 
+            placeholder="Enter your admin secret"
+            autocomplete="off"
+          >
+        </div>
+        <button id="loadButton" onclick="loadChats()">Load Chats</button>
+      </div>
+    </div>
+
+    <div id="errorMessage" class="message error"></div>
+    <div id="successMessage" class="message success"></div>
+    
+    <div id="spinner" class="spinner"></div>
+
+    <div class="empty-state show" id="emptyState">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+      <h3>No chats loaded</h3>
+      <p>Enter your admin secret and click "Load Chats" to view chat logs</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="chatsTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User Message</th>
+            <th>Bot Reply</th>
+          </tr>
+        </thead>
+        <tbody id="chatsBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // API Configuration
+    // Replace with your API Gateway URL after deployment
+    const API_URL = 'https://YOUR_API_GATEWAY_URL/admin/chats';
+
+    // State management
+    let currentSecret = '';
+
+    // Show message helper
+    function showMessage(text, type = 'error') {
+      const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
+      
+      // Reset both messages
+      errorMsg.classList.remove('show');
+      successMsg.classList.remove('show');
+      
+      // Show appropriate message
+      if (type === 'error') {
+        errorMsg.textContent = text;
+        errorMsg.classList.add('show');
+      } else {
+        successMsg.textContent = text;
+        successMsg.classList.add('show');
+      }
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        errorMsg.classList.remove('show');
+        successMsg.classList.remove('show');
+      }, 5000);
+    }
+
+    // Format timestamp
+    function formatTimestamp(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Truncate long text
+    function truncateText(text, maxLength = 150) {
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+
+    // Load chats from API
+    async function loadChats() {
+      const secretInput = document.getElementById('adminSecret');
+      const secret = secretInput.value.trim();
+
+      if (!secret) {
+        showMessage('Please enter your admin secret', 'error');
+        return;
+      }
+
+      // Store secret in memory only (not in localStorage or sessionStorage)
+      currentSecret = secret;
+
+      // UI updates
+      const spinner = document.getElementById('spinner');
+      const table = document.getElementById('chatsTable');
+      const emptyState = document.getElementById('emptyState');
+      const loadButton = document.getElementById('loadButton');
+
+      // Show loading state
+      spinner.classList.add('show');
+      table.classList.remove('show');
+      emptyState.classList.remove('show');
+      loadButton.disabled = true;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'x-admin-secret': secret,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 401) {
+          showMessage('❌ Unauthorized: Invalid admin secret', 'error');
+          currentSecret = ''; // Clear secret from memory
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const chats = await response.json();
+
+        if (!Array.isArray(chats) || chats.length === 0) {
+          emptyState.innerHTML = `
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3>No chats found</h3>
+            <p>The database is empty. Start chatting to see logs here.</p>
+          `;
+          emptyState.classList.add('show');
+          return;
+        }
+
+        // Render chats in table
+        renderChats(chats);
+        showMessage(`✅ Successfully loaded ${chats.length} chat${chats.length === 1 ? '' : 's'}`, 'success');
+
+      } catch (error) {
+        console.error('Error loading chats:', error);
+        showMessage(`❌ Failed to load chats: ${error.message}`, 'error');
+        emptyState.classList.add('show');
+
+      } finally {
+        spinner.classList.remove('show');
+        loadButton.disabled = false;
+      }
+    }
+
+    // Render chats in table
+    function renderChats(chats) {
+      const tbody = document.getElementById('chatsBody');
+      const table = document.getElementById('chatsTable');
+      
+      tbody.innerHTML = '';
+
+      chats.forEach(chat => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="timestamp">${formatTimestamp(chat.created_at)}</td>
+          <td class="message-text user-message">${truncateText(chat.user_message)}</td>
+          <td class="message-text bot-reply">${truncateText(chat.bot_reply)}</td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+
+      table.classList.add('show');
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('adminSecret').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        loadChats();
+      }
+    });
+
+    // Security: Clear secret from memory on page unload
+    window.addEventListener('beforeunload', function() {
+      currentSecret = '';
+    });
+  </script>
+</body>
+</html>

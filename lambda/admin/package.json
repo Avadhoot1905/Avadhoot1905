@@ -1,0 +1,18 @@
+{
+  "name": "admin-lambda",
+  "version": "1.0.0",
+  "description": "Admin Lambda for fetching chat logs from Neon PostgreSQL",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "package": "npm install && npm run build && zip -r function.zip ."
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.6"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}

@@ -55,14 +55,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   
-  // Optional: Custom build directory
-  // distDir: 'out',
-  
-  // Webpack configuration for Node.js libraries
-  webpack: (config) => {
-    config.resolve.fallback = { fs: false, net: false, tls: false };
-    return config;
-  },
+  // Turbopack configuration (Next.js 16+)
+  turbopack: {},
   
   // Trailing slashes for S3 compatibility
   trailingSlash: true,

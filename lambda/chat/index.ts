@@ -72,7 +72,7 @@ async function getChatHistory(sessionId: string): Promise<{ role: string; conten
       take: MAX_HISTORY_MESSAGES,
     })
     
-    return dbMessages.map(msg => ({
+    return dbMessages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
       content: msg.content,
     }))

@@ -25,6 +25,11 @@
  * NO SERVER ACTIONS
  */
 
+// Load environment variables from .env file (for local development)
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+dotenv.config({ path: path.join(process.cwd(), '.env') })
+
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Redis } from '@upstash/redis'
 import { PrismaClient } from '@prisma/client'
@@ -168,7 +173,7 @@ async function sendMessageToGemini(
     })
     
     // Send to Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
     
     const chat = model.startChat({
       history: conversationHistory.slice(0, -1), // All except current message

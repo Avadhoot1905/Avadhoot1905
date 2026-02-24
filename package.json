@@ -12,7 +12,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.0.2",
-    "@prisma/client": "^7.4.1",
+    "@prisma/client": "^6.17.1",
     "@upstash/redis": "^1.36.2",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.7.4",
@@ -32,6 +32,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^0.1.0",
     "@tailwindcss/postcss": "^4",
+    "@types/express": "^5.0.6",
     "@types/imagesloaded": "^4.1.7",
     "@types/node": "^20",
     "@types/nprogress": "^0.2.3",
@@ -39,7 +40,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.1.6",
+    "express": "^5.2.1",
     "minimatch": "^10.2.2",
+    "prisma": "^6.17.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

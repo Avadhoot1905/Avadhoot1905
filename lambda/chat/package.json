@@ -2,15 +2,21 @@
   "name": "chat-lambda",
   "version": "1.0.0",
   "description": "AWS Lambda for Gemini AI chat functionality",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "package": "npm install && npm run build && zip -r function.zip ."
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
+    "test": "node dist/index.js",
+    "dev": "tsx index.ts",
+    "package": "npm run build && cd dist && zip -r ../function.zip . && cd ..",
+    "deploy:prepare": "npm install --production && npm run build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@upstash/redis": "^1.35.6",
-    "@prisma/client": "^6.17.1"
+    "@prisma/client": "^6.17.1",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",

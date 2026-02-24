@@ -1,3 +1,8 @@
+// Load environment variables from .env file (for local development)
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+dotenv.config({ path: path.join(process.cwd(), '.env') })
+
 import { neon } from '@neondatabase/serverless';
 
 /**
@@ -84,3 +89,28 @@ export const handler = async (event: any) => {
     };
   }
 };
+
+/**
+ * Local testing helper
+ */
+if (require.main === module) {
+  console.log('🔐 Testing Admin Lambda Handler\n');
+  
+  // Test event with admin secret
+  const testEvent = {
+    httpMethod: 'GET',
+    path: '/admin/chats',
+    headers: {
+      'x-admin-secret': process.env.ADMIN_SECRET || 'test-secret'
+    }
+  };
+  
+  handler(testEvent).then(result => {
+    console.log('Response Status:', result.statusCode);
+    console.log('Response Body:', result.body);
+    process.exit(0);
+  }).catch(error => {
+    console.error('Test error:', error);
+    process.exit(1);
+  });
+}

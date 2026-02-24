@@ -33,6 +33,8 @@ dotenv.config({ path: path.join(process.cwd(), '.env') })
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Redis } from '@upstash/redis'
 import { PrismaClient } from '@prisma/client'
+import express, { Request, Response } from 'express'
+import { PERSONALITY_PROMPT } from './personality-prompt.js'
 
 // ===================================================
 // ENVIRONMENT VARIABLES (Set in Lambda Configuration)
@@ -172,14 +174,17 @@ async function sendMessageToGemini(
       parts: [{ text: userMessage }],
     })
     
-    // Send to Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+    // Send to Gemini with personality context
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash-lite",
+      systemInstruction: PERSONALITY_PROMPT,
+    })
     
     const chat = model.startChat({
       history: conversationHistory.slice(0, -1), // All except current message
       generationConfig: {
-        maxOutputTokens: 1024,
-        temperature: 0.9,
+        maxOutputTokens: 2048,
+        temperature: 0.85,
       },
     })
     
@@ -302,23 +307,126 @@ export const handler = async (event: any) => {
 }
 
 /**
- * Local testing helper
+ * Express server for local development
+ */
+function startExpressServer() {
+  const app = express()
+  const PORT = process.env.CHAT_PORT || 3001
+  
+  // Middleware
+  app.use(express.json())
+  
+  // CORS middleware
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+    
+    if (req.method === 'OPTIONS') {
+      res.status(200).end()
+      return
+    }
+    
+    next()
+  })
+  
+  // Request logging
+  app.use((req, res, next) => {
+    console.log(`\n📨 ${req.method} ${req.path}`)
+    if (req.body && Object.keys(req.body).length > 0) {
+      console.log('   Body:', JSON.stringify(req.body, null, 2))
+    }
+    next()
+  })
+  
+  // POST /chat endpoint
+  app.post('/chat', async (req: Request, res: Response) => {
+    try {
+      // Convert Express request to Lambda event format
+      const lambdaEvent = {
+        httpMethod: 'POST',
+        path: '/chat',
+        headers: req.headers as Record<string, string>,
+        body: JSON.stringify(req.body),
+      }
+      
+      // Call the Lambda handler
+      const lambdaResponse = await handler(lambdaEvent)
+      
+      // Log response
+      console.log(`   Status: ${lambdaResponse.statusCode}`)
+      
+      // Set headers from Lambda response
+      if (lambdaResponse.headers) {
+        Object.entries(lambdaResponse.headers).forEach(([key, value]) => {
+          res.setHeader(key, value)
+        })
+      }
+      
+      // Send response
+      res.status(lambdaResponse.statusCode).send(lambdaResponse.body)
+    } catch (error) {
+      console.error('❌ Error:', error)
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error'
+      })
+    }
+  })
+  
+  // Health check endpoint
+  app.get('/health', (req: Request, res: Response) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  })
+  
+  // Start server
+  app.listen(PORT, () => {
+    console.log('\n🚀 Chat Server Started!')
+    console.log(`   URL: http://localhost:${PORT}`)
+    console.log(`   Endpoint: POST http://localhost:${PORT}/chat`)
+    console.log(`   Health: GET http://localhost:${PORT}/health`)
+    console.log(`   Model: gemini-2.5-flash-lite with personality context`)
+    console.log('\n✨ Ready to receive requests from frontend')
+    console.log('   Press Ctrl+C to stop\n')
+  })
+  
+  // Graceful shutdown
+  process.on('SIGINT', () => {
+    console.log('\n\n🛑 Shutting down server...')
+    process.exit(0)
+  })
+  
+  process.on('SIGTERM', () => {
+    console.log('\n\n🛑 Shutting down server...')
+    process.exit(0)
+  })
+}
+
+/**
+ * Run as Express server when executed directly
  */
 if (require.main === module) {
-  // Test locally by running: node lambda/chat/index.js
-  const testEvent = {
-    httpMethod: 'POST',
-    body: JSON.stringify({
-      sessionId: 'test-session-123',
-      message: 'Hello, who are you?',
-    }),
+  console.log('🔧 Starting in development mode...\n')
+  
+  // Validate environment variables
+  const requiredEnvVars = [
+    'GEMINI_API_KEY',
+    'UPSTASH_REDIS_REST_URL',
+    'UPSTASH_REDIS_REST_TOKEN',
+    'DATABASE_URL',
+  ]
+  
+  const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
+  
+  if (missingEnvVars.length > 0) {
+    console.error('❌ Missing required environment variables:')
+    missingEnvVars.forEach(envVar => console.error(`   - ${envVar}`))
+    console.error('\n💡 Create a .env file in the root directory with these variables.\n')
+    process.exit(1)
   }
   
-  handler(testEvent).then(result => {
-    console.log('Test result:', JSON.stringify(result, null, 2))
-    process.exit(0)
-  }).catch(error => {
-    console.error('Test error:', error)
-    process.exit(1)
-  })
+  console.log('✅ Environment variables loaded')
+  console.log('✅ Personality prompt loaded\n')
+  
+  startExpressServer()
 }

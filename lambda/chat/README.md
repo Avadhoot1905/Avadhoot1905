@@ -1,6 +1,73 @@
 # Chat Lambda
 
-AWS Lambda function for Gemini AI chat functionality with Redis caching and PostgreSQL persistence.
+AWS Lambda function for Gemini AI chat functionality with Redis caching, PostgreSQL persistence, and personality-driven MCP context.
+
+## ✨ Features
+
+- ✅ **Personality-driven AI**: Uses Model Context Protocol (MCP) with custom personality prompt
+- ✅ **Dual Mode**: Run as Express server for local development OR AWS Lambda for production
+- ✅ **Gemini 2.0 Flash**: Latest AI model with system instructions
+- ✅ **Redis caching**: Fast responses with session management
+- ✅ **PostgreSQL persistence**: Long-term chat history storage
+- ✅ **Auto CORS**: Configured for frontend integration
+
+## 🎭 Personality Context
+
+The chatbot uses `personality-prompt.ts` as MCP context, giving Gemini AI:
+- Core identity and persona
+- Communication style guidelines  
+- Technical expertise and skills
+- Project portfolio context
+- UI navigation markers for frontend integration
+
+This ensures consistent, authentic, and contextually aware responses.
+
+## 🚀 Local Development
+
+### Run as Express Server
+
+```bash
+# From lambda/chat directory
+npx tsx index.ts
+# or
+npm run dev
+# or
+npm run server
+```
+
+This starts a local Express server on port 3001 (configurable via `CHAT_PORT` env var):
+
+```
+🚀 Chat Server Started!
+   URL: http://localhost:3001
+   Endpoint: POST http://localhost:3001/chat
+   Health: GET http://localhost:3001/health
+   Model: gemini-2.0-flash-exp with personality context
+```
+
+### Alternative: From project root
+
+```bash
+# Using the dev script from root directory
+npx tsx lambda/chat/index.ts
+# or
+node lambda/chat/index.ts
+```
+
+### Test the server
+
+```bash
+# Send a message
+curl -X POST http://localhost:3001/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "test-123",
+    "message": "Hello, who are you?"
+  }'
+
+# Health check
+curl http://localhost:3001/health
+```
 
 ## 📦 Dependencies
 
@@ -118,38 +185,74 @@ Content-Type: application/json
 ## 🏗️ Architecture
 
 ```
-Client
-  ↓
-API Gateway
-  ↓
-AWS Lambda
-  ├→ Gemini AI (chat responses)
+Frontend (Next.js on localhost:3000)
+  ↓ HTTP POST
+Chat Server (Express on localhost:3001)
+  ├→ Gemini AI (with personality context)
   ├→ Upstash Redis (session cache, 1 hour TTL)
   └→ Neon PostgreSQL (persistent storage)
 ```
 
-## 🧪 Local Testing
+## 🔌 Frontend Integration
+
+The frontend is already configured to connect to the chat server:
+
+1. **Chat API Client**: [`src/lib/chat-api.ts`](../../src/lib/chat-api.ts)
+   - Automatically uses `NEXT_PUBLIC_CHAT_API_URL` from environment
+   - Falls back to `http://localhost:3001/chat` for development
+
+2. **Environment Configuration**: Create `.env.local` in project root:
+   ```env
+   NEXT_PUBLIC_CHAT_API_URL=http://localhost:3001/chat
+   ```
+
+3. **Run Both Servers**:
+   ```bash
+   # Terminal 1: Start chat server
+   npx tsx lambda/chat/index.ts
+   
+   # Terminal 2: Start Next.js frontend
+   npm run dev
+   ```
+
+4. **Access the Chat**:
+   - Open http://localhost:3000
+   - Open Messages app
+   - Chat with the AI powered by your personality context!
+
+## 🧪 Testing & Development Modes
+
+### Mode 1: Express Server (Recommended for Development)
+
+Runs a full HTTP server with proper request handling:
 
 ```bash
-# Set environment variables
-export GEMINI_API_KEY="your-key"
-export UPSTASH_REDIS_REST_URL="your-redis-url"
-export UPSTASH_REDIS_REST_TOKEN="your-redis-token"
-export DATABASE_URL="your-database-url"
+# Create .env file in project root with:
+GEMINI_API_KEY=your-key
+UPSTASH_REDIS_REST_URL=your-redis-url  
+UPSTASH_REDIS_REST_TOKEN=your-redis-token
+DATABASE_URL=your-database-url
+CHAT_PORT=3001  # Optional, defaults to 3001
 
-# Run test
-node index.ts
+# Run the server
+npx tsx lambda/chat/index.ts
 ```
 
-## 📊 Features
+### Mode 2: AWS Lambda (Production)
 
-- ✅ Gemini 2.0 Flash AI model
-- ✅ Redis caching for fast responses
+Deployed to AWS Lambda and invoked via API Gateway.
+
+## 📊 Enhanced Features
+
+- ✅ Gemini 2.0 Flash Exp model with personality context
+- ✅ System instructions for consistent persona
+- ✅ Redis caching for fast responses  
 - ✅ PostgreSQL persistence for chat history
 - ✅ Session management with 1-hour TTL
-- ✅ CORS enabled
-- ✅ Error handling and logging
+- ✅ CORS enabled for frontend integration
 - ✅ Up to 30 messages per session history
+- ✅ Health check endpoint (`/health`)
+- ✅ Graceful shutdown handling
 
 ## 💰 Cost Estimate
 

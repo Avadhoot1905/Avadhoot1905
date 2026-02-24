@@ -20,8 +20,8 @@
  * - getUserChatHistory(sessionId)
  */
 
-// Get API URL from environment variable or use placeholder
-const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://api.example.com/chat'
+// Get API URL from environment variable or use local dev server
+const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'http://localhost:3001/chat'
 
 /**
  * Send a message to the chat API

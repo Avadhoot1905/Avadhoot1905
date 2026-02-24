@@ -3,38 +3,66 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 dotenv.config({ path: path.join(process.cwd(), '.env') })
 
-import { neon } from '@neondatabase/serverless';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Admin Lambda Handler
  * 
- * Purpose: Fetch chat logs from Neon PostgreSQL database
+ * Purpose: Fetch chat logs from PostgreSQL database using Prisma
  * Security: Requires x-admin-secret header matching ADMIN_SECRET env var
  * 
  * Environment Variables:
  * - ADMIN_SECRET: Secret key for authentication
- * - DATABASE_URL: Neon PostgreSQL connection string
+ * - DATABASE_URL: PostgreSQL connection string
  */
 
-interface ChatLog {
-  id: string;
-  user_message: string;
-  bot_reply: string;
-  created_at: string;
+// Singleton PrismaClient instance
+let prisma: PrismaClient;
+
+function getPrismaClient() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
 }
 
 export const handler = async (event: any) => {
+  // 🐛 Debug: Log incoming event
+  console.log('\n🔍 [LAMBDA ADMIN] Incoming event:');
+  console.log('   Headers:', JSON.stringify(event.headers, null, 2));
+  console.log('   Path:', event.path || event.rawPath || 'UNDEFINED');
+  
   // 1️⃣ Security Check - Validate admin secret
-  const adminSecret = event.headers?.['x-admin-secret'] || event.headers?.['X-Admin-Secret'];
-  const expectedSecret = process.env.ADMIN_SECRET;
+  // Normalize all header keys to lowercase for consistent comparison
+  const normalizedHeaders: Record<string, string> = {};
+  if (event.headers && typeof event.headers === 'object') {
+    Object.keys(event.headers).forEach(key => {
+      const value = event.headers[key];
+      if (value !== undefined && value !== null) {
+        normalizedHeaders[key.toLowerCase()] = String(value).trim();
+      }
+    });
+  }
+  
+  console.log('   Normalized headers:', JSON.stringify(normalizedHeaders, null, 2));
+  
+  const adminSecret = normalizedHeaders['x-admin-secret'];
+  const expectedSecret = process.env.ADMIN_SECRET?.trim();
+  
+  console.log('   Received secret:', adminSecret ? `[${adminSecret.length} chars]` : 'MISSING');
+  console.log('   Expected secret:', expectedSecret ? `[${expectedSecret.length} chars]` : 'NOT CONFIGURED');
+  console.log('   Secrets match:', adminSecret === expectedSecret);
 
-  if (!adminSecret || adminSecret !== expectedSecret) {
+  if (!adminSecret || !expectedSecret || adminSecret !== expectedSecret) {
+    console.log('❌ [LAMBDA ADMIN] Authorization failed');
     return {
       statusCode: 401,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Unauthorized' })
     };
   }
+  
+  console.log('✅ [LAMBDA ADMIN] Authorization successful');
 
   // 2️⃣ Route Handling - Only support GET /admin/chats
   const path = event.path || event.rawPath || '';
@@ -48,36 +76,30 @@ export const handler = async (event: any) => {
   }
 
   try {
-    // 3️⃣ Fetch Chat Logs from Neon
-    const databaseUrl = process.env.DATABASE_URL;
+    // 3️⃣ Fetch Chat Logs using Prisma
+    const prismaClient = getPrismaClient();
     
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL not configured');
-    }
+    // Fetch last 100 messages ordered by newest first
+    // Include the related ChatSession data
+    const messages = await prismaClient.message.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 100,
+      include: {
+        chatSession: true
+      }
+    });
 
-    const sql = neon(databaseUrl);
-    
-    // Fetch last 100 chats ordered by newest first
-    const chats = await sql`
-      SELECT 
-        id,
-        user_message,
-        bot_reply,
-        created_at
-      FROM messages
-      ORDER BY created_at DESC
-      LIMIT 100
-    `;
+    console.log(`✅ [LAMBDA ADMIN] Fetched ${messages.length} messages`);
 
     // 4️⃣ Response Format
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(chats)
+      body: JSON.stringify(messages)
     };
 
   } catch (error) {
-    console.error('Error fetching chats:', error);
+    console.error('❌ [LAMBDA ADMIN] Error fetching messages:', error);
     
     return {
       statusCode: 500,

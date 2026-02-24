@@ -75,10 +75,21 @@ interface LambdaEvent {
 }
 
 function expressToLambdaEvent(req: Request): LambdaEvent {
+  // Express headers are IncomingHttpHeaders which can have string | string[] | undefined values
+  // We need to normalize them to Record<string, string> for Lambda compatibility
+  const headers: Record<string, string> = {};
+  
+  Object.entries(req.headers).forEach(([key, value]) => {
+    if (value !== undefined) {
+      // If value is an array, join it; otherwise convert to string
+      headers[key] = Array.isArray(value) ? value.join(', ') : String(value);
+    }
+  });
+  
   return {
     httpMethod: req.method,
     path: req.path,
-    headers: req.headers as Record<string, string>,
+    headers,
     body: req.body ? JSON.stringify(req.body) : undefined
   }
 }
@@ -189,9 +200,14 @@ adminApp.use((req, res, next) => {
 // Request logging middleware
 adminApp.use((req, res, next) => {
   console.log(`\n📨 [ADMIN] ${req.method} ${req.path}`)
-  if (req.headers['x-admin-secret']) {
-    console.log('   x-admin-secret: [PRESENT]')
-  }
+  console.log('   All headers:', JSON.stringify(req.headers, null, 2))
+  
+  const adminSecret = req.headers['x-admin-secret'];
+  const expectedSecret = process.env.ADMIN_SECRET;
+  
+  console.log('   x-admin-secret header:', adminSecret ? `[${String(adminSecret).length} chars]` : 'MISSING')
+  console.log('   ADMIN_SECRET env var:', expectedSecret ? `[${expectedSecret.length} chars]` : 'NOT SET')
+  
   next()
 })
 

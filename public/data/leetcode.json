@@ -1,5 +1,5 @@
 {
   "success": false,
-  "error": "LeetCode stats API error: 500",
-  "fetchedAt": "2026-02-24T13:56:18.272Z"
+  "error": "LeetCode stats API error: 503",
+  "fetchedAt": "2026-02-24T17:32:50.142Z"
 }

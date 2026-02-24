@@ -29,6 +29,7 @@
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 import express, { Request, Response, Application } from 'express'
+import rateLimit from 'express-rate-limit'
 
 // ===================================================
 // 1. LOAD ENVIRONMENT VARIABLES
@@ -181,6 +182,9 @@ chatApp.listen(CHAT_PORT, () => {
 const adminApp: Application = express()
 const ADMIN_PORT = 3002
 
+// Configure trust proxy for CloudFront/API Gateway
+adminApp.set('trust proxy', 1)
+
 // Middleware
 adminApp.use(express.json())
 
@@ -200,6 +204,7 @@ adminApp.use((req, res, next) => {
 // Request logging middleware
 adminApp.use((req, res, next) => {
   console.log(`\n📨 [ADMIN] ${req.method} ${req.path}`)
+  console.log('   Client IP:', req.ip)
   console.log('   All headers:', JSON.stringify(req.headers, null, 2))
   
   const adminSecret = req.headers['x-admin-secret'];
@@ -211,7 +216,55 @@ adminApp.use((req, res, next) => {
   next()
 })
 
-// GET /admin/chats endpoint
+// ===================================================
+// 8. ADMIN RATE LIMITER - POST /admin/chat ONLY
+// ===================================================
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Maximum 5 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { error: 'Too many login attempts. Please try again later.' },
+  handler: (req: Request, res: Response) => {
+    console.log(`🚨 [ADMIN] Rate limit exceeded for IP: ${req.ip}`)
+    res.status(429).json({
+      error: 'Too many login attempts. Please try again later.'
+    })
+  }
+  // Note: keyGenerator defaults to req.ip which properly handles IPv6
+})
+
+// POST /admin/chat endpoint - Admin login with rate limiting
+adminApp.post('/admin/chat', adminLoginLimiter, async (req: Request, res: Response) => {
+  try {
+    console.log('🔐 [ADMIN] Login attempt from IP:', req.ip)
+    
+    // Validate admin secret AFTER rate limiting
+    const adminSecret = req.headers['x-admin-secret'];
+    const expectedSecret = process.env.ADMIN_SECRET;
+    
+    if (!adminSecret || !expectedSecret || adminSecret !== expectedSecret) {
+      console.log('❌ [ADMIN] Invalid credentials')
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+    
+    console.log('✅ [ADMIN] Login successful')
+    
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'Admin authenticated successfully'
+    })
+  } catch (error) {
+    console.error('❌ [ADMIN] Login error:', error)
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+// GET /admin/chats endpoint - Fetch chat logs (no rate limiting)
 adminApp.get('/admin/chats', async (req: Request, res: Response) => {
   try {
     // Convert Express request to Lambda event format
@@ -237,7 +290,8 @@ adminApp.get('/admin/chats', async (req: Request, res: Response) => {
 // Start admin server
 adminApp.listen(ADMIN_PORT, () => {
   console.log(`🔐 Admin Server running on http://localhost:${ADMIN_PORT}`)
-  console.log(`   Endpoint: GET http://localhost:${ADMIN_PORT}/admin/chats`)
+  console.log(`   Login: POST http://localhost:${ADMIN_PORT}/admin/chat (rate limited: 5 attempts per 15 min)`)
+  console.log(`   Chats: GET http://localhost:${ADMIN_PORT}/admin/chats`)
 })
 
 // ===================================================

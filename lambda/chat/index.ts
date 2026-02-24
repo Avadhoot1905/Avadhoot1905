@@ -90,7 +90,7 @@ async function getChatHistory(sessionId: string): Promise<{ role: string; conten
 }
 
 /**
- * Save chat history to Redis and Neon
+ * Save chat history to Redis (best effort)
  */
 async function saveChatHistory(
   sessionId: string, 
@@ -99,37 +99,65 @@ async function saveChatHistory(
   try {
     const cacheKey = `chat:${sessionId}`
     await redis.setex(cacheKey, SESSION_TTL, JSON.stringify(history))
-    console.log(`💾 Saved to Redis for session: ${sessionId}`)
+    console.log(`📦 Redis cache updated for session: ${sessionId} (${history.length} messages)`)
   } catch (error) {
-    console.error('Error saving to Redis:', error)
+    console.warn('⚠️  Redis cache update failed (non-critical):', error)
+    // Don't throw - cache failure is not critical
   }
 }
 
 /**
- * Save individual message to Neon
+ * Save individual message to Neon with retry logic
  */
 async function saveMessage(
   sessionId: string,
   role: 'user' | 'assistant',
-  content: string
+  content: string,
+  retries: number = 3
 ): Promise<void> {
-  try {
-    // Ensure session exists
-    await prisma.chatSession.upsert({
-      where: { sessionId },
-      create: { sessionId },
-      update: { updatedAt: new Date() },
-    })
+  let lastError: Error | null = null
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      // Ensure session exists
+      await prisma.chatSession.upsert({
+        where: { sessionId },
+        create: { sessionId },
+        update: { updatedAt: new Date() },
+      })
 
-    // Create the message
-    await prisma.message.create({
-      data: { sessionId, role, content },
-    })
-    
-    console.log(`💾 Saved to Neon for session: ${sessionId}, role: ${role}`)
-  } catch (error) {
-    console.error('Error saving message to Neon:', error)
+      // Create the message
+      await prisma.message.create({
+        data: { 
+          sessionId, 
+          role, 
+          content,
+        },
+      })
+      
+      console.log(`💾 ✅ Saved to database - Session: ${sessionId}, Role: ${role}, Length: ${content.length} chars`)
+      return // Success - exit function
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      console.error(`❌ Attempt ${attempt}/${retries} failed saving message to database:`, {
+        sessionId,
+        role,
+        error: lastError.message,
+      })
+      
+      // Wait before retry (exponential backoff)
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100))
+      }
+    }
   }
+  
+  // All retries failed - throw error to make it visible
+  console.error(`🚨 CRITICAL: Failed to save ${role} message after ${retries} attempts`, {
+    sessionId,
+    contentPreview: content.substring(0, 100),
+  })
+  throw new Error(`Failed to save ${role} message to database: ${lastError?.message}`)
 }
 
 /**
@@ -158,6 +186,8 @@ async function sendMessageToGemini(
   sessionId: string,
   userMessage: string
 ): Promise<string> {
+  let aiResponse = ''
+  
   try {
     // Get chat history
     const history = await getChatHistory(sessionId)
@@ -190,26 +220,52 @@ async function sendMessageToGemini(
     
     const result = await chat.sendMessage(userMessage)
     const response = await result.response
-    const aiResponse = response.text()
+    aiResponse = response.text()
     
-    // Save messages to history
+    console.log(`🤖 AI Response generated: ${aiResponse.substring(0, 100)}...`)
+    
+  } catch (error) {
+    console.error('Error generating AI response:', error)
+    throw error
+  }
+  
+  // Save messages to database (CRITICAL: Must succeed for both messages)
+  try {
+    console.log('\n💾 Saving messages to database...')
+    
+    // Save user message first
     await saveMessage(sessionId, 'user', userMessage)
+    
+    // CRITICAL: Save assistant response
     await saveMessage(sessionId, 'assistant', aiResponse)
     
-    // Update cache
+    console.log('✅ Both messages saved successfully to database\n')
+    
+  } catch (error) {
+    console.error('🚨 CRITICAL ERROR: Failed to save messages to database:', error)
+    // Log details for debugging
+    console.error('Session:', sessionId)
+    console.error('User message length:', userMessage.length)
+    console.error('AI response length:', aiResponse.length)
+    // Re-throw to make the error visible to the client
+    throw new Error(`Database save failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+  
+  // Update Redis cache (best effort - don't fail if this doesn't work)
+  try {
     const updatedHistory = [
-      ...history,
+      ...await getChatHistory(sessionId),
       { role: 'user', content: userMessage },
       { role: 'assistant', content: aiResponse },
     ].slice(-MAX_HISTORY_MESSAGES)
     
     await saveChatHistory(sessionId, updatedHistory)
-    
-    return aiResponse
   } catch (error) {
-    console.error('Error sending message to Gemini:', error)
-    throw error
+    console.warn('⚠️  Warning: Failed to update Redis cache (non-critical):', error)
+    // Don't throw - cache failure is not critical
   }
+  
+  return aiResponse
 }
 
 /**

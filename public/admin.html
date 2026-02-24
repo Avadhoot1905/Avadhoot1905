@@ -311,8 +311,11 @@
 
   <script>
     // API Configuration
-    // Replace with your API Gateway URL after deployment
-    const API_URL = 'https://YOUR_API_GATEWAY_URL/admin/chats';
+    // Local development: http://localhost:3002/admin/chats
+    // Production: Replace with your API Gateway URL after deployment
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3002/admin/chats'
+      : 'https://YOUR_API_GATEWAY_URL/admin/chats';
 
     // State management
     let currentSecret = '';
@@ -420,7 +423,10 @@
 
         // Render chats in table
         renderChats(chats);
-        showMessage(`✅ Successfully loaded ${chats.length} chat${chats.length === 1 ? '' : 's'}`, 'success');
+        
+        // Count user messages for better UX
+        const userMessageCount = chats.filter(m => m.role === 'user').length;
+        showMessage(`✅ Successfully loaded ${userMessageCount} conversation${userMessageCount === 1 ? '' : 's'} (${chats.length} total messages)`, 'success');
 
       } catch (error) {
         console.error('Error loading chats:', error);
@@ -434,23 +440,36 @@
     }
 
     // Render chats in table
-    function renderChats(chats) {
+    function renderChats(messages) {
       const tbody = document.getElementById('chatsBody');
       const table = document.getElementById('chatsTable');
       
       tbody.innerHTML = '';
 
-      chats.forEach(chat => {
-        const row = document.createElement('tr');
+      // Group messages by session for better display
+      // Messages come as individual records with role: "user" or "assistant"
+      for (let i = 0; i < messages.length; i++) {
+        const message = messages[i];
         
-        row.innerHTML = `
-          <td class="timestamp">${formatTimestamp(chat.created_at)}</td>
-          <td class="message-text user-message">${truncateText(chat.user_message)}</td>
-          <td class="message-text bot-reply">${truncateText(chat.bot_reply)}</td>
-        `;
-        
-        tbody.appendChild(row);
-      });
+        // For user messages, try to find the next assistant message
+        if (message.role === 'user') {
+          const assistantMessage = messages.find((m, idx) => 
+            idx > i && 
+            m.role === 'assistant' && 
+            m.sessionId === message.sessionId
+          );
+          
+          const row = document.createElement('tr');
+          
+          row.innerHTML = `
+            <td class="timestamp">${formatTimestamp(message.timestamp)}</td>
+            <td class="message-text user-message">${truncateText(message.content)}</td>
+            <td class="message-text bot-reply">${assistantMessage ? truncateText(assistantMessage.content) : '<em>No response</em>'}</td>
+          `;
+          
+          tbody.appendChild(row);
+        }
+      }
 
       table.classList.add('show');
     }

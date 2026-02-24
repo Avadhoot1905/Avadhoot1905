@@ -1,0 +1,30 @@
+{
+  "name": "portfolio-lambda",
+  "version": "1.0.0",
+  "description": "Consolidated AWS Lambda for chat and admin functionality",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rm -rf dist deploy",
+    "build": "tsc",
+    "deploy:build": "npm run clean && npm install && npx prisma generate && npm run build && npm run deploy:package",
+    "deploy:package": "mkdir -p deploy && cp -r dist node_modules prisma package.json deploy/ && cd deploy && zip -r lambda.zip . && cd .. && echo '\n✅ Deployment package created: lambda/deploy/lambda.zip'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@upstash/redis": "^1.35.6",
+    "@prisma/client": "^6.17.1",
+    "prisma": "^6.17.1",
+    "express": "^5.2.1",
+    "serverless-http": "^3.2.0",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

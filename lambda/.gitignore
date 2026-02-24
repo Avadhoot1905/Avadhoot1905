@@ -1,0 +1,25 @@
+# Build artifacts
+dist/
+deploy/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Lock files
+package-lock.json
+
+# Prisma generated client
+prisma/generated/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store

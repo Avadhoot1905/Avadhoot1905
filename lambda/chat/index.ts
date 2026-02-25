@@ -34,7 +34,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Redis } from '@upstash/redis'
 import { PrismaClient } from '@prisma/client'
 import express, { Request, Response } from 'express'
-import { PERSONALITY_PROMPT } from './personality-prompt.js'
+import { PERSONALITY_PROMPT } from './personality-prompt'
 
 // ===================================================
 // ENVIRONMENT VARIABLES (Set in Lambda Configuration)

@@ -27,6 +27,26 @@ function getPrismaClient() {
 }
 
 export const handler = async (event: any) => {
+  // CORS headers for HTTP API v2.0
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': 'https://avadhootgm.in',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, x-admin-secret',
+    'Access-Control-Max-Age': '86400',
+    'Content-Type': 'application/json'
+  };
+  
+  // Handle OPTIONS preflight request
+  const httpMethod = event.requestContext?.http?.method || event.httpMethod;
+  if (httpMethod === 'OPTIONS') {
+    console.log('✅ [LAMBDA ADMIN] OPTIONS preflight request');
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: ''
+    };
+  }
+  
   // 🐛 Debug: Log incoming event
   console.log('\n🔍 [LAMBDA ADMIN] Incoming event:');
   console.log('   Headers:', JSON.stringify(event.headers, null, 2));
@@ -57,7 +77,7 @@ export const handler = async (event: any) => {
     console.log('❌ [LAMBDA ADMIN] Authorization failed');
     return {
       statusCode: 401,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Unauthorized' })
     };
   }
@@ -70,7 +90,7 @@ export const handler = async (event: any) => {
   if (!path.includes('/admin/chats')) {
     return {
       statusCode: 404,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Not Found' })
     };
   }
@@ -94,7 +114,12 @@ export const handler = async (event: any) => {
     // 4️⃣ Response Format
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Access-Control-Allow-Origin': 'https://avadhootgm.in',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-admin-secret',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(messages)
     };
 
@@ -103,7 +128,12 @@ export const handler = async (event: any) => {
     
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Access-Control-Allow-Origin': 'https://avadhootgm.in',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-admin-secret',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ 
         error: 'Internal Server Error',
         message: error instanceof Error ? error.message : 'Unknown error'

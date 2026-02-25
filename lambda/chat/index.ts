@@ -270,20 +270,24 @@ async function sendMessageToGemini(
 
 /**
  * AWS Lambda Handler
+ * Compatible with AWS API Gateway HTTP API v2.0
  */
 export const handler = async (event: any) => {
   console.log('🚀 Lambda invoked:', JSON.stringify(event, null, 2))
   
-  // CORS headers
+  // CORS headers for HTTP API v2.0
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*', // Update with your domain
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin': 'https://avadhootgm.in',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
   }
   
-  // Handle preflight
-  if (event.httpMethod === 'OPTIONS') {
+  // Handle OPTIONS preflight request
+  const httpMethod = event.requestContext?.http?.method || event.httpMethod;
+  if (httpMethod === 'OPTIONS') {
+    console.log('✅ OPTIONS preflight request')
     return {
       statusCode: 200,
       headers,
@@ -292,7 +296,7 @@ export const handler = async (event: any) => {
   }
   
   // Only accept POST
-  if (event.httpMethod !== 'POST') {
+  if (httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers,
@@ -372,13 +376,15 @@ function startExpressServer() {
   // Middleware
   app.use(express.json())
   
-  // CORS middleware
+  // CORS middleware - matching AWS Lambda configuration
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*')
-    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.header('Access-Control-Allow-Origin', 'https://avadhootgm.in')
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.header('Access-Control-Allow-Headers', 'Content-Type')
+    res.header('Access-Control-Max-Age', '86400')
     
     if (req.method === 'OPTIONS') {
+      console.log(`✅ OPTIONS preflight request for ${req.path}`)
       res.status(200).end()
       return
     }

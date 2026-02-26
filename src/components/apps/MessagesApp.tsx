@@ -265,7 +265,7 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
       setIsLoading(false)
       const errorMessage: Message = {
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
+        content: "Sorry, I encountered an error. Please try again, later.",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])

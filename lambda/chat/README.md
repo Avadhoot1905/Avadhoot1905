@@ -198,13 +198,10 @@ Chat Server (Express on localhost:3001)
 The frontend is already configured to connect to the chat server:
 
 1. **Chat API Client**: [`src/lib/chat-api.ts`](../../src/lib/chat-api.ts)
-   - Automatically uses `NEXT_PUBLIC_CHAT_API_URL` from environment
-   - Falls back to `http://localhost:3001/chat` for development
+  - Uses same-origin route `/api/chat`
+  - CloudFront routes `/api/*` to API Gateway
 
-2. **Environment Configuration**: Create `.env.local` in project root:
-   ```env
-   NEXT_PUBLIC_CHAT_API_URL=http://localhost:3001/chat
-   ```
+2. **Environment Configuration**: No public frontend API URL variable is required
 
 3. **Run Both Servers**:
    ```bash

@@ -7,7 +7,7 @@ import { useTheme } from "next-themes"
 // ===================================================
 // Chat functionality now calls AWS Lambda API
 // See: lambda/chat/index.ts
-// Configure: Set NEXT_PUBLIC_CHAT_API_URL in .env
+// CloudFront routes same-origin /api/chat to API Gateway
 import { sendMessageWithHistory, clearChatHistory, getUserChatHistory } from "@/lib/chat-api"
 import { FaPaperPlane, FaUndo } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"

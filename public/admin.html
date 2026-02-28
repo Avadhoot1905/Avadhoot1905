@@ -310,12 +310,8 @@
   </div>
 
   <script>
-    // API Configuration
-    // Local development: http://localhost:3002/admin/chats
-    // Production: Replace with your API Gateway URL after deployment
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:3002/admin/chats'
-      : 'https://YOUR_API_GATEWAY_URL/admin/chats';
+    // API Configuration (same-origin, routed by CloudFront)
+    const API_URL = '/api/admin/test';
 
     // State management
     let currentSecret = '';

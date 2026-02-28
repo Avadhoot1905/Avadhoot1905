@@ -4,15 +4,14 @@
  * ====================================================
  * 
  * This module provides client-side functions to interact
- * with the AWS Lambda chat API (deployed separately).
+ * with the chat API through same-origin CloudFront routing.
  * 
  * For static builds, server actions are not available.
- * Instead, we call the Lambda API directly via fetch().
+ * Instead, we call the API via relative /api routes.
  * 
  * Setup:
  * 1. Deploy lambda/chat/index.ts to AWS Lambda
- * 2. Expose via API Gateway
- * 3. Set NEXT_PUBLIC_CHAT_API_URL in .env
+ * 2. Route /api/chat to API Gateway in CloudFront
  * 
  * Usage (same interface as old server actions):
  * - sendMessageWithHistory(sessionId, message)
@@ -20,16 +19,7 @@
  * - getUserChatHistory(sessionId)
  */
 
-// Get API URL from environment variable or use local dev server
-const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL;
-
-function getChatApiUrl(): string {
-  if (!CHAT_API_URL) {
-    throw new Error('NEXT_PUBLIC_CHAT_API_URL is not configured')
-  }
-
-  return CHAT_API_URL
-}
+const CHAT_API_PATH = '/api/chat'
 
 /**
  * Send a message to the chat API
@@ -39,7 +29,7 @@ export async function sendMessageWithHistory(
   message: string
 ): Promise<string> {
   try {
-    const response = await fetch(getChatApiUrl(), {
+    const response = await fetch(CHAT_API_PATH, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,7 +62,7 @@ export async function sendMessageWithHistory(
  */
 export async function clearChatHistory(sessionId: string): Promise<void> {
   try {
-    const response = await fetch(getChatApiUrl(), {
+    const response = await fetch(CHAT_API_PATH, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -109,8 +99,8 @@ export async function getUserChatHistory(_sessionId: string): Promise<{ role: st
 }
 
 /**
- * Check if chat API is configured
+ * Check if chat API is enabled for same-origin routing
  */
 export function isChatEnabled(): boolean {
-  return Boolean(CHAT_API_URL && CHAT_API_URL !== 'https://api.example.com/chat')
+  return true
 }

@@ -113,7 +113,7 @@ aws apigatewayv2 create-stage \
 
 Your endpoint will be:
 ```
-https://YOUR_API_ID.execute-api.REGION.amazonaws.com/prod/admin/chats
+/api/admin/test
 ```
 
 ---
@@ -126,7 +126,7 @@ After deploying the Lambda and API Gateway:
 2. Replace `API_URL` on line 210:
 
 ```javascript
-const API_URL = 'https://YOUR_API_ID.execute-api.REGION.amazonaws.com/prod/admin/chats';
+const API_URL = '/api/admin/test';
 ```
 
 3. Rebuild the static site:

@@ -237,13 +237,21 @@ const app = express()
 // Middleware
 app.use(express.json())
 
-// CORS
+// ===================================================
+// CORS MIDDLEWARE
+// ===================================================
+// Configured for AWS API Gateway HTTP API v2.0
+// Handles OPTIONS preflight requests and adds CORS headers to all responses
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
+  // Set CORS headers for all responses
+  res.header('Access-Control-Allow-Origin', 'https://avadhootgm.in')
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret')
+  res.header('Access-Control-Max-Age', '86400') // Cache preflight for 24 hours
   
+  // Handle OPTIONS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log(`✅ OPTIONS preflight request for ${req.path}`)
     res.status(200).end()
     return
   }

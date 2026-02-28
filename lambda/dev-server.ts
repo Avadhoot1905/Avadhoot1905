@@ -62,8 +62,8 @@ console.log('✅ Environment variables loaded\n')
 // 3. IMPORT LAMBDA HANDLERS
 // ===================================================
 // These are imported after environment variables are loaded
-import { handler as chatHandler } from './chat/index.js'
-import { handler as adminHandler } from './admin/index.js'
+import { handler as chatHandler } from './chat/index.ts'
+import { handler as adminHandler } from './admin/index.ts'
 
 // ===================================================
 // 4. HELPER FUNCTION: Convert Express Request to Lambda Event
@@ -117,10 +117,10 @@ function sendLambdaResponse(res: Response, lambdaResponse: LambdaResponse): void
 }
 
 // ===================================================
-// 6. CREATE CHAT SERVER (PORT 3000)
+// 6. CREATE CHAT SERVER (PORT 3001)
 // ===================================================
 const chatApp: Application = express()
-const CHAT_PORT = 3000
+const CHAT_PORT = 3001
 
 // Middleware
 chatApp.use(express.json())

@@ -103,9 +103,7 @@ npx prisma studio        # Open Prisma Studio (DB GUI)
 ## 🌐 Environment Variables
 
 ### Frontend (.env.local)
-```env
-NEXT_PUBLIC_CHAT_API_URL=http://localhost:3001/chat
-```
+No public API URL variables are needed. Frontend requests use same-origin routes (`/api/chat`, `/api/admin/test`) via CloudFront.
 
 ### Backend (.env)
 ```env

@@ -30,9 +30,6 @@ jobs:
 
       - name: Build Next.js (Static Export)
         run: npm run build
-        env:
-          NEXT_PUBLIC_CHAT_API_URL: ${{ secrets.NEXT_PUBLIC_CHAT_API_URL }}
-          NEXT_PUBLIC_ADMIN_API_URL: ${{ secrets.NEXT_PUBLIC_ANALYTICS_ID }}
 
       - name: Verify out directory exists
         run: ls -la out

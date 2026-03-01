@@ -19,8 +19,6 @@
  * - getUserChatHistory(sessionId)
  */
 
-const CHAT_API_PATH = '/api/chat'
-
 /**
  * Send a message to the chat API
  */
@@ -29,14 +27,15 @@ export async function sendMessageWithHistory(
   message: string
 ): Promise<string> {
   try {
-    const response = await fetch(CHAT_API_PATH, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        sessionId,
         message,
+        userId: sessionId,
+        conversationId: sessionId,
       }),
     })
 
@@ -62,7 +61,7 @@ export async function sendMessageWithHistory(
  */
 export async function clearChatHistory(sessionId: string): Promise<void> {
   try {
-    const response = await fetch(CHAT_API_PATH, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

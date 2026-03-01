@@ -362,4 +362,8 @@ app.get('/health', (req: Request, res: Response) => {
 // EXPORT LAMBDA HANDLER
 // ===================================================
 
-export const handler = serverless(app)
+const serverlessHandler = serverless(app)
+
+export const handler = async (event: any, context: any) => {
+  return serverlessHandler(event, context)
+}

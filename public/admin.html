@@ -310,9 +310,6 @@
   </div>
 
   <script>
-    // API Configuration (same-origin, routed by CloudFront)
-    const API_URL = '/api/admin/test';
-
     // State management
     let currentSecret = '';
 
@@ -362,15 +359,15 @@
     // Load chats from API
     async function loadChats() {
       const secretInput = document.getElementById('adminSecret');
-      const secret = secretInput.value.trim();
+      const enteredPassword = secretInput.value.trim();
 
-      if (!secret) {
+      if (!enteredPassword) {
         showMessage('Please enter your admin secret', 'error');
         return;
       }
 
       // Store secret in memory only (not in localStorage or sessionStorage)
-      currentSecret = secret;
+      currentSecret = enteredPassword;
 
       // UI updates
       const spinner = document.getElementById('spinner');
@@ -385,11 +382,11 @@
       loadButton.disabled = true;
 
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch('/api/admin/chats', {
           method: 'GET',
           headers: {
-            'x-admin-secret': secret,
-            'Content-Type': 'application/json'
+            'Accept': 'application/json',
+            'x-admin-password': enteredPassword
           }
         });
 

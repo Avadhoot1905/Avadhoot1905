@@ -265,11 +265,15 @@ app.use((req, res, next) => {
   next()
 })
 
+const apiRouter = express.Router()
+
+app.use('/api', apiRouter)
+
 // ===================================================
 // CHAT ROUTE
 // ===================================================
 
-app.post('/chat', async (req: Request, res: Response) => {
+apiRouter.post('/chat', async (req: Request, res: Response) => {
   try {
     const { sessionId, message, clearHistory } = req.body
     
@@ -314,7 +318,7 @@ app.post('/chat', async (req: Request, res: Response) => {
 // ADMIN ROUTE
 // ===================================================
 
-app.get('/admin/chats', async (req: Request, res: Response) => {
+apiRouter.get('/admin/chats', async (req: Request, res: Response) => {
   try {
     // Validate admin secret
     const adminSecret = req.headers['x-admin-secret']

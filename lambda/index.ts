@@ -23,15 +23,12 @@
  * - ADMIN_SECRET
  */
 
-import * as dotenv from 'dotenv'
-import * as path from 'path'
-dotenv.config({ path: path.join(process.cwd(), '.env') })
-
 import express, { Request, Response } from 'express'
 import serverless from 'serverless-http'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Redis } from '@upstash/redis'
-import { PrismaClient } from '@prisma/client'
+import { asc, desc, eq, sql } from 'drizzle-orm'
+import { db, chatSessionTable, messageTable } from './src/db'
 import { PERSONALITY_PROMPT } from './personality-prompt'
 
 // ===================================================
@@ -42,7 +39,6 @@ const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 })
-const prisma = new PrismaClient()
 
 // Configuration
 const SESSION_TTL = 3600 // 1 hour
@@ -67,11 +63,12 @@ async function getChatHistory(sessionId: string): Promise<{ role: string; conten
     
     console.log(`❌ Redis cache MISS for session: ${sessionId}, falling back to DB`)
     
-    const dbMessages = await prisma.message.findMany({
-      where: { sessionId },
-      orderBy: { timestamp: 'asc' },
-      take: MAX_HISTORY_MESSAGES,
-    })
+    const dbMessages = await db
+      .select({ role: messageTable.role, content: messageTable.content })
+      .from(messageTable)
+      .where(eq(messageTable.sessionId, sessionId))
+      .orderBy(asc(messageTable.timestamp))
+      .limit(MAX_HISTORY_MESSAGES)
     
     return dbMessages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
@@ -112,15 +109,12 @@ async function saveMessage(
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      await prisma.chatSession.upsert({
-        where: { sessionId },
-        create: { sessionId },
-        update: { updatedAt: new Date() },
+      await db.insert(chatSessionTable).values({ sessionId, updatedAt: new Date() }).onConflictDoUpdate({
+        target: chatSessionTable.sessionId,
+        set: { updatedAt: new Date() },
       })
 
-      await prisma.message.create({
-        data: { sessionId, role, content },
-      })
+      await db.insert(messageTable).values({ sessionId, role, content })
       
       console.log(`💾 ✅ Saved to database - Role: ${role}, Length: ${content.length} chars`)
       return
@@ -145,9 +139,7 @@ async function clearChatHistory(sessionId: string): Promise<void> {
     const cacheKey = `chat:${sessionId}`
     await redis.del(cacheKey)
     
-    await prisma.message.deleteMany({
-      where: { sessionId },
-    })
+    await db.delete(messageTable).where(eq(messageTable.sessionId, sessionId))
     
     console.log(`🗑️  Cleared history for session: ${sessionId}`)
   } catch (error) {
@@ -333,13 +325,17 @@ apiRouter.get('/admin/chats', async (req: Request, res: Response) => {
     console.log('✅ Authorization successful')
     
     // Fetch chat logs
-    const messages = await prisma.message.findMany({
-      orderBy: { timestamp: 'desc' },
-      take: 100,
-      include: {
-        chatSession: true
-      }
-    })
+    const rows = await db
+      .select()
+      .from(messageTable)
+      .leftJoin(chatSessionTable, eq(messageTable.sessionId, chatSessionTable.sessionId))
+      .orderBy(desc(messageTable.timestamp))
+      .limit(100)
+
+    const messages = rows.map((row) => ({
+      ...row.Message,
+      chatSession: row.ChatSession,
+    }))
 
     console.log(`✅ Fetched ${messages.length} messages`)
     
@@ -360,6 +356,21 @@ apiRouter.get('/admin/chats', async (req: Request, res: Response) => {
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+app.get('/health/db', async (req: Request, res: Response) => {
+  try {
+    await db.execute(sql`SELECT 1`)
+    res.json({ status: 'ok', db: 'up', timestamp: new Date().toISOString() })
+  } catch (error) {
+    console.error('❌ DB health check failed:', error)
+    res.status(500).json({
+      status: 'error',
+      db: 'down',
+      error: error instanceof Error ? error.message : 'Unknown database error',
+      timestamp: new Date().toISOString(),
+    })
+  }
 })
 
 // ===================================================

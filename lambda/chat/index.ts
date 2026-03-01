@@ -32,7 +32,11 @@ dotenv.config({ path: path.join(process.cwd(), '.env') })
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Redis } from '@upstash/redis'
-import { PrismaClient } from '@prisma/client'
+import { asc, eq } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { randomUUID } from 'node:crypto'
+import { Pool } from 'pg'
 import express, { Request, Response } from 'express'
 import { PERSONALITY_PROMPT } from './personality-prompt'
 
@@ -51,7 +55,41 @@ const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 })
-const prisma = new PrismaClient()
+
+const chatSessionTable = pgTable('ChatSession', {
+  id: text('id').primaryKey().$defaultFn(() => randomUUID()),
+  sessionId: text('sessionId').notNull(),
+  createdAt: timestamp('createdAt', { precision: 3, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt', { precision: 3, mode: 'date' }).notNull(),
+})
+
+const messageTable = pgTable('Message', {
+  id: text('id').primaryKey().$defaultFn(() => randomUUID()),
+  sessionId: text('sessionId').notNull(),
+  role: text('role').notNull(),
+  content: text('content').notNull(),
+  timestamp: timestamp('timestamp', { precision: 3, mode: 'date' }).notNull().defaultNow(),
+})
+
+let pool: Pool | undefined
+
+function getDb() {
+  if (!pool) {
+    const connectionString = process.env.DATABASE_URL
+    if (!connectionString) {
+      throw new Error('DATABASE_URL environment variable is required')
+    }
+
+    pool = new Pool({
+      connectionString,
+      max: 1,
+      idleTimeoutMillis: 5000,
+      connectionTimeoutMillis: 5000,
+    })
+  }
+
+  return drizzle(pool)
+}
 
 // Session configuration
 const SESSION_TTL = 3600 // 1 hour
@@ -62,6 +100,7 @@ const MAX_HISTORY_MESSAGES = 30
  */
 async function getChatHistory(sessionId: string): Promise<{ role: string; content: string }[]> {
   try {
+    const db = getDb()
     const cacheKey = `chat:${sessionId}`
     const cached = await redis.get<{ role: string; content: string }[]>(cacheKey)
     
@@ -73,11 +112,12 @@ async function getChatHistory(sessionId: string): Promise<{ role: string; conten
     console.log(`❌ Redis cache MISS for session: ${sessionId}, falling back to DB`)
     
     // Fallback to database
-    const dbMessages = await prisma.message.findMany({
-      where: { sessionId },
-      orderBy: { timestamp: 'asc' },
-      take: MAX_HISTORY_MESSAGES,
-    })
+    const dbMessages = await db
+      .select({ role: messageTable.role, content: messageTable.content })
+      .from(messageTable)
+      .where(eq(messageTable.sessionId, sessionId))
+      .orderBy(asc(messageTable.timestamp))
+      .limit(MAX_HISTORY_MESSAGES)
     
     return dbMessages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
@@ -115,25 +155,18 @@ async function saveMessage(
   content: string,
   retries: number = 3
 ): Promise<void> {
+  const db = getDb()
   let lastError: Error | null = null
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       // Ensure session exists
-      await prisma.chatSession.upsert({
-        where: { sessionId },
-        create: { sessionId },
-        update: { updatedAt: new Date() },
+      await db.insert(chatSessionTable).values({ sessionId, updatedAt: new Date() }).onConflictDoUpdate({
+        target: chatSessionTable.sessionId,
+        set: { updatedAt: new Date() },
       })
 
-      // Create the message
-      await prisma.message.create({
-        data: { 
-          sessionId, 
-          role, 
-          content,
-        },
-      })
+      await db.insert(messageTable).values({ sessionId, role, content })
       
       console.log(`💾 ✅ Saved to database - Session: ${sessionId}, Role: ${role}, Length: ${content.length} chars`)
       return // Success - exit function
@@ -165,12 +198,11 @@ async function saveMessage(
  */
 async function clearChatHistory(sessionId: string): Promise<void> {
   try {
+    const db = getDb()
     const cacheKey = `chat:${sessionId}`
     await redis.del(cacheKey)
     
-    await prisma.message.deleteMany({
-      where: { sessionId },
-    })
+    await db.delete(messageTable).where(eq(messageTable.sessionId, sessionId))
     
     console.log(`🗑️  Cleared history for session: ${sessionId}`)
   } catch (error) {

@@ -3,12 +3,16 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 dotenv.config({ path: path.join(process.cwd(), '.env') })
 
-import { PrismaClient } from '@prisma/client';
+import { desc, eq } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { randomUUID } from 'node:crypto'
+import { Pool } from 'pg'
 
 /**
  * Admin Lambda Handler
  * 
- * Purpose: Fetch chat logs from PostgreSQL database using Prisma
+ * Purpose: Fetch chat logs from PostgreSQL database using Drizzle ORM
  * Security: Requires x-admin-secret header matching ADMIN_SECRET env var
  * 
  * Environment Variables:
@@ -16,14 +20,38 @@ import { PrismaClient } from '@prisma/client';
  * - DATABASE_URL: PostgreSQL connection string
  */
 
-// Singleton PrismaClient instance
-let prisma: PrismaClient;
+const chatSessionTable = pgTable('ChatSession', {
+  id: text('id').primaryKey().$defaultFn(() => randomUUID()),
+  sessionId: text('sessionId').notNull(),
+  createdAt: timestamp('createdAt', { precision: 3, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt', { precision: 3, mode: 'date' }).notNull(),
+})
 
-function getPrismaClient() {
-  if (!prisma) {
-    prisma = new PrismaClient();
+const messageTable = pgTable('Message', {
+  id: text('id').primaryKey().$defaultFn(() => randomUUID()),
+  sessionId: text('sessionId').notNull(),
+  role: text('role').notNull(),
+  content: text('content').notNull(),
+  timestamp: timestamp('timestamp', { precision: 3, mode: 'date' }).notNull().defaultNow(),
+})
+
+let pool: Pool | undefined
+
+function getDb() {
+  if (!pool) {
+    const connectionString = process.env.DATABASE_URL
+    if (!connectionString) {
+      throw new Error('DATABASE_URL environment variable is required')
+    }
+    pool = new Pool({
+      connectionString,
+      max: 1,
+      idleTimeoutMillis: 5000,
+      connectionTimeoutMillis: 5000,
+    })
   }
-  return prisma;
+
+  return drizzle(pool)
 }
 
 export const handler = async (event: any) => {
@@ -96,18 +124,20 @@ export const handler = async (event: any) => {
   }
 
   try {
-    // 3️⃣ Fetch Chat Logs using Prisma
-    const prismaClient = getPrismaClient();
-    
-    // Fetch last 100 messages ordered by newest first
-    // Include the related ChatSession data
-    const messages = await prismaClient.message.findMany({
-      orderBy: { timestamp: 'desc' },
-      take: 100,
-      include: {
-        chatSession: true
-      }
-    });
+    // 3️⃣ Fetch chat logs using Drizzle
+    const db = getDb()
+
+    const rows = await db
+      .select()
+      .from(messageTable)
+      .leftJoin(chatSessionTable, eq(messageTable.sessionId, chatSessionTable.sessionId))
+      .orderBy(desc(messageTable.timestamp))
+      .limit(100)
+
+    const messages = rows.map((row) => ({
+      ...row.Message,
+      chatSession: row.ChatSession,
+    }))
 
     console.log(`✅ [LAMBDA ADMIN] Fetched ${messages.length} messages`);
 

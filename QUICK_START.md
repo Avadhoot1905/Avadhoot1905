@@ -24,13 +24,7 @@ cp .env.example .env
 # - ADMIN_SECRET
 ```
 
-### 3. Generate Prisma Client
-
-```bash
-npx prisma generate
-```
-
-### 4. Run the Project
+### 3. Run the Project
 
 You need to run **two servers** for full functionality:
 
@@ -64,7 +58,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser and click th
 ├── lambda/                # Backend services
 │   ├── chat/              # Chat API with Gemini AI
 │   └── admin/             # Admin dashboard API
-├── prisma/                # Database schema
+├── lambda/src/db/         # Drizzle schema and DB connection
 └── public/                # Static assets
 ```
 
@@ -95,9 +89,8 @@ npm run fetch-data       # Fetch external data (GitHub, Medium, etc.)
 npx tsx lambda/chat/index.ts    # Start chat server
 
 # Database
-npx prisma generate      # Generate Prisma client
-npx prisma migrate dev   # Run database migrations
-npx prisma studio        # Open Prisma Studio (DB GUI)
+# Drizzle schema lives in lambda/src/db
+# Runtime uses DATABASE_URL directly via pg + drizzle-orm
 ```
 
 ## 🌐 Environment Variables
@@ -130,7 +123,7 @@ npm run build
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js 16, React 19, TypeScript, TailwindCSS
-- **Backend**: Express, Gemini AI, Prisma
+- **Backend**: Express, Gemini AI, Drizzle ORM
 - **Database**: PostgreSQL (Neon), Redis (Upstash)
 - **Deployment**: Vercel (Frontend), AWS Lambda (Backend)
 

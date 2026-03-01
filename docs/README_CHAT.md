@@ -79,7 +79,7 @@ npm install
 **Installed packages:**
 - `@google/generative-ai` - Gemini AI SDK
 - `@upstash/redis` - Redis client for session caching
-- `@prisma/client` - PostgreSQL ORM for message persistence
+- `drizzle-orm` + `pg` - PostgreSQL ORM and driver for message persistence
 
 ## 🔐 Environment Variables
 
@@ -274,7 +274,7 @@ aws logs tail /aws/lambda/portfolio-chat --follow
 |-------|----------|
 | "GEMINI_API_KEY not found" | Set environment variable in Lambda |
 | "Redis connection failed" | Check Upstash credentials |
-| "Prisma client error" | Ensure DATABASE_URL is correct |
+| "Database query error" | Ensure DATABASE_URL is correct |
 | CORS error | Update `Access-Control-Allow-Origin` in code |
 
 ---

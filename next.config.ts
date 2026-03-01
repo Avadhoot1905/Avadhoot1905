@@ -60,6 +60,27 @@ const nextConfig: NextConfig = {
   
   // Trailing slashes for S3 compatibility
   trailingSlash: true,
+
+  async rewrites() {
+    if (process.env.NODE_ENV !== 'development') {
+      return []
+    }
+
+    return [
+      {
+        source: '/api/chat',
+        destination: 'http://localhost:3001/chat',
+      },
+      {
+        source: '/api/admin/chats',
+        destination: 'http://localhost:3002/admin/chats',
+      },
+      {
+        source: '/api/admin/chat',
+        destination: 'http://localhost:3002/admin/chat',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

@@ -22,17 +22,33 @@
 /**
  * Send a message to the chat API
  */
+function getChatApiUrl(): string {
+  if (typeof window === 'undefined') {
+    return '/api/chat'
+  }
+
+  const isLocalPreview =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+  if (isLocalPreview) {
+    return 'http://localhost:3001/chat'
+  }
+
+  return '/api/chat'
+}
+
 export async function sendMessageWithHistory(
   sessionId: string,
   message: string
 ): Promise<string> {
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch(getChatApiUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        sessionId,
         message,
         userId: sessionId,
         conversationId: sessionId,
@@ -40,7 +56,21 @@ export async function sendMessageWithHistory(
     })
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`)
+      const errorText = await response.text()
+      let errorMessage = `API error: ${response.status}`
+
+      try {
+        const errorData = JSON.parse(errorText)
+        if (errorData?.error && typeof errorData.error === 'string') {
+          errorMessage = `API error: ${response.status} - ${errorData.error}`
+        }
+      } catch {
+        if (errorText) {
+          errorMessage = `API error: ${response.status} - ${errorText}`
+        }
+      }
+
+      throw new Error(errorMessage)
     }
 
     const data = await response.json()
@@ -61,7 +91,7 @@ export async function sendMessageWithHistory(
  */
 export async function clearChatHistory(sessionId: string): Promise<void> {
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch(getChatApiUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

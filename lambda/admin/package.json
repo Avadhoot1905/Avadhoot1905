@@ -13,8 +13,9 @@
     "deploy:prepare": "npm install --production && npm run build"
   },
   "dependencies": {
-    "@prisma/client": "^6.17.1",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.6",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",

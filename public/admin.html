@@ -313,6 +313,18 @@
     // State management
     let currentSecret = '';
 
+    function getAdminApiUrl() {
+      const isLocalPreview =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+
+      if (isLocalPreview) {
+        return 'http://localhost:3002/admin/chats';
+      }
+
+      return '/api/admin/chats';
+    }
+
     // Show message helper
     function showMessage(text, type = 'error') {
       const errorMsg = document.getElementById('errorMessage');
@@ -382,11 +394,11 @@
       loadButton.disabled = true;
 
       try {
-        const response = await fetch('/api/admin/chats', {
+        const response = await fetch(getAdminApiUrl(), {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
-            'x-admin-password': enteredPassword
+            'x-admin-secret': enteredPassword
           }
         });
 

@@ -8,15 +8,14 @@ This directory contains a consolidated AWS Lambda function that combines both Ch
 lambda/
 ├── index.ts                    # Main handler with Express routes
 ├── personality-prompt.ts       # AI personality configuration
-├── prisma/
-│   └── schema.prisma          # Database schema with ARM64 support
+├── src/db/
+│   └── schema.ts              # Drizzle schema definitions
 ├── package.json               # Dependencies and build scripts
 ├── tsconfig.json              # TypeScript configuration
 ├── dist/                      # Compiled JavaScript (gitignored)
 ├── deploy/                    # Deployment package (gitignored)
 │   ├── dist/
 │   ├── node_modules/
-│   ├── prisma/
 │   ├── package.json
 │   └── lambda.zip            # ✨ Upload this to AWS Lambda
 ```
@@ -33,7 +32,6 @@ npm run deploy:build
 This script will:
 - Clean old build artifacts
 - Install production dependencies
-- Generate Prisma client with ARM64 binary targets
 - Compile TypeScript to JavaScript
 - Create deployment package
 - Generate `deploy/lambda.zip`
@@ -157,9 +155,8 @@ Compiles TypeScript to JavaScript
 Complete build pipeline:
 1. Clean old artifacts
 2. Install dependencies
-3. Generate Prisma client (with ARM64 support)
-4. Compile TypeScript
-5. Package everything into `deploy/lambda.zip`
+3. Compile TypeScript
+4. Package everything into `deploy/lambda.zip`
 
 ### `npm run deploy:package`
 Package existing build into zip (without rebuilding)
@@ -179,15 +176,15 @@ Package existing build into zip (without rebuilding)
 
 ## 🗄️ Database Setup
 
-The Lambda function uses Prisma to connect to PostgreSQL. Ensure:
+The Lambda function uses Drizzle ORM to connect to PostgreSQL. Ensure:
 
 1. Database is accessible from Lambda (VPC configuration if needed)
 2. Connection string is properly formatted in `DATABASE_URL`
-3. Database has the correct schema (run migrations):
+3. Database has the correct schema (run your migration workflow):
 
 ```bash
 # On your local machine or CI/CD
-npx prisma migrate deploy
+npm run db:migrate
 ```
 
 ## 🔐 Security Notes
@@ -215,9 +212,9 @@ Lambda automatically logs to CloudWatch:
 
 ## 🐛 Troubleshooting
 
-### "Cannot find module '@prisma/client'"
-- Ensure `prisma generate` ran during build
-- Check `node_modules/.prisma/client` exists in zip
+### "Database module not found"
+- Ensure dependencies were installed during build
+- Verify `drizzle-orm` and `pg` are included in zip
 
 ### "Invalid handler"
 - Verify handler is set to `dist/index.handler`
@@ -240,7 +237,6 @@ The final `lambda.zip` includes **only** production files:
 ✅ **Included:**
 - `dist/` - Compiled JavaScript
 - `node_modules/` - Production dependencies
-- `prisma/` - Database schema
 - `package.json` - Package metadata
 
 ❌ **Excluded:**
@@ -269,7 +265,6 @@ curl https://your-api-gateway-url/health
 
 ## 📝 Notes
 
-- Prisma client is generated with both `native` and `linux-arm64-openssl-3.0.x` binary targets
 - Express app is wrapped with `serverless-http` for Lambda compatibility
 - All routes use CORS headers (update for production)
 - Redis caching is optional - system falls back to database
@@ -282,7 +277,7 @@ For issues:
 2. Verify environment variables
 3. Test endpoints individually
 4. Check database connectivity
-5. Review Prisma client generation
+5. Review database migration state
 
 ---
 

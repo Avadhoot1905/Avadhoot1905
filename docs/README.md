@@ -16,11 +16,8 @@
 
 3. **Install dependencies:**
    ```bash
-   # Install root dependencies (includes Prisma)
+   # Install root dependencies
    npm install
-   
-   # Generate Prisma Client
-   npx prisma generate
    ```
 
 ## Development
@@ -57,7 +54,7 @@ curl http://localhost:3002/admin/chats \
 - ✅ Request/response logging
 - ✅ Proper error handling
 - ✅ Environment variable loading from `.env`
-- ✅ Works with existing Prisma client
+- ✅ Works with existing Drizzle ORM setup
 
 ### Running Lambda Functions Directly (TypeScript)
 
@@ -182,12 +179,7 @@ This will:
    npm install --production
    ```
 
-3. **Generate Prisma Client (for chat lambda):**
-   ```bash
-   npx prisma generate --schema=../../prisma/schema.prisma
-   ```
-
-4. **Create deployment package:**
+3. **Create deployment package:**
    ```bash
    cd dist
    zip -r ../function.zip .
@@ -237,12 +229,13 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
-### Prisma Client Issues
+### Database ORM Issues
 
 ```bash
-# Regenerate Prisma Client
-cd ../../  # Go to root
-npx prisma generate
+# Reinstall dependencies and rebuild
+cd lambda/chat
+npm install
+npm run build
 ```
 
 ### Testing Compiled Output

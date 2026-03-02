@@ -104,11 +104,26 @@ interface LambdaResponse {
   body: string
 }
 
+// CORS headers are set by each app's middleware for local dev.
+// The Lambda handlers hardcode production origins (https://avadhootgm.in).
+// If we blindly copy Lambda CORS headers they overwrite the middleware's '*',
+// causing the browser to reject responses from localhost with a CORS error.
+const CORS_HEADERS_TO_SKIP = new Set([
+  'access-control-allow-origin',
+  'access-control-allow-methods',
+  'access-control-allow-headers',
+  'access-control-max-age',
+])
+
 function sendLambdaResponse(res: Response, lambdaResponse: LambdaResponse): void {
-  // Set headers from Lambda response
+  // Copy non-CORS headers from Lambda response.
+  // CORS headers are intentionally left to the Express middleware so that
+  // the correct local-dev origin ('*') is preserved.
   if (lambdaResponse.headers) {
     Object.entries(lambdaResponse.headers).forEach(([key, value]) => {
-      res.setHeader(key, value)
+      if (!CORS_HEADERS_TO_SKIP.has(key.toLowerCase())) {
+        res.setHeader(key, value)
+      }
     })
   }
 

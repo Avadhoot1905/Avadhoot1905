@@ -6,10 +6,10 @@
   "scripts": {
     "clean": "rm -rf dist deploy",
     "build": "esbuild index.ts --bundle --platform=node --target=node22 --format=cjs --minify --outfile=dist/index.js",
-    "deploy:build": "npm run clean && npm install && npx prisma generate && npm run build && npm run deploy:package",
-    "deploy:package": "mkdir -p deploy && cp -r dist node_modules prisma package.json deploy/ && cd deploy && zip -r lambda.zip . && cd .. && echo '\n✅ Deployment package created: lambda/deploy/lambda.zip'",
     "zip": "cd dist && zip -r deploy.zip index.js",
-    "deploy:prep": "rm -rf dist && mkdir dist && npm run build && cd dist && zip -r deploy.zip index.js"
+    "deploy:prep": "rm -rf dist && mkdir dist && npm run build && cd dist && zip -r deploy.zip index.js",
+    "deploy:build": "npm run clean && npm install && npm run build && npm run deploy:package",
+    "deploy:package": "cd dist && zip -r deploy.zip index.js && cd .. && mkdir -p deploy && cp dist/deploy.zip deploy/lambda.zip && echo '\n✅ Deployment packages created: lambda/dist/deploy.zip and lambda/deploy/lambda.zip'"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

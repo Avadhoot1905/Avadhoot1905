@@ -441,7 +441,7 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("experience")}
               onClose={() => toggleWindow("experience")}
               initialPosition={{ x: 220, y: 160 }}
-              initialSize={{ width: 700, height: 550 }}
+              initialSize={{ width: 1000, height: 550 }}
             >
               <ExperienceApp />
             </Window>

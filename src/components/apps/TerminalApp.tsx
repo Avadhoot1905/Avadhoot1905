@@ -43,13 +43,13 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           "==============================",
           "",
           "💻 Technical Skills:",
-          "• C/C++, Java, Python, JavaScript, TypeScript, Golang, Swift, Shell",
-          "• React, Next.js, Tailwind CSS",
-          "• Node.js, Express.js",
-          "• CockroachDB, PostgreSQL, SQLite",
-          "• Git, Docker, Kubernetes, REST APIs, Fast API, GitHub",
-          "• BeautifulSoup, CoreML, Pandas, NumPy",
-          "",
+          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL",
+          "• Frontend: React, Next.js, Tailwind CSS",
+          "• Backend: Node.js, Express, Django, SpringBoot",
+          "• Databases: PostgreSQL, MySQL, AWS RDS",
+          "• Infrastructure: Git, Docker, AWS",
+          "• Tools: Linux, Postman, Prometheus, Grafana",
+          "• AI/ML: TensorFlow, PyTorch, CNN, BiLSTM, CoreML",
           ""
         ]
       }
@@ -252,6 +252,26 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     return parts.length > 0 ? <>{parts}</> : <>{text}</>
   }
 
+  const renderOutputLine = (line: string) => {
+    const skillCategoryMatch = line.match(
+      /^(•\s*)(Languages|Frontend|Backend|Database|Databases|Infrastructure|Tools|AI\/ML)(:.*)$/
+    )
+
+    if (!skillCategoryMatch) {
+      return linkifyText(line)
+    }
+
+    const [, bullet, label, rest] = skillCategoryMatch
+
+    return (
+      <>
+        <span>{bullet}</span>
+        <span className="text-yellow-400">{label}</span>
+        {linkifyText(rest)}
+      </>
+    )
+  }
+
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -380,22 +400,23 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
       case "skills":
         output = isMobile ? [
           "Technical Skills:",
-          "• Python, JS, TypeScript",
+          "• Java, C++, Python, JS, TS",
           "• React, Next.js, Tailwind",
-          "• Node.js, Express, Django",
-          "• MongoDB, PostgreSQL",
+          "• Node.js, Express, Django, SpringBoot",
+          "• AWS RDS, AWS S3, PostgreSQL",
           "• Git, Docker, AWS",
           "• TensorFlow, PyTorch",
           ""
         ] : [
           "Technical Skills:",
           "-------------------",
-          "• Languages: Python, JavaScript, TypeScript, Java, C++, SQL",
-          "• Frontend: React, Next.js, HTML5, CSS3, Tailwind CSS",
-          "• Backend: Node.js, Express, Django, Flask",
-          "• Databases: MongoDB, PostgreSQL, MySQL, Firebase",
-          "• Tools & Tech: Git, Docker, AWS, REST APIs, GraphQL",
-          "• AI/ML: TensorFlow, PyTorch, Scikit-learn, NLP",
+          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL",
+          "• Frontend: React, Next.js, Tailwind CSS",
+          "• Backend: Node.js, Express, Django, SpringBoot",
+          "• Databases: PostgreSQL, MySQL, AWS RDS",
+          "• Infrastructure: Git, Docker, AWS",
+          "• Tools: Linux, Postman, Prometheus, Grafana",
+          "• AI/ML: TensorFlow, PyTorch, CNN, BiLSTM, CoreML",
           ""
         ]
         break
@@ -623,7 +644,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
                       isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
                     }`}
                   >
-                    {linkifyText(line)}
+                    {renderOutputLine(line)}
                   </div>
                 ))}
               </>

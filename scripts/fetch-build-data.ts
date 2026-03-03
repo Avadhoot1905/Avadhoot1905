@@ -92,46 +92,82 @@ async function fetchLeetCodeData() {
   console.log('🔍 Fetching LeetCode data...')
   
   try {
-    // Fetch user stats
-    const statsResponse = await fetch(
-      `https://leetcode-stats-api.herokuapp.com/${LEETCODE_USERNAME}`
-    )
-    
-    if (!statsResponse.ok) {
-      throw new Error(`LeetCode stats API error: ${statsResponse.status}`)
-    }
-
-    const statsText = await statsResponse.text()
-    let stats
-    
-    try {
-      stats = JSON.parse(statsText)
-    } catch {
-      throw new Error('Invalid JSON from LeetCode stats API')
-    }
-
-    // Fetch recent submissions
-    let recentProblems = []
-    
-    try {
-      const submissionsResponse = await fetch(
-        `https://alfa-leetcode-api.onrender.com/${LEETCODE_USERNAME}/submission?limit=10`,
-        { headers: { 'Content-Type': 'application/json' } }
-      )
-      
-      if (submissionsResponse.ok) {
-        const submissionsData = await submissionsResponse.json()
-        const submissions = submissionsData.submission || submissionsData.data?.recentSubmissions || []
-        
-        recentProblems = submissions
-          .filter((sub: { statusDisplay: string }) => sub.statusDisplay === "Accepted")
-          .slice(0, 5)
-        
-        console.log(`   Found ${recentProblems.length} recent submissions`)
+    const query = `
+      query getUserProfileAndRecent($username: String!) {
+        matchedUser(username: $username) {
+          profile {
+            ranking
+            reputation
+          }
+          submitStatsGlobal {
+            acSubmissionNum {
+              difficulty
+              count
+              submissions
+            }
+          }
+        }
+        recentSubmissionList(username: $username) {
+          title
+          titleSlug
+          timestamp
+          statusDisplay
+          lang
+        }
       }
-    } catch (error) {
-      console.warn('⚠️  Could not fetch recent submissions:', error)
+    `
+
+    const graphqlResponse = await fetch('https://leetcode.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Referer': `https://leetcode.com/${LEETCODE_USERNAME}/`,
+        'User-Agent': 'Mozilla/5.0',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { username: LEETCODE_USERNAME },
+      }),
+    })
+
+    if (!graphqlResponse.ok) {
+      throw new Error(`LeetCode GraphQL API error: ${graphqlResponse.status}`)
     }
+
+    const graphqlData = await graphqlResponse.json()
+    const user = graphqlData?.data?.matchedUser
+
+    if (!user) {
+      throw new Error('LeetCode user data not found')
+    }
+
+    const acStats = user.submitStatsGlobal?.acSubmissionNum || []
+    const getSolvedCount = (difficulty: string) => {
+      const record = acStats.find((item: { difficulty: string; count: number }) => item.difficulty === difficulty)
+      return record?.count ?? 0
+    }
+
+    const stats = {
+      totalSolved: getSolvedCount('All'),
+      easySolved: getSolvedCount('Easy'),
+      mediumSolved: getSolvedCount('Medium'),
+      hardSolved: getSolvedCount('Hard'),
+      ranking: user.profile?.ranking ?? 0,
+      contributionPoints: user.profile?.reputation ?? 0,
+    }
+
+    const recentProblems = (graphqlData?.data?.recentSubmissionList || [])
+      .filter((submission: { statusDisplay?: string }) => submission.statusDisplay === 'Accepted')
+      .slice(0, 5)
+      .map((submission: { title?: string; titleSlug?: string; timestamp?: string; lang?: string }) => ({
+        title: submission.title || submission.titleSlug || 'Unknown Problem',
+        titleSlug: submission.titleSlug || '',
+        timestamp: submission.timestamp || Date.now().toString(),
+        statusDisplay: 'Accepted',
+        lang: submission.lang || 'N/A',
+      }))
+
+    console.log(`   Found ${recentProblems.length} recent accepted submissions`)
 
     const data = {
       stats,

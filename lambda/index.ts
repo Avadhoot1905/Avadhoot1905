@@ -374,7 +374,53 @@ app.get('/health/db', async (req: Request, res: Response) => {
 })
 
 // ===================================================
+// EVENT NORMALIZATION (API Gateway v1 and v2)
+// ===================================================
+
+/**
+ * Normalizes an API Gateway event so the rest of the handler works
+ * identically regardless of whether it came from:
+ *   - REST API (v1): event.httpMethod, event.path, event.body (string)
+ *   - HTTP API (v2): event.requestContext.http.method, event.rawPath,
+ *                    event.body (possibly base64-encoded)
+ *
+ * The normalized event always has:
+ *   httpMethod       – upper-case HTTP verb
+ *   path             – request path
+ *   body             – decoded string (or null)
+ *   isBase64Encoded  – false (already decoded above)
+ */
+function normalizeEvent(event: any): any {
+  // Method: v2 stores it inside requestContext.http; v1 uses httpMethod directly
+  const method =
+    event.requestContext?.http?.method ??
+    event.httpMethod ??
+    'GET'
+
+  // Path: v2 uses rawPath; v1 uses path
+  const path = event.rawPath ?? event.path ?? '/'
+
+  // Body: decode base64 if the gateway marked it as such
+  let rawBody = event.body
+  if (event.isBase64Encoded && typeof rawBody === 'string') {
+    rawBody = Buffer.from(rawBody, 'base64').toString('utf-8')
+  }
+
+  return {
+    ...event,
+    httpMethod: method,      // serverless-http reads httpMethod (v1-style)
+    path,                    // serverless-http reads path
+    body: rawBody ?? null,
+    isBase64Encoded: false,  // body is already a plain string now
+  }
+}
+
+// ===================================================
 // EXPORT LAMBDA HANDLER
 // ===================================================
 
-export const handler = serverless(app)
+const _serverlessHandler = serverless(app)
+
+export const handler = async (event: any, context: any): Promise<any> => {
+  return _serverlessHandler(normalizeEvent(event), context)
+}

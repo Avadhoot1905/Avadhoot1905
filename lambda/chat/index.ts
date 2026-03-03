@@ -306,7 +306,37 @@ async function sendMessageToGemini(
  */
 export const handler = async (event: any) => {
   console.log('🚀 Lambda invoked:', JSON.stringify(event, null, 2))
-  
+
+  // ===================================================
+  // NORMALIZE EVENT (API Gateway v1 and v2)
+  // ===================================================
+  //
+  // Method: v2 stores it inside requestContext.http; v1 uses httpMethod directly
+  const method: string =
+    event.requestContext?.http?.method ??
+    event.httpMethod ??
+    'GET'
+
+  // Path: v2 uses rawPath; v1 uses path
+  const path: string = event.rawPath ?? event.path ?? '/'
+
+  // Body: decode base64 first (HTTP API v2 + CloudFront may base64-encode it)
+  let _rawBody = event.body
+  if (event.isBase64Encoded && typeof _rawBody === 'string') {
+    _rawBody = Buffer.from(_rawBody, 'base64').toString('utf-8')
+  }
+
+  // Parse body safely
+  let body: Record<string, any>
+  if (_rawBody && typeof _rawBody === 'object') {
+    body = _rawBody as Record<string, any>
+  } else if (typeof _rawBody === 'string') {
+    try { body = JSON.parse(_rawBody) } catch { body = {} }
+  } else {
+    body = {}
+  }
+  // ===================================================
+
   // CORS headers for HTTP API v2.0
   const headers = {
     'Content-Type': 'application/json',
@@ -317,8 +347,7 @@ export const handler = async (event: any) => {
   }
   
   // Handle OPTIONS preflight request
-  const httpMethod = event.requestContext?.http?.method || event.httpMethod;
-  if (httpMethod === 'OPTIONS') {
+  if (method === 'OPTIONS') {
     console.log('✅ OPTIONS preflight request')
     return {
       statusCode: 200,
@@ -328,7 +357,7 @@ export const handler = async (event: any) => {
   }
   
   // Only accept POST
-  if (httpMethod !== 'POST') {
+  if (method !== 'POST') {
     return {
       statusCode: 405,
       headers,
@@ -337,8 +366,6 @@ export const handler = async (event: any) => {
   }
   
   try {
-    // Parse body
-    const body = JSON.parse(event.body || '{}')
     const { sessionId, message, clearHistory } = body
     
     // Validate input

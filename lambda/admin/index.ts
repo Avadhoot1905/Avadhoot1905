@@ -55,6 +55,34 @@ function getDb() {
 }
 
 export const handler = async (event: any) => {
+  // ===================================================
+  // NORMALIZE EVENT (API Gateway v1 and v2)
+  // ===================================================
+  //
+  // Method: v2 stores it inside requestContext.http; v1 uses httpMethod directly
+  const method: string =
+    event.requestContext?.http?.method ??
+    event.httpMethod ??
+    'GET'
+
+  // Path: v2 uses rawPath; v1 uses path
+  const path: string = event.rawPath ?? event.path ?? '/'
+
+  // Body: decode base64 first if the gateway marked it as such.
+  // Admin is GET-only so body is not used in business logic, but we
+  // normalize it here for completeness and future-proofing.
+  let _rawBody = event.body
+  if (event.isBase64Encoded && typeof _rawBody === 'string') {
+    _rawBody = Buffer.from(_rawBody, 'base64').toString('utf-8')
+  }
+  const body: Record<string, any> =
+    _rawBody && typeof _rawBody === 'object'
+      ? (_rawBody as Record<string, any>)
+      : typeof _rawBody === 'string'
+      ? (() => { try { return JSON.parse(_rawBody) } catch { return {} } })()
+      : {}
+  // ===================================================
+
   // CORS headers for HTTP API v2.0
   const corsHeaders = {
     'Access-Control-Allow-Origin': 'https://avadhootgm.in',
@@ -65,8 +93,7 @@ export const handler = async (event: any) => {
   };
   
   // Handle OPTIONS preflight request
-  const httpMethod = event.requestContext?.http?.method || event.httpMethod;
-  if (httpMethod === 'OPTIONS') {
+  if (method === 'OPTIONS') {
     console.log('✅ [LAMBDA ADMIN] OPTIONS preflight request');
     return {
       statusCode: 200,
@@ -78,7 +105,7 @@ export const handler = async (event: any) => {
   // 🐛 Debug: Log incoming event
   console.log('\n🔍 [LAMBDA ADMIN] Incoming event:');
   console.log('   Headers:', JSON.stringify(event.headers, null, 2));
-  console.log('   Path:', event.path || event.rawPath || 'UNDEFINED');
+  console.log('   Path:', path || 'UNDEFINED');
   
   // 1️⃣ Security Check - Validate admin secret
   // Normalize all header keys to lowercase for consistent comparison
@@ -113,8 +140,6 @@ export const handler = async (event: any) => {
   console.log('✅ [LAMBDA ADMIN] Authorization successful');
 
   // 2️⃣ Route Handling - Only support GET /admin/chats
-  const path = event.path || event.rawPath || '';
-  
   if (!path.includes('/admin/chats')) {
     return {
       statusCode: 404,

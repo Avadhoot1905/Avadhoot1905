@@ -1,6 +1,6 @@
 "use client"
 
-import { FaCode, FaGithub, FaExternalLinkAlt, FaGlobe, FaMobile, FaLaptopCode } from "react-icons/fa"
+import { FaCode, FaGithub, FaExternalLinkAlt, FaGlobe, FaMobile, FaLaptopCode, FaCube, FaMicrochip } from "react-icons/fa"
 import { useTheme } from "next-themes"
 import { useState, useEffect } from "react"
 import { projects as projectsData } from "@/data/projects"
@@ -13,6 +13,8 @@ const domainIcons: Record<string, React.ComponentType<{ className?: string }>> =
   "Website Development": FaGlobe,
   "App Development": FaMobile,
   "system": FaLaptopCode,
+  "Blockchain": FaCube,
+  "IoT": FaMicrochip,
   "Extension Development": FaCode,
   "Data Science": FaCode,
   "Machine Learning": FaCode,
@@ -22,6 +24,8 @@ const domainColors: { [key: string]: string } = {
   "Website Development": "text-blue-500",
   "App Development": "text-green-500",
   "system": "text-purple-500",
+  "Blockchain": "text-amber-500",
+  "IoT": "text-teal-500",
   "Extension Development": "text-orange-500",
   "Data Science": "text-red-500",
   "Machine Learning": "text-pink-500",
@@ -69,6 +73,18 @@ const techColors: { [key: string]: string } = {
   "rsync": "bg-gray-600 text-white",
   "Threading": "bg-purple-500 text-white",
   "Syncthing": "bg-blue-500 text-white",
+  "AWS S3": "bg-orange-500 text-white",
+  "AWS Lambda": "bg-amber-500 text-black",
+  "AWS CloudFront": "bg-indigo-600 text-white",
+  "Vercel": "bg-black text-white",
+  "Django": "bg-green-800 text-white",
+  "MySQL": "bg-blue-600 text-white",
+  "Ethereum": "bg-indigo-500 text-white",
+  "AWS": "bg-orange-600 text-white",
+  "CNN": "bg-rose-600 text-white",
+  "SLM": "bg-violet-600 text-white",
+  "AWS EC2": "bg-orange-700 text-white",
+  "Chrome Web Extensions": "bg-red-500 text-white",
 }
 
 export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
@@ -193,7 +209,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
 
       <div className="grid gap-4">
         {filteredProjects.map((project) => {
-          const DomainIcon = domainIcons[project.domain]
+          const DomainIcon = domainIcons[project.domain] || FaCode
           const displayDomains = project.domains || [project.domain]
           return (
             <div
@@ -211,7 +227,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                   {displayDomains.length > 1 && (
                     <div className="flex gap-1">
                       {displayDomains.map((d, idx) => {
-                        const Icon = domainIcons[d]
+                        const Icon = domainIcons[d] || FaCode
                         return (
                           <span 
                             key={idx}

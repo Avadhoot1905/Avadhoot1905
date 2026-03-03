@@ -45,32 +45,27 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
   return (
     <div className="p-6 overflow-y-auto">
       <div className="flex items-center mb-6">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mr-6">
-          <FaUser className="text-white text-3xl" />
-        </div>
+        <img 
+          src="/favicon.ico" 
+          alt="Profile" 
+          className="w-24 h-24 rounded-full mr-6 object-cover"
+        />
         <div>
           <h1 className="text-2xl font-bold mb-2">Avadhoot Ganesh Mahadik</h1>
           <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-            Full Stack Developer
+            Systems Architect
           </p>
         </div>
       </div>
       <div className="space-y-4">
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I&apos;m someone who just likes figuring things out — whether it&apos;s code, design, or how things connect.  
-          I don&apos;t really chase perfection, I just keep tweaking and learning till it feels right. I take my time 
-          with stuff, but I always get there eventually, and that&apos;s kind of my thing.
+          I&apos;m a Computer Science student passionate about backend engineering and system architecture. I&apos;m fascinated by how well-designed systems scale, evolve, and remain maintainable over time. I enjoy working on the invisible parts of software — APIs, data models, infrastructure decisions, and the architectural tradeoffs that make or break a system.
         </p>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I&apos;m big on problem-solving and I spend a lot of time on LeetCode or DSA stuff, just trying to train 
-          my brain to think better. The dream&apos;s to reach that stage where code just flows — like you think 
-          the logic, and your hands already know what to do. I also love building full-stack projects using 
-          Next.js, Prisma, Docker, Git and all that, making sure they actually work well and not just look 
-          fancy. It&apos;s more about connecting what I learn with what I build.
+          I&apos;m especially curious about serverless systems, distributed components, and designing clean interfaces between services. Beyond writing code, I focus on understanding why solutions work — from database behavior and ORM abstractions to deployment pipelines and cloud networking. I find the most interesting problems lie in balancing simplicity with scalability.
         </p>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          I&apos;m still figuring things out, learning a bit every day, and building stuff that makes sense to me.  
-          Just trying to keep growing, one idea at a time.
+          Currently, I&apos;m strengthening my backend fundamentals, deepening my understanding of production systems, and building projects that prioritize clarity, reliability, and thoughtful design. I&apos;m open to collaborating on backend systems, architecture discussions, and implementations that go beyond surface-level functionality.
         </p>
 
         <div className="flex gap-4 mt-6">

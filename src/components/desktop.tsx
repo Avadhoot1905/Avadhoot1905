@@ -399,7 +399,7 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("about")}
               onClose={() => toggleWindow("about")}
               initialPosition={{ x: 50, y: 80 }}
-              initialSize={{ width: 650, height: 600 }}
+              initialSize={{ width: 650, height: 680 }}
             >
               <AboutApp onOpenApp={openOrActivateWindow} />
             </Window>

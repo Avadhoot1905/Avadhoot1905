@@ -38,6 +38,22 @@ export const experiences: ExperienceItem[] = [
   },
   {
     id: 2,
+    organization: "JP Morgan Chase & Co (Forage)",
+    locationAndDuration: "Virtual • December 2025",
+    roles: [
+      {
+        title: "Software Engineering Virtual Experience",
+        period: "December 2025",
+      },
+    ],
+    techStack: ["Java", "Spring Boot", "Kafka", "REST APIs", "JPA", "H2"],
+    highlights: [
+      "Implemented a Kafka-backed Spring Boot service to process 100K+ financial events/day, ensuring transactional validation and ACID-compliant persistence for deterministic balance updates",
+      "Designed idempotent REST APIs and validated failure scenarios through integration testing, ensuring consistency across message ingestion, database transactions, and external service calls.",
+    ],
+  },
+  {
+    id: 3,
     organization: "ACM-VIT CHAPTER",
     locationAndDuration: "Vellore, Tamil Nadu, India • Apr 2024 - Present · 1 yr 7 mos",
     roles: [

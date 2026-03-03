@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist deploy",
+    "dev": "npx tsx dev-server.ts",
     "build": "esbuild index.ts --bundle --platform=node --target=node22 --format=cjs --minify --outfile=dist/index.js",
     "zip": "cd dist && zip -r deploy.zip index.js",
     "deploy:prep": "rm -rf dist && mkdir dist && npm run build && cd dist && zip -r deploy.zip index.js",
@@ -16,13 +17,10 @@
     "@upstash/redis": "^1.35.6",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
-    "express": "^5.2.1",
-    "pg": "^8.19.0",
-    "serverless-http": "^3.2.0"
+    "pg": "^8.19.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
-    "@types/express": "^5.0.6",
     "@types/node": "^22.10.5",
     "drizzle-kit": "^0.31.9",
     "esbuild": "^0.27.3",

@@ -1,326 +1,101 @@
-/**
- * ===================================================
- * LOCAL DEVELOPMENT SERVER - EXPRESS WRAPPER
- * ===================================================
- * 
- * This TypeScript Express server wraps your existing Lambda handlers
- * for local development without modifying the Lambda code.
- * 
- * Features:
- * - Chat endpoint on port 3000
- * - Admin endpoint on port 3002
- * - CORS support
- * - Request/response logging
- * - Environment variable loading
- * - Proper error handling
- * 
- * Usage:
- *   npx tsx lambda/dev-server.ts
- * 
- * Then test with:
- *   curl -X POST http://localhost:3000/chat \
- *     -H "Content-Type: application/json" \
- *     -d '{"sessionId":"test-123","message":"Hello!"}'
- * 
- *   curl http://localhost:3002/admin/chats \
- *     -H "x-admin-secret: your-secret"
- */
-
 import * as dotenv from 'dotenv'
-import * as path from 'path'
-import express, { Request, Response, Application } from 'express'
-import rateLimit from 'express-rate-limit'
+import * as http from 'node:http'
+import { URL } from 'node:url'
+import * as path from 'node:path'
 
-// ===================================================
-// 1. LOAD ENVIRONMENT VARIABLES
-// ===================================================
 dotenv.config({ path: path.join(process.cwd(), '.env') })
 
-// ===================================================
-// 2. VALIDATE REQUIRED ENVIRONMENT VARIABLES
-// ===================================================
-const requiredEnvVars = [
-  'GEMINI_API_KEY',
-  'UPSTASH_REDIS_REST_URL',
-  'UPSTASH_REDIS_REST_TOKEN',
-  'DATABASE_URL',
-  'ADMIN_SECRET'
-]
+const PORT = Number(process.env.PORT || 3001)
 
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
+let handlerPromise: Promise<typeof import('./index').handler> | null = null
 
-if (missingEnvVars.length > 0) {
-  console.error('❌ Missing required environment variables:')
-  missingEnvVars.forEach(envVar => console.error(`   - ${envVar}`))
-  console.error('\n💡 Create a .env file in the root directory with these variables.\n')
-  process.exit(1)
-}
-
-console.log('✅ Environment variables loaded\n')
-
-// ===================================================
-// 3. IMPORT LAMBDA HANDLERS
-// ===================================================
-// These are imported after environment variables are loaded
-import { handler as chatHandler } from './chat/index.ts'
-import { handler as adminHandler } from './admin/index.ts'
-
-// ===================================================
-// 4. HELPER FUNCTION: Convert Express Request to Lambda Event
-// ===================================================
-interface LambdaEvent {
-  httpMethod: string
-  path: string
-  headers: Record<string, string>
-  body?: string
-}
-
-function expressToLambdaEvent(req: Request): LambdaEvent {
-  // Express headers are IncomingHttpHeaders which can have string | string[] | undefined values
-  // We need to normalize them to Record<string, string> for Lambda compatibility
-  const headers: Record<string, string> = {};
-  
-  Object.entries(req.headers).forEach(([key, value]) => {
-    if (value !== undefined) {
-      // If value is an array, join it; otherwise convert to string
-      headers[key] = Array.isArray(value) ? value.join(', ') : String(value);
-    }
-  });
-  
-  return {
-    httpMethod: req.method,
-    path: req.path,
-    headers,
-    body: req.body ? JSON.stringify(req.body) : undefined
+async function getHandler(): Promise<typeof import('./index').handler> {
+  if (!handlerPromise) {
+    handlerPromise = import('./index').then((module) => module.handler)
   }
+  return handlerPromise
 }
 
-// ===================================================
-// 5. HELPER FUNCTION: Send Lambda Response via Express
-// ===================================================
-interface LambdaResponse {
-  statusCode: number
-  headers?: Record<string, string>
-  body: string
+type HeaderValue = string | string[] | undefined
+
+function normalizeHeaders(headers: http.IncomingHttpHeaders): Record<string, string> {
+  const normalized: Record<string, string> = {}
+  Object.entries(headers).forEach(([key, value]: [string, HeaderValue]) => {
+    if (value === undefined) return
+    normalized[key] = Array.isArray(value) ? value.join(',') : String(value)
+  })
+  return normalized
 }
 
-// CORS headers are set by each app's middleware for local dev.
-// The Lambda handlers hardcode production origins (https://avadhootgm.in).
-// If we blindly copy Lambda CORS headers they overwrite the middleware's '*',
-// causing the browser to reject responses from localhost with a CORS error.
-const CORS_HEADERS_TO_SKIP = new Set([
-  'access-control-allow-origin',
-  'access-control-allow-methods',
-  'access-control-allow-headers',
-  'access-control-max-age',
-])
+function readBody(req: http.IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    req.on('data', (chunk) => {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+    })
+    req.on('end', () => resolve(Buffer.concat(chunks)))
+    req.on('error', reject)
+  })
+}
 
-function sendLambdaResponse(res: Response, lambdaResponse: LambdaResponse): void {
-  // Copy non-CORS headers from Lambda response.
-  // CORS headers are intentionally left to the Express middleware so that
-  // the correct local-dev origin ('*') is preserved.
-  if (lambdaResponse.headers) {
-    Object.entries(lambdaResponse.headers).forEach(([key, value]) => {
-      if (!CORS_HEADERS_TO_SKIP.has(key.toLowerCase())) {
-        res.setHeader(key, value)
+const server = http.createServer(async (req, res) => {
+  const method = req.method || 'GET'
+  const host = req.headers.host || `localhost:${PORT}`
+  const requestUrl = new URL(req.url || '/', `http://${host}`)
+
+  try {
+    const rawBody = await readBody(req)
+    const event = {
+      version: '2.0' as const,
+      routeKey: '$default',
+      rawPath: requestUrl.pathname,
+      rawQueryString: requestUrl.search.startsWith('?') ? requestUrl.search.slice(1) : requestUrl.search,
+      headers: normalizeHeaders(req.headers),
+      queryStringParameters: Object.fromEntries(requestUrl.searchParams.entries()),
+      requestContext: {
+        http: {
+          method,
+          path: requestUrl.pathname,
+          protocol: 'HTTP/1.1',
+          sourceIp: req.socket.remoteAddress || '127.0.0.1',
+          userAgent: req.headers['user-agent'] || '',
+        },
+      },
+      isBase64Encoded: false,
+      body: rawBody.length > 0 ? rawBody.toString('utf8') : undefined,
+    }
+
+    const handler = await getHandler()
+    const lambdaResponse = await handler(event)
+    res.statusCode = lambdaResponse.statusCode || 200
+
+    Object.entries(lambdaResponse.headers || {}).forEach(([key, value]) => {
+      if (value !== undefined) {
+        res.setHeader(key, String(value))
       }
     })
-  }
 
-  // Send response
-  res.status(lambdaResponse.statusCode).send(lambdaResponse.body)
-}
-
-// ===================================================
-// 6. CREATE CHAT SERVER (PORT 3001)
-// ===================================================
-const chatApp: Application = express()
-const CHAT_PORT = 3001
-
-// Middleware
-chatApp.use(express.json())
-
-// CORS middleware
-chatApp.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-  
-  next()
-})
-
-// Request logging middleware
-chatApp.use((req, res, next) => {
-  console.log(`\n📨 [CHAT] ${req.method} ${req.path}`)
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log('   Body:', JSON.stringify(req.body, null, 2))
-  }
-  next()
-})
-
-// POST /chat endpoint
-chatApp.post('/chat', async (req: Request, res: Response) => {
-  try {
-    // Convert Express request to Lambda event format
-    const lambdaEvent = expressToLambdaEvent(req)
-    
-    // Call the Lambda handler
-    const lambdaResponse = await chatHandler(lambdaEvent)
-    
-    // Log response
-    console.log(`   Status: ${lambdaResponse.statusCode}`)
-    
-    // Send Lambda response back to client
-    sendLambdaResponse(res, lambdaResponse)
+    res.end(lambdaResponse.body || '')
   } catch (error) {
-    console.error('❌ [CHAT] Error:', error)
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
-    })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(
+      JSON.stringify({
+        error: 'Local dev server error',
+        message: error instanceof Error ? error.message : String(error),
+      })
+    )
   }
 })
 
-// Start chat server
-chatApp.listen(CHAT_PORT, () => {
-  console.log(`🚀 Chat Server running on http://localhost:${CHAT_PORT}`)
-  console.log(`   Endpoint: POST http://localhost:${CHAT_PORT}/chat`)
+server.listen(PORT, () => {
+  console.log(`🚀 Lambda backend dev server running at http://localhost:${PORT}`)
+  console.log('   Routes: POST /api/chat, GET /api/admin/chats')
 })
 
-// ===================================================
-// 7. CREATE ADMIN SERVER (PORT 3002)
-// ===================================================
-const adminApp: Application = express()
-const ADMIN_PORT = 3002
-
-// Configure trust proxy for CloudFront/API Gateway
-adminApp.set('trust proxy', 1)
-
-// Middleware
-adminApp.use(express.json())
-
-// CORS middleware
-adminApp.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret')
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-  
-  next()
-})
-
-// Request logging middleware
-adminApp.use((req, res, next) => {
-  console.log(`\n📨 [ADMIN] ${req.method} ${req.path}`)
-  console.log('   Client IP:', req.ip)
-  console.log('   All headers:', JSON.stringify(req.headers, null, 2))
-  
-  const adminSecret = req.headers['x-admin-secret'];
-  const expectedSecret = process.env.ADMIN_SECRET;
-  
-  console.log('   x-admin-secret header:', adminSecret ? `[${String(adminSecret).length} chars]` : 'MISSING')
-  console.log('   ADMIN_SECRET env var:', expectedSecret ? `[${expectedSecret.length} chars]` : 'NOT SET')
-  
-  next()
-})
-
-// ===================================================
-// 8. ADMIN RATE LIMITER - POST /admin/chat ONLY
-// ===================================================
-const adminLoginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Maximum 5 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: { error: 'Too many login attempts. Please try again later.' },
-  handler: (req: Request, res: Response) => {
-    console.log(`🚨 [ADMIN] Rate limit exceeded for IP: ${req.ip}`)
-    res.status(429).json({
-      error: 'Too many login attempts. Please try again later.'
-    })
-  }
-  // Note: keyGenerator defaults to req.ip which properly handles IPv6
-})
-
-// POST /admin/chat endpoint - Admin login with rate limiting
-adminApp.post('/admin/chat', adminLoginLimiter, async (req: Request, res: Response) => {
-  try {
-    console.log('🔐 [ADMIN] Login attempt from IP:', req.ip)
-    
-    // Validate admin secret AFTER rate limiting
-    const adminSecret = req.headers['x-admin-secret'];
-    const expectedSecret = process.env.ADMIN_SECRET;
-    
-    if (!adminSecret || !expectedSecret || adminSecret !== expectedSecret) {
-      console.log('❌ [ADMIN] Invalid credentials')
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-    
-    console.log('✅ [ADMIN] Login successful')
-    
-    // Return success response
-    res.status(200).json({
-      success: true,
-      message: 'Admin authenticated successfully'
-    })
-  } catch (error) {
-    console.error('❌ [ADMIN] Login error:', error)
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
-  }
-})
-
-// GET /admin/chats endpoint - Fetch chat logs (no rate limiting)
-adminApp.get('/admin/chats', async (req: Request, res: Response) => {
-  try {
-    // Convert Express request to Lambda event format
-    const lambdaEvent = expressToLambdaEvent(req)
-    
-    // Call the Lambda handler
-    const lambdaResponse = await adminHandler(lambdaEvent)
-    
-    // Log response
-    console.log(`   Status: ${lambdaResponse.statusCode}`)
-    
-    // Send Lambda response back to client
-    sendLambdaResponse(res, lambdaResponse)
-  } catch (error) {
-    console.error('❌ [ADMIN] Error:', error)
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
-  }
-})
-
-// Start admin server
-adminApp.listen(ADMIN_PORT, () => {
-  console.log(`🔐 Admin Server running on http://localhost:${ADMIN_PORT}`)
-  console.log(`   Login: POST http://localhost:${ADMIN_PORT}/admin/chat (rate limited: 5 attempts per 15 min)`)
-  console.log(`   Chats: GET http://localhost:${ADMIN_PORT}/admin/chats`)
-})
-
-// ===================================================
-// 8. GRACEFUL SHUTDOWN
-// ===================================================
 process.on('SIGINT', () => {
-  console.log('\n\n🛑 Shutting down servers...')
-  process.exit(0)
+  server.close(() => {
+    console.log('\n🛑 Dev server stopped')
+    process.exit(0)
+  })
 })
-
-process.on('SIGTERM', () => {
-  console.log('\n\n🛑 Shutting down servers...')
-  process.exit(0)
-})
-
-console.log('\n✨ Development servers started successfully!')
-console.log('   Press Ctrl+C to stop\n')

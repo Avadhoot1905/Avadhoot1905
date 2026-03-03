@@ -54,7 +54,7 @@ function isLocalDev(): boolean {
  */
 function getChatEndpoint(): string {
   if (isLocalDev()) {
-    return "http://localhost:3001/chat"
+    return "http://localhost:3001/api/chat"
   }
   return `${API_BASE}/chat`
 }
@@ -67,7 +67,7 @@ function getChatEndpoint(): string {
  */
 function getAdminChatsEndpoint(): string {
   if (isLocalDev()) {
-    return "http://localhost:3002/admin/chats"
+    return "http://localhost:3001/api/admin/chats"
   }
   return `${API_BASE}/admin/chats`
 }

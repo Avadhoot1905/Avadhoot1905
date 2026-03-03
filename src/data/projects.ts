@@ -14,7 +14,7 @@ export const projects: Project[] = [
     id: 1,
     name: "Portfolio Website",
     description: "A responsive macOS-inspired portfolio Website Development built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
-    techStack: ["Next.js", "Tailwind CSS", "Redis", "AWS S3", "AWS Lambda", "AWS CloudFront", "AWS API Gateway"],
+    techStack: ["Next.js", "Tailwind CSS", "Redis", "AWS S3", "AWS Lambda", "AWS CloudFront", "AWS API Gateway", "Gemini API"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/Avadhoot1905",
     live: "https://avadhootgm.in"

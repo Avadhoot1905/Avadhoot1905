@@ -80,7 +80,7 @@ const techColors: { [key: string]: string } = {
   "Django": "bg-green-800 text-white",
   "MySQL": "bg-blue-600 text-white",
   "Ethereum": "bg-indigo-500 text-white",
-  "AWS": "bg-orange-600 text-white",
+  "AWS API Gateway": "bg-orange-600 text-white",
   "CNN": "bg-rose-600 text-white",
   "SLM": "bg-violet-600 text-white",
   "AWS EC2": "bg-orange-700 text-white",

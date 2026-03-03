@@ -14,7 +14,7 @@ export const projects: Project[] = [
     id: 1,
     name: "Portfolio Website",
     description: "A responsive macOS-inspired portfolio Website Development built with Next.js and Tailwind CSS featuring dynamic theme switching and interactive UI components",
-    techStack: ["Next.js", "Tailwind CSS", "Redis", "AWS S3", "AWS Lambda", "AWS CloudFront"],
+    techStack: ["Next.js", "Tailwind CSS", "Redis", "AWS S3", "AWS Lambda", "AWS CloudFront", "AWS API Gateway"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/Avadhoot1905",
     live: "https://avadhootgm.in"
@@ -33,7 +33,7 @@ export const projects: Project[] = [
     id: 3,
     name: "NagrikMitra",
     description: "A scalable Website Development application for citizen services and grievance redressal, built with modern development practices and collaborative workflows",
-    techStack: ["React.js", "Django", "MySQL", "Ethereum", "AWS", "CNN", "SLM"],
+    techStack: ["React.js", "Django", "MySQL", "Ethereum", "AWS S3", "AWS RDS" , "CNN", "SLM"],
     domain: "Website Development",
     domains: ["Website Development","App Development","Blockchain", "IoT", "Machine Learning"],
     github: "https://github.com/CodinGakpo/Yantra26-user",

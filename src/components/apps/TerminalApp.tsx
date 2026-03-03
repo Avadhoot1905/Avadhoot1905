@@ -252,6 +252,26 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     return parts.length > 0 ? <>{parts}</> : <>{text}</>
   }
 
+  const renderOutputLine = (line: string) => {
+    const skillCategoryMatch = line.match(
+      /^(•\s*)(Languages|Frontend|Backend|Database|Databases|Infrastructure|Tools|AI\/ML)(:.*)$/
+    )
+
+    if (!skillCategoryMatch) {
+      return linkifyText(line)
+    }
+
+    const [, bullet, label, rest] = skillCategoryMatch
+
+    return (
+      <>
+        <span>{bullet}</span>
+        <span className="text-yellow-400">{label}</span>
+        {linkifyText(rest)}
+      </>
+    )
+  }
+
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -624,7 +644,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
                       isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
                     }`}
                   >
-                    {linkifyText(line)}
+                    {renderOutputLine(line)}
                   </div>
                 ))}
               </>

@@ -1,5 +1,49 @@
 {
-  "success": false,
-  "error": "LeetCode stats API error: 503",
-  "fetchedAt": "2026-03-03T08:16:42.307Z"
+  "stats": {
+    "totalSolved": 175,
+    "easySolved": 70,
+    "mediumSolved": 96,
+    "hardSolved": 9,
+    "ranking": 858545,
+    "contributionPoints": 0
+  },
+  "recentProblems": [
+    {
+      "title": "Palindrome Number",
+      "titleSlug": "palindrome-number",
+      "timestamp": "1772030412",
+      "statusDisplay": "Accepted",
+      "lang": "cpp"
+    },
+    {
+      "title": "Palindrome Number",
+      "titleSlug": "palindrome-number",
+      "timestamp": "1772030405",
+      "statusDisplay": "Accepted",
+      "lang": "cpp"
+    },
+    {
+      "title": "Palindrome Number",
+      "titleSlug": "palindrome-number",
+      "timestamp": "1772030393",
+      "statusDisplay": "Accepted",
+      "lang": "cpp"
+    },
+    {
+      "title": "Palindrome Number",
+      "titleSlug": "palindrome-number",
+      "timestamp": "1772029780",
+      "statusDisplay": "Accepted",
+      "lang": "cpp"
+    },
+    {
+      "title": "Palindrome Number",
+      "titleSlug": "palindrome-number",
+      "timestamp": "1772029764",
+      "statusDisplay": "Accepted",
+      "lang": "cpp"
+    }
+  ],
+  "fetchedAt": "2026-03-03T12:50:50.381Z",
+  "success": true
 }

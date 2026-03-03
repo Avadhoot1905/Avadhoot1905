@@ -69,15 +69,15 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/chat',
-        destination: 'http://localhost:3001/chat',
+        destination: 'http://localhost:3001/api/chat',
       },
       {
         source: '/api/admin/chats',
-        destination: 'http://localhost:3002/admin/chats',
+        destination: 'http://localhost:3001/api/admin/chats',
       },
       {
         source: '/api/admin/chat',
-        destination: 'http://localhost:3002/admin/chat',
+        destination: 'http://localhost:3001/api/admin/chat',
       },
     ]
   },

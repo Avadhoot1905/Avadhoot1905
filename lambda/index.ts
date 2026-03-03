@@ -1,104 +1,143 @@
-/**
- * ===================================================
- * AWS LAMBDA HANDLER - CONSOLIDATED API
- * ===================================================
- * 
- * Combines Chat and Admin APIs into a single Lambda function
- * using Express and serverless-http.
- * 
- * Routes:
- * - POST /chat      : Chat API with Gemini AI
- * - GET  /admin/chats : Admin API to fetch chat logs
- * 
- * Deployment:
- * - Handler: dist/index.handler
- * - Runtime: nodejs20.x
- * - Architecture: arm64
- * 
- * Environment Variables:
- * - GEMINI_API_KEY
- * - UPSTASH_REDIS_REST_URL
- * - UPSTASH_REDIS_REST_TOKEN
- * - DATABASE_URL
- * - ADMIN_SECRET
- */
-
-import express, { Request, Response } from 'express'
-import serverless from 'serverless-http'
+import type { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Redis } from '@upstash/redis'
-import { asc, desc, eq, sql } from 'drizzle-orm'
+import { asc, desc, eq } from 'drizzle-orm'
 import { db, chatSessionTable, messageTable } from './src/db'
 import { PERSONALITY_PROMPT } from './personality-prompt'
 
-// ===================================================
-// INITIALIZE CLIENTS
-// ===================================================
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 })
 
-// Configuration
-const SESSION_TTL = 3600 // 1 hour
+const SESSION_TTL = 3600
 const MAX_HISTORY_MESSAGES = 30
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Content-Type': 'application/json',
+}
 
-// ===================================================
-// CHAT HELPER FUNCTIONS
-// ===================================================
+class HttpError extends Error {
+  statusCode: number
 
-/**
- * Get chat history from Redis or Database
- */
+  constructor(statusCode: number, message: string) {
+    super(message)
+    this.statusCode = statusCode
+  }
+}
+
+type NormalizedEvent = {
+  requestId: string
+  method: string
+  path: string
+  headers: Record<string, string>
+  query: Record<string, string>
+  body: string | null
+  isBase64Encoded: boolean
+}
+
+function normalizeEvent(event: APIGatewayProxyEvent | APIGatewayProxyEventV2): NormalizedEvent {
+  const isV2 = (event as APIGatewayProxyEventV2).version === '2.0'
+  const requestId =
+    (event as APIGatewayProxyEventV2).requestContext?.requestId ||
+    (event as APIGatewayProxyEvent).requestContext?.requestId ||
+    `req-${Date.now()}`
+  const method = isV2
+    ? ((event as APIGatewayProxyEventV2).requestContext.http.method || 'GET')
+    : ((event as APIGatewayProxyEvent).httpMethod || 'GET')
+  const path = isV2
+    ? ((event as APIGatewayProxyEventV2).rawPath || '/')
+    : ((event as APIGatewayProxyEvent).path || '/')
+
+  const rawHeaders = event.headers || {}
+  const headers = Object.fromEntries(
+    Object.entries(rawHeaders)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => [key.toLowerCase(), String(value)])
+  )
+
+  const query = isV2
+    ? (((event as APIGatewayProxyEventV2).queryStringParameters || {}) as Record<string, string>)
+    : (((event as APIGatewayProxyEvent).queryStringParameters || {}) as Record<string, string>)
+
+  console.log(
+    `[lambda][${requestId}] normalizeEvent: method=${method} path=${path} isV2=${isV2} base64=${!!event.isBase64Encoded}`
+  )
+
+  return {
+    requestId,
+    method,
+    path,
+    headers,
+    query,
+    body: event.body ?? null,
+    isBase64Encoded: !!event.isBase64Encoded,
+  }
+}
+
+function parseJsonBody(event: Pick<NormalizedEvent, 'body' | 'isBase64Encoded' | 'requestId'>): Record<string, unknown> {
+  if (!event.body) return {}
+
+  const decoded = event.isBase64Encoded
+    ? Buffer.from(event.body, 'base64').toString('utf8')
+    : event.body
+
+  if (!decoded.trim()) return {}
+
+  try {
+    return JSON.parse(decoded) as Record<string, unknown>
+  } catch {
+    console.error(`[lambda][${event.requestId}] parseJsonBody failed: invalid JSON`)
+    throw new HttpError(400, 'Invalid JSON body')
+  }
+}
+
+function jsonResponse(statusCode: number, bodyObject: unknown): APIGatewayProxyResult {
+  return {
+    statusCode,
+    headers: corsHeaders,
+    body: JSON.stringify(bodyObject),
+  }
+}
+
 async function getChatHistory(sessionId: string): Promise<{ role: string; content: string }[]> {
   try {
     const cacheKey = `chat:${sessionId}`
     const cached = await redis.get<{ role: string; content: string }[]>(cacheKey)
-    
     if (cached && cached.length > 0) {
-      console.log(`✅ Redis cache HIT for session: ${sessionId}`)
+      console.log(`[lambda] getChatHistory cache hit: sessionId=${sessionId} count=${cached.length}`)
       return cached
     }
-    
-    console.log(`❌ Redis cache MISS for session: ${sessionId}, falling back to DB`)
-    
+
     const dbMessages = await db
       .select({ role: messageTable.role, content: messageTable.content })
       .from(messageTable)
       .where(eq(messageTable.sessionId, sessionId))
       .orderBy(asc(messageTable.timestamp))
       .limit(MAX_HISTORY_MESSAGES)
-    
-    return dbMessages.map((msg: { role: string; content: string }) => ({
-      role: msg.role,
-      content: msg.content,
-    }))
+
+    console.log(`[lambda] getChatHistory cache miss: sessionId=${sessionId} dbCount=${dbMessages.length}`)
+
+    return dbMessages.map((msg) => ({ role: msg.role, content: msg.content }))
   } catch (error) {
-    console.error('Error getting chat history:', error)
+    console.error('[lambda] getChatHistory error:', error)
     return []
   }
 }
 
-/**
- * Save chat history to Redis
- */
-async function saveChatHistory(
-  sessionId: string, 
-  history: { role: string; content: string }[]
-): Promise<void> {
+async function saveChatHistory(sessionId: string, history: { role: string; content: string }[]): Promise<void> {
   try {
-    const cacheKey = `chat:${sessionId}`
-    await redis.setex(cacheKey, SESSION_TTL, JSON.stringify(history))
-    console.log(`📦 Redis cache updated for session: ${sessionId} (${history.length} messages)`)
+    await redis.setex(`chat:${sessionId}`, SESSION_TTL, JSON.stringify(history))
+    console.log(`[lambda] saveChatHistory success: sessionId=${sessionId} count=${history.length}`)
   } catch (error) {
-    console.warn('⚠️  Redis cache update failed (non-critical):', error)
+    console.warn('[lambda] saveChatHistory warning:', error)
+    // best effort cache
   }
 }
 
-/**
- * Save individual message to database
- */
 async function saveMessage(
   sessionId: string,
   role: 'user' | 'assistant',
@@ -106,225 +145,106 @@ async function saveMessage(
   retries: number = 3
 ): Promise<void> {
   let lastError: Error | null = null
-  
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await db.insert(chatSessionTable).values({ sessionId, updatedAt: new Date() }).onConflictDoUpdate({
         target: chatSessionTable.sessionId,
         set: { updatedAt: new Date() },
       })
-
       await db.insert(messageTable).values({ sessionId, role, content })
-      
-      console.log(`💾 ✅ Saved to database - Role: ${role}, Length: ${content.length} chars`)
+      console.log(`[lambda] saveMessage success: sessionId=${sessionId} role=${role} attempt=${attempt}`)
       return
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      console.error(`❌ Attempt ${attempt}/${retries} failed:`, lastError.message)
-      
-      if (attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100))
-      }
+      console.error(`[lambda] saveMessage failed: sessionId=${sessionId} role=${role} attempt=${attempt}`, lastError)
+      if (attempt < retries) await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100))
     }
   }
-  
   throw new Error(`Failed to save ${role} message: ${lastError?.message}`)
 }
 
-/**
- * Clear chat history
- */
 async function clearChatHistory(sessionId: string): Promise<void> {
   try {
-    const cacheKey = `chat:${sessionId}`
-    await redis.del(cacheKey)
-    
+    await redis.del(`chat:${sessionId}`)
     await db.delete(messageTable).where(eq(messageTable.sessionId, sessionId))
-    
-    console.log(`🗑️  Cleared history for session: ${sessionId}`)
+    console.log(`[lambda] clearChatHistory success: sessionId=${sessionId}`)
   } catch (error) {
-    console.error('Error clearing chat history:', error)
+    console.error(`[lambda] clearChatHistory error: sessionId=${sessionId}`, error)
     throw error
   }
 }
 
-/**
- * Send message to Gemini and get response
- */
-async function sendMessageToGemini(
-  sessionId: string,
-  userMessage: string
-): Promise<string> {
-  let aiResponse = ''
-  
+async function sendMessageToGemini(sessionId: string, userMessage: string): Promise<string> {
   try {
+    console.log(`[lambda] sendMessageToGemini start: sessionId=${sessionId} messageLength=${userMessage.length}`)
     const history = await getChatHistory(sessionId)
-    
-    const conversationHistory = history.map(msg => ({
+    const conversationHistory = history.map((msg) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }))
-    
-    conversationHistory.push({
-      role: 'user',
-      parts: [{ text: userMessage }],
-    })
-    
-    const model = genAI.getGenerativeModel({ 
+
+    const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
       systemInstruction: PERSONALITY_PROMPT,
     })
-    
     const chat = model.startChat({
-      history: conversationHistory.slice(0, -1),
-      generationConfig: {
-        maxOutputTokens: 2048,
-        temperature: 0.85,
-      },
+      history: conversationHistory,
+      generationConfig: { maxOutputTokens: 2048, temperature: 0.85 },
     })
-    
+
     const result = await chat.sendMessage(userMessage)
-    const response = await result.response
-    aiResponse = response.text()
-    
-    console.log(`🤖 AI Response generated: ${aiResponse.substring(0, 100)}...`)
-    
-  } catch (error) {
-    console.error('Error generating AI response:', error)
-    throw error
-  }
-  
-  // Save messages to database
-  try {
+    const aiResponse = (await result.response).text()
+    console.log(`[lambda] sendMessageToGemini generated response: sessionId=${sessionId} responseLength=${aiResponse.length}`)
+
     await saveMessage(sessionId, 'user', userMessage)
     await saveMessage(sessionId, 'assistant', aiResponse)
-    console.log('✅ Both messages saved successfully to database')
-  } catch (error) {
-    console.error('🚨 CRITICAL ERROR: Failed to save messages:', error)
-    throw new Error(`Database save failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-  
-  // Update Redis cache
-  try {
-    const updatedHistory = [
-      ...await getChatHistory(sessionId),
-      { role: 'user', content: userMessage },
-      { role: 'assistant', content: aiResponse },
-    ].slice(-MAX_HISTORY_MESSAGES)
-    
+
+    const updatedHistory = [...history, { role: 'user', content: userMessage }, { role: 'assistant', content: aiResponse }]
+      .slice(-MAX_HISTORY_MESSAGES)
     await saveChatHistory(sessionId, updatedHistory)
+
+    return aiResponse
   } catch (error) {
-    console.warn('⚠️  Warning: Failed to update Redis cache (non-critical):', error)
+    console.error(`[lambda] sendMessageToGemini error: sessionId=${sessionId}`, error)
+    throw error
   }
-  
-  return aiResponse
 }
 
-// ===================================================
-// EXPRESS APP & ROUTES
-// ===================================================
-
-const app = express()
-
-// Middleware
-app.use(express.json())
-
-// ===================================================
-// CORS MIDDLEWARE
-// ===================================================
-// Configured for AWS API Gateway HTTP API v2.0
-// Handles OPTIONS preflight requests and adds CORS headers to all responses
-app.use((req, res, next) => {
-  // Set CORS headers for all responses
-  res.header('Access-Control-Allow-Origin', 'https://avadhootgm.in')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret')
-  res.header('Access-Control-Max-Age', '86400') // Cache preflight for 24 hours
-  
-  // Handle OPTIONS preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log(`✅ OPTIONS preflight request for ${req.path}`)
-    res.status(200).end()
-    return
-  }
-  
-  next()
-})
-
-// Request logging
-app.use((req, res, next) => {
-  console.log(`\n📨 ${req.method} ${req.path}`)
-  next()
-})
-
-const apiRouter = express.Router()
-
-app.use('/api', apiRouter)
-
-// ===================================================
-// CHAT ROUTE
-// ===================================================
-
-apiRouter.post('/chat', async (req: Request, res: Response) => {
+async function handleChat(body: Record<string, unknown>): Promise<APIGatewayProxyResult> {
   try {
-    const { sessionId, message, clearHistory } = req.body
-    
-    // Validate sessionId
-    if (!sessionId || typeof sessionId !== 'string') {
-      res.status(400).json({ error: 'sessionId is required' })
-      return
-    }
-    
-    // Handle clear history request
-    if (clearHistory === true) {
+    const sessionId = typeof body.sessionId === 'string' ? body.sessionId : ''
+    const message = typeof body.message === 'string' ? body.message : ''
+    const clearHistory = body.clearHistory === true
+
+    console.log(`[lambda] handleChat: sessionId=${sessionId || 'missing'} clearHistory=${clearHistory}`)
+
+    if (!sessionId) return jsonResponse(400, { error: 'sessionId is required' })
+    if (clearHistory) {
       await clearChatHistory(sessionId)
-      res.json({ success: true, message: 'History cleared' })
-      return
+      return jsonResponse(200, { success: true, message: 'History cleared' })
     }
-    
-    // Validate message
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      res.status(400).json({ error: 'message is required' })
-      return
-    }
-    
-    // Process chat message
+    if (!message.trim()) return jsonResponse(400, { error: 'message is required' })
+
     const response = await sendMessageToGemini(sessionId, message.trim())
-    
-    res.json({
-      success: true,
-      response,
-      sessionId,
-    })
+    return jsonResponse(200, { success: true, response, sessionId })
   } catch (error) {
-    console.error('❌ Chat error:', error)
-    
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-    })
+    console.error('[lambda] handleChat error:', error)
+    throw error
   }
-})
+}
 
-// ===================================================
-// ADMIN ROUTE
-// ===================================================
-
-apiRouter.get('/admin/chats', async (req: Request, res: Response) => {
+async function handleAdmin(headers: Record<string, string>): Promise<APIGatewayProxyResult> {
   try {
-    // Validate admin secret
-    const adminSecret = req.headers['x-admin-secret']
+    const adminSecret = headers['x-admin-secret']
     const expectedSecret = process.env.ADMIN_SECRET
-    
+
+    console.log(`[lambda] handleAdmin: secretPresent=${!!adminSecret}`)
+
     if (!adminSecret || !expectedSecret || adminSecret !== expectedSecret) {
-      console.log('❌ Authorization failed')
-      res.status(401).json({ error: 'Unauthorized' })
-      return
+      console.warn('[lambda] handleAdmin unauthorized request')
+      return jsonResponse(401, { error: 'Unauthorized' })
     }
-    
-    console.log('✅ Authorization successful')
-    
-    // Fetch chat logs
+
     const rows = await db
       .select()
       .from(messageTable)
@@ -332,49 +252,40 @@ apiRouter.get('/admin/chats', async (req: Request, res: Response) => {
       .orderBy(desc(messageTable.timestamp))
       .limit(100)
 
-    const messages = rows.map((row) => ({
-      ...row.Message,
-      chatSession: row.ChatSession,
-    }))
-
-    console.log(`✅ Fetched ${messages.length} messages`)
-    
-    res.json(messages)
+    console.log(`[lambda] handleAdmin success: rows=${rows.length}`)
+    const messages = rows.map((row) => ({ ...row.Message, chatSession: row.ChatSession }))
+    return jsonResponse(200, messages)
   } catch (error) {
-    console.error('❌ Admin error:', error)
-    
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+    console.error('[lambda] handleAdmin error:', error)
+    throw error
   }
-})
+}
 
-// ===================================================
-// HEALTH CHECK
-// ===================================================
-
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
-})
-
-app.get('/health/db', async (req: Request, res: Response) => {
+export const handler = async (
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResult> => {
   try {
-    await db.execute(sql`SELECT 1`)
-    res.json({ status: 'ok', db: 'up', timestamp: new Date().toISOString() })
+    const normalized = normalizeEvent(event)
+    console.log(`[lambda][${normalized.requestId}] handler start: ${normalized.method} ${normalized.path}`)
+
+    if (normalized.method === 'OPTIONS') return jsonResponse(200, { ok: true })
+
+    if (normalized.method === 'POST' && normalized.path === '/api/chat') {
+      return await handleChat(parseJsonBody(normalized))
+    }
+
+    if (normalized.method === 'GET' && normalized.path === '/api/admin/chats') {
+      return await handleAdmin(normalized.headers)
+    }
+
+    return jsonResponse(404, { error: 'Not Found' })
   } catch (error) {
-    console.error('❌ DB health check failed:', error)
-    res.status(500).json({
-      status: 'error',
-      db: 'down',
-      error: error instanceof Error ? error.message : 'Unknown database error',
-      timestamp: new Date().toISOString(),
+    console.error('[lambda] handler error:', error)
+    if (error instanceof HttpError) return jsonResponse(error.statusCode, { error: error.message })
+
+    return jsonResponse(500, {
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Unknown error',
     })
   }
-})
-
-// ===================================================
-// EXPORT LAMBDA HANDLER
-// ===================================================
-
-export const handler = serverless(app)
+}

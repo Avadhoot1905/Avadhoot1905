@@ -13,6 +13,42 @@ type AchievementNotesViewProps = {
   achievement: Achievement
 }
 
+const highlightedPhrases = [
+  "Track Winner for Best CS/IT Project out of 250 teams",
+  "Track Winner in Tech for Good among 180 teams",
+]
+
+function renderHighlightedText(text: string) {
+  return highlightedPhrases.reduce<React.ReactNode[]>((nodes, phrase, phraseIndex) => {
+    return nodes.flatMap((node, nodeIndex) => {
+      if (typeof node !== "string") {
+        return [node]
+      }
+
+      const parts = node.split(phrase)
+      if (parts.length === 1) {
+        return [node]
+      }
+
+      return parts.flatMap((part, partIndex) => {
+        if (partIndex === parts.length - 1) {
+          return [part]
+        }
+
+        return [
+          part,
+          <span
+            key={`highlight-${phraseIndex}-${nodeIndex}-${partIndex}`}
+            className="rounded bg-yellow-200 px-1 text-yellow-900"
+          >
+            {phrase}
+          </span>,
+        ]
+      })
+    })
+  }, [text])
+}
+
 function CheckCircleIcon({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
@@ -62,13 +98,13 @@ function AchievementNotesView({ achievement }: AchievementNotesViewProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-neutral-900">{achievement.title}</h2>
+        <h2 className="text-xl font-semibold text-yellow-500">{achievement.title}</h2>
         <p className="mt-1 text-sm text-neutral-500">{achievement.date}</p>
       </div>
 
       <div className="space-y-4 text-base leading-relaxed text-neutral-700">
-        {achievement.content.split("\n\n").map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
+        {achievement.content.split("\n\n").map((paragraph, index) => (
+          <p key={`${achievement.id}-paragraph-${index}`}>{renderHighlightedText(paragraph)}</p>
         ))}
       </div>
     </div>
@@ -86,7 +122,7 @@ export function AchievementsApp() {
         <aside className="w-full border-b border-neutral-200 bg-neutral-50 md:w-[280px] md:border-b-0 md:border-r">
           <div className="border-b border-neutral-200 px-4 py-4">
             <div className="flex items-center justify-between gap-2">
-              <h1 className="text-lg font-semibold text-neutral-900">Achievements</h1>
+            <h1 className="text-lg font-semibold text-yellow-600">Achievements</h1>
               <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                 Completed
               </span>
@@ -110,7 +146,7 @@ export function AchievementsApp() {
           {selectedAchievement ? (
             <AchievementNotesView achievement={selectedAchievement} />
           ) : (
-            <div className="rounded-lg bg-emerald-400/10 px-4 py-3 text-sm text-neutral-600">
+            <div className="rounded-lg bg-emerald-400/10 px-4 py-3 text-sm text-yellow-400">
               No achievements available.
             </div>
           )}

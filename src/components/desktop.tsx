@@ -10,8 +10,9 @@ import { ShutdownScreen } from "@/components/shutdown-screen"
 import { LockScreen } from "@/components/lock-screen"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
+import { GiTicTacToe } from "react-icons/gi"
 import { 
-  FaFolder, 
+  FaFolder,
   FaSafari, 
   FaCommentDots, 
   FaImages, 
@@ -22,6 +23,7 @@ import {
   FaGamepad,
   FaTerminal
 } from "react-icons/fa"
+
 import { 
   SiGithub,
   SiLinkedin,
@@ -325,7 +327,7 @@ export function MacOSDesktop() {
           />
           <AppIcon
             name="Tic Tac Toe"
-            icon={<FaGamepad className="text-pink-500" />}
+            icon={<GiTicTacToe className="text-pink-500" />}
             onClick={() => toggleWindow("tictactoe")}
           />
           <AppIcon

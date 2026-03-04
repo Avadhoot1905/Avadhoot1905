@@ -40,6 +40,7 @@ import { PhotosApp } from "@/components/apps/PhotosApp"
 import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
 import { Game2048App } from "@/components/apps/Game2048App"
 import { TerminalApp } from "@/components/apps/TerminalApp"
+import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/AchievementsApp"
 import { Widgets } from "@/components/widgets"
 
 export function MacOSDesktop() {
@@ -308,6 +309,11 @@ export function MacOSDesktop() {
             onClick={() => toggleWindow("projects")}
           />
           <AppIcon
+            name="Achievements"
+            icon={<AchievementsAppIcon />}
+            onClick={() => toggleWindow("achievements")}
+          />
+          <AppIcon
             name="Education"
             icon={<FaGraduationCap className="text-blue-700" />}
             onClick={() => toggleWindow("education")}
@@ -416,6 +422,20 @@ export function MacOSDesktop() {
               initialSize={{ width: 700, height: 550 }}
             >
               <ProjectsApp initialFilter={projectsFilter} />
+            </Window>
+          )}
+
+          {openWindows.includes("achievements") && (
+            <Window
+              key="achievements"
+              title="Achievements"
+              isActive={activeWindow === "achievements"}
+              onActivate={() => activateWindow("achievements")}
+              onClose={() => toggleWindow("achievements")}
+              initialPosition={{ x: 240, y: 140 }}
+              initialSize={{ width: 820, height: 560 }}
+            >
+              <AchievementsApp />
             </Window>
           )}
 

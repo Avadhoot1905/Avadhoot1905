@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactElement } from "react"
 import { achievements, type Achievement } from "@/data/achievements"
 
 type AchievementListItemProps = {
@@ -19,34 +19,45 @@ const highlightedPhrases = [
 ]
 
 function renderHighlightedText(text: string) {
-  return highlightedPhrases.reduce<React.ReactNode[]>((nodes, phrase, phraseIndex) => {
-    return nodes.flatMap((node, nodeIndex) => {
-      if (typeof node !== "string") {
-        return [node]
+  type HighlightSegment = string | ReactElement
+
+  let segments: HighlightSegment[] = [text]
+
+  highlightedPhrases.forEach((phrase, phraseIndex) => {
+    segments = segments.flatMap((segment, segmentIndex) => {
+      if (typeof segment !== "string") {
+        return [segment]
       }
 
-      const parts = node.split(phrase)
+      const parts = segment.split(phrase)
       if (parts.length === 1) {
-        return [node]
+        return [segment]
       }
 
-      return parts.flatMap((part, partIndex) => {
-        if (partIndex === parts.length - 1) {
-          return [part]
+      const nextSegments: HighlightSegment[] = []
+
+      parts.forEach((part, partIndex) => {
+        if (part) {
+          nextSegments.push(part)
         }
 
-        return [
-          part,
-          <span
-            key={`highlight-${phraseIndex}-${nodeIndex}-${partIndex}`}
-            className="rounded bg-yellow-200 px-1 text-yellow-900"
-          >
-            {phrase}
-          </span>,
-        ]
+        if (partIndex < parts.length - 1) {
+          nextSegments.push(
+            <span
+              key={`highlight-${phraseIndex}-${segmentIndex}-${partIndex}`}
+              className="rounded bg-yellow-200 px-1 text-yellow-900"
+            >
+              {phrase}
+            </span>
+          )
+        }
       })
+
+      return nextSegments
     })
-  }, [text])
+  })
+
+  return segments
 }
 
 function CheckCircleIcon({ className = "" }: { className?: string }) {
@@ -122,7 +133,7 @@ export function AchievementsApp() {
         <aside className="w-full border-b border-neutral-200 bg-neutral-50 md:w-[280px] md:border-b-0 md:border-r">
           <div className="border-b border-neutral-200 px-4 py-4">
             <div className="flex items-center justify-between gap-2">
-            <h1 className="text-lg font-semibold text-yellow-600">Achievements</h1>
+            <h1 className="text-lg font-semibold text-yellow-500">Achievements</h1>
               <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                 Completed
               </span>
@@ -146,7 +157,7 @@ export function AchievementsApp() {
           {selectedAchievement ? (
             <AchievementNotesView achievement={selectedAchievement} />
           ) : (
-            <div className="rounded-lg bg-emerald-400/10 px-4 py-3 text-sm text-yellow-400">
+            <div className="rounded-lg bg-emerald-400/10 px-4 py-3 text-sm text-yellow-300">
               No achievements available.
             </div>
           )}

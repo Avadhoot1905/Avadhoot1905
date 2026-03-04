@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "dev:lambda": "tsx lambda/dev-server.ts",
     "dev:chat": "tsx lambda/chat/index.ts",
-    "build": "npm run fetch-data && next build",
+    "build": "rm -rf /out && npm run fetch-data && next build",
     "start": "next start",
     "lint": "next lint",
     "fetch-data": "tsx scripts/fetch-build-data.ts"

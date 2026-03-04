@@ -157,16 +157,28 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
             📱 App
           </button>
           <button
-            onClick={() => setFilter("system")}
+            onClick={() => setFilter("Blockchain")}
             className={`px-3 py-1 rounded text-sm font-medium transition ${
-              filter === "system"
+              filter === "Blockchain"
                 ? "bg-blue-600 text-white"
                 : theme === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
-            💻 System
+            🧱 Blockchain
+          </button>
+          <button
+            onClick={() => setFilter("Machine Learning")}
+            className={`px-3 py-1 rounded text-sm font-medium transition ${
+              filter === "Machine Learning"
+                ? "bg-blue-600 text-white"
+                : theme === "dark"
+                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            🤖 ML
           </button>
           <button
             onClick={() => setFilter("Extension Development")}
@@ -181,28 +193,16 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
             🧩 Extension
           </button>
           <button
-            onClick={() => setFilter("Data Science")}
+            onClick={() => setFilter("system")}
             className={`px-3 py-1 rounded text-sm font-medium transition ${
-              filter === "Data Science"
+              filter === "system"
                 ? "bg-blue-600 text-white"
                 : theme === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
-            📊 Data Science
-          </button>
-          <button
-            onClick={() => setFilter("Machine Learning")}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${
-              filter === "Machine Learning"
-                ? "bg-blue-600 text-white"
-                : theme === "dark"
-                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            🤖 ML
+            💻 System
           </button>
         </div>
       </div>

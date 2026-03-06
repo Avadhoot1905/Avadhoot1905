@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion } from "framer-motion"
+import { Lock, Unlock } from "lucide-react"
 
 type Board = (number | null)[][]
 type Tile = {
@@ -41,6 +42,8 @@ export function Game2048App() {
   const [gameWon, setGameWon] = useState(false)
   const [highScore, setHighScore] = useState(0)
   const [moveDirection, setMoveDirection] = useState<"up" | "down" | "left" | "right" | null>(null)
+  const [isLocked, setIsLocked] = useState(false)
+  const gameContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Convert board to tiles for animation
   const boardToTiles = (board: Board): Tile[] => {
@@ -214,8 +217,23 @@ export function Game2048App() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [move])
 
-  // Handle touch/swipe gestures
+  // Prevent body scrolling when lock mode is enabled.
   useEffect(() => {
+    if (!isLocked) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isLocked])
+
+  // Handle touch/swipe gestures inside the game area.
+  useEffect(() => {
+    const gameElement = gameContainerRef.current
+    if (!gameElement) return
+
     let touchStartX = 0
     let touchStartY = 0
     let touchEndX = 0
@@ -229,6 +247,10 @@ export function Game2048App() {
     }
 
     const handleTouchMove = (e: TouchEvent) => {
+      // In lock mode, avoid browser scroll and parent drag gestures.
+      if (isLocked) {
+        e.preventDefault()
+      }
       touchEndX = e.touches[0].clientX
       touchEndY = e.touches[0].clientY
     }
@@ -265,16 +287,16 @@ export function Game2048App() {
       touchEndY = 0
     }
 
-    window.addEventListener("touchstart", handleTouchStart)
-    window.addEventListener("touchmove", handleTouchMove)
-    window.addEventListener("touchend", handleTouchEnd)
+    gameElement.addEventListener("touchstart", handleTouchStart, { passive: true })
+    gameElement.addEventListener("touchmove", handleTouchMove, { passive: !isLocked })
+    gameElement.addEventListener("touchend", handleTouchEnd, { passive: true })
 
     return () => {
-      window.removeEventListener("touchstart", handleTouchStart)
-      window.removeEventListener("touchmove", handleTouchMove)
-      window.removeEventListener("touchend", handleTouchEnd)
+      gameElement.removeEventListener("touchstart", handleTouchStart)
+      gameElement.removeEventListener("touchmove", handleTouchMove)
+      gameElement.removeEventListener("touchend", handleTouchEnd)
     }
-  }, [move])
+  }, [move, isLocked])
 
   // Initialize game
   useEffect(() => {
@@ -316,8 +338,18 @@ export function Game2048App() {
   }
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-amber-900 via-orange-800 to-red-900 flex flex-col items-center justify-center p-4 overflow-auto">
-      <div className="max-w-md w-full">
+    <div
+      ref={gameContainerRef}
+      className={`${
+        isLocked
+          ? "fixed inset-0 z-[250]"
+          : "h-full w-full"
+      } bg-gradient-to-br from-amber-900 via-orange-800 to-red-900 flex flex-col items-center justify-center p-4 overflow-auto touch-none`}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
+      <div className={`w-full ${isLocked ? "max-w-2xl" : "max-w-md"}`}>
         {/* Header */}
         <div className="mb-4 text-center">
           <h1 className="text-5xl font-bold text-yellow-300 mb-2 retro-text shadow-lg">
@@ -344,6 +376,14 @@ export function Game2048App() {
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold uppercase text-sm border-2 border-red-400 shadow-lg transition-all hover:scale-105"
           >
             New Game
+          </button>
+          <button
+            onClick={() => setIsLocked((current) => !current)}
+            className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold uppercase text-sm border-2 border-amber-400 shadow-lg transition-all hover:scale-105 flex items-center gap-2"
+            aria-label={isLocked ? "Unlock game layout" : "Lock game to fullscreen"}
+          >
+            {isLocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+            {isLocked ? "Unlock" : "Lock"}
           </button>
         </div>
 
@@ -438,6 +478,7 @@ export function Game2048App() {
             <span className="hidden md:inline">🎮 Use arrow keys to move tiles</span>
             <span className="md:hidden">🎮 Swipe in any direction to move tiles</span>
           </p>
+          <p className="mb-1 md:hidden">🔒 Use Lock for smooth full-screen swipes</p>
           <p>🎯 Combine same numbers to reach 2048!</p>
         </div>
       </div>

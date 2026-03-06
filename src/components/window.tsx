@@ -40,6 +40,7 @@ export function Window({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [dragY, setDragY] = useState(0)
+  const [isGame2048Locked, setIsGame2048Locked] = useState(false)
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
@@ -53,6 +54,18 @@ export function Window({
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    const handle2048LockChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ locked?: boolean }>
+      setIsGame2048Locked(Boolean(customEvent.detail?.locked))
+    }
+
+    window.addEventListener("game2048-lock-change", handle2048LockChange as EventListener)
+    return () => {
+      window.removeEventListener("game2048-lock-change", handle2048LockChange as EventListener)
+    }
   }, [])
 
   // Handle drag to dismiss on mobile
@@ -70,6 +83,8 @@ export function Window({
 
   // Mobile iOS-style modal
   if (isMobile) {
+    const disableDrag = title === "2048" && isGame2048Locked
+
     return (
       <motion.div
         className="fixed inset-0 flex items-end md:items-center justify-center p-0"
@@ -98,11 +113,11 @@ export function Window({
           initial={{ y: '100%' }}
           animate={{ y: dragY }}
           exit={{ y: '100%' }}
-          drag="y"
+          drag={disableDrag ? false : "y"}
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={{ top: 0, bottom: 0.5 }}
           dragMomentum={false}
-          onDragEnd={handleDragEnd}
+          onDragEnd={disableDrag ? undefined : handleDragEnd}
           onClick={(e) => e.stopPropagation()}
         >
           {/* iOS-style handle - Draggable area */}

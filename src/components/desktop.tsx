@@ -393,7 +393,7 @@ export function MacOSDesktop() {
               onActivate={() => activateWindow("photos")}
               onClose={() => toggleWindow("photos")}
               initialPosition={{ x: 250, y: 150 }}
-              initialSize={{ width: 650, height: 450 }}
+              initialSize={{ width: 750, height: 600 }}
             >
               <PhotosApp />
             </Window>

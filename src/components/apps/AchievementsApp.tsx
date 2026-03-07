@@ -17,6 +17,7 @@ type AchievementNotesViewProps = {
 const highlightedPhrases = [
   "Track Winner for Best CS/IT Project out of 250 teams",
   "Track Winner in Tech for Good among 180 teams",
+  "Best Idea among 60 participating teams"
 ]
 
 function renderHighlightedText(text: string) {

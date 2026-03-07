@@ -25,9 +25,9 @@ export const achievements: Achievement[] = [
     },
     {
         id: "ios-fusion-25",
-        title: "IoS Fusion 25 Apple Developers Group",
+        title: "iOS Fusion 25 Apple Developers Group",
         date: "September 2025",
-        summary: "IoS Fusion 25 Best Idea",
+        summary: "iOS Fusion 25 Best Idea",
         content:
             "Won Best Idea among 60 participating teams for conceptualizing and developing a mobile application aimed at enabling early detection of common eye diseases using on-device machine learning. The solution focused on making preliminary eye health screening more accessible by allowing users to capture images of their eyes through a simple mobile interface. The application was built using Swift and designed to run inference locally, ensuring faster results, offline capability, and improved user privacy by avoiding the need to transmit sensitive medical images to external servers.\n\nThe core detection system was built using TensorFlow and OpenCV, where a machine learning model was trained to identify visual indicators of conditions such as cataract, glaucoma, and conjunctivitis from eye images. Once trained, the model was converted into Apple’s .mlmodel format using the CoreML framework, allowing it to run natively on the device. This integration enabled real-time analysis directly on the user’s phone, leveraging Apple’s optimized on-device ML pipeline for efficient and responsive predictions without requiring cloud-based processing.\n\nBeyond detection, the application also aimed to guide users toward timely medical consultation. Based on the analysis results, the app could suggest nearby ophthalmologists or clinics for further diagnosis and treatment. Authentication and user management were handled through OAuth, ensuring secure access while maintaining a smooth user experience. The project demonstrated how mobile development and on-device machine learning could be combined to create accessible, privacy-conscious healthcare screening tools.",
     }

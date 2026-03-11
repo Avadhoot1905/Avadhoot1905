@@ -25,7 +25,7 @@ export const achievements: Achievement[] = [
     },
     {
         id: "ios-fusion-25",
-        title: "iOS Fusion'25 Apple Developers Group",
+        title: "iOS Fusion'25 Apple Developers Group Best Idea",
         date: "September 2025",
         summary: "iOS Fusion'25 Best Idea",
         content:

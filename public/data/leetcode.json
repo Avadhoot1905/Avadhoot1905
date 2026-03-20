@@ -1,49 +1,49 @@
 {
   "stats": {
-    "totalSolved": 175,
-    "easySolved": 70,
-    "mediumSolved": 96,
-    "hardSolved": 9,
-    "ranking": 859127,
+    "totalSolved": 181,
+    "easySolved": 72,
+    "mediumSolved": 99,
+    "hardSolved": 10,
+    "ranking": 837807,
     "contributionPoints": 0
   },
   "recentProblems": [
     {
-      "title": "Palindrome Number",
-      "titleSlug": "palindrome-number",
-      "timestamp": "1772030412",
+      "title": "Rotate List",
+      "titleSlug": "rotate-list",
+      "timestamp": "1772950790",
       "statusDisplay": "Accepted",
-      "lang": "cpp"
+      "lang": "java"
     },
     {
-      "title": "Palindrome Number",
-      "titleSlug": "palindrome-number",
-      "timestamp": "1772030405",
+      "title": "Rotate List",
+      "titleSlug": "rotate-list",
+      "timestamp": "1772950782",
       "statusDisplay": "Accepted",
-      "lang": "cpp"
+      "lang": "java"
     },
     {
-      "title": "Palindrome Number",
-      "titleSlug": "palindrome-number",
-      "timestamp": "1772030393",
+      "title": "Reverse Linked List",
+      "titleSlug": "reverse-linked-list",
+      "timestamp": "1772949220",
       "statusDisplay": "Accepted",
-      "lang": "cpp"
+      "lang": "java"
     },
     {
-      "title": "Palindrome Number",
-      "titleSlug": "palindrome-number",
-      "timestamp": "1772029780",
+      "title": "Reverse Linked List",
+      "titleSlug": "reverse-linked-list",
+      "timestamp": "1772949197",
       "statusDisplay": "Accepted",
-      "lang": "cpp"
+      "lang": "java"
     },
     {
-      "title": "Palindrome Number",
-      "titleSlug": "palindrome-number",
-      "timestamp": "1772029764",
+      "title": "Merge Two Sorted Lists",
+      "titleSlug": "merge-two-sorted-lists",
+      "timestamp": "1772947522",
       "statusDisplay": "Accepted",
-      "lang": "cpp"
+      "lang": "java"
     }
   ],
-  "fetchedAt": "2026-03-04T17:16:22.894Z",
+  "fetchedAt": "2026-03-20T23:45:31.216Z",
   "success": true
 }

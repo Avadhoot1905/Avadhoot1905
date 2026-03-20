@@ -24,6 +24,8 @@ import {
   FaTerminal
 } from "react-icons/fa"
 
+import { PiBirdFill } from "react-icons/pi";
+
 import { 
   SiGithub,
   SiLinkedin,
@@ -41,6 +43,7 @@ import { MessagesApp } from "@/components/apps/MessagesApp"
 import { PhotosApp } from "@/components/apps/PhotosApp"
 import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
 import { Game2048App } from "@/components/apps/Game2048App"
+import { FlappyBirdApp } from "@/components/apps/FlappyBirdApp"
 import { TerminalApp } from "@/components/apps/TerminalApp"
 import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/AchievementsApp"
 import { Widgets } from "@/components/widgets"
@@ -336,6 +339,11 @@ export function MacOSDesktop() {
             onClick={() => toggleWindow("2048")}
           />
           <AppIcon
+            name="Flappy Bird"
+            icon={<PiBirdFill className="text-yellow-400" />}
+            onClick={() => toggleWindow("flappybird")}
+          />
+          <AppIcon
             name="Terminal"
             icon={<FaTerminal className="text-gray-300" />}
             onClick={() => toggleWindow("terminal")}
@@ -494,6 +502,20 @@ export function MacOSDesktop() {
               initialSize={{ width: 550, height: 700 }}
             >
               <Game2048App />
+            </Window>
+          )}
+
+          {openWindows.includes("flappybird") && (
+            <Window
+              key="flappybird"
+              title="Flappy Bird"
+              isActive={activeWindow === "flappybird"}
+              onActivate={() => activateWindow("flappybird")}
+              onClose={() => toggleWindow("flappybird")}
+              initialPosition={{ x: 380, y: 90 }}
+              initialSize={{ width: 520, height: 700 }}
+            >
+              <FlappyBirdApp />
             </Window>
           )}
 

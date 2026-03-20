@@ -21,9 +21,10 @@ import {
   FaGraduationCap,
   FaBriefcase,
   FaGamepad,
-  FaTerminal,
-  FaDove
+  FaTerminal
 } from "react-icons/fa"
+
+import { PiBirdFill } from "react-icons/pi";
 
 import { 
   SiGithub,
@@ -339,7 +340,7 @@ export function MacOSDesktop() {
           />
           <AppIcon
             name="Flappy Bird"
-            icon={<FaDove className="text-yellow-400" />}
+            icon={<PiBirdFill className="text-yellow-400" />}
             onClick={() => toggleWindow("flappybird")}
           />
           <AppIcon

@@ -299,6 +299,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           "• exit - Close terminal",
           "• whoami - Current user",
           "• date - Date/time",
+          "• users - List users",
           ""
         ] : [
           "Available commands:",
@@ -314,6 +315,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           "  exit       - Close the terminal window",
           "  whoami     - Display current user",
           "  date       - Display current date and time",
+          "  users      - List users",
           ""
         ]
         break
@@ -529,6 +531,9 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
         return
       case "whoami":
         output = ["avadhoot@portfolio:~$", "Avadhoot Ganesh Mahadik", ""]
+        break
+      case "users":
+        output = ["avi19", ""]
         break
       case "date":
         output = [new Date().toString(), ""]

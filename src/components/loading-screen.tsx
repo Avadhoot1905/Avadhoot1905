@@ -25,64 +25,81 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       const tl = gsap.timeline()
 
       // ============================================
-      // 1️⃣ FIRST TEXT: Typewriter Effect
+      // 1️⃣ FIRST TEXT: Zoomed-in word-by-word reveal + zoom-out
       // ============================================
       if (firstTextRef.current) {
-        const firstText = "Simple on the surface."
-        firstTextRef.current.textContent = ""
+        const words = ["Simple", "on", "the", "surface."]
+
+        // Clear and set up container — starts zoomed in
+        firstTextRef.current.innerHTML = ""
         firstTextRef.current.style.opacity = "1"
+        firstTextRef.current.style.transform = "scale(1.4)"
+        firstTextRef.current.style.transformOrigin = "center center"
 
-        tl.to(
-          firstTextRef.current,
+        // Create word spans (hidden initially)
+        const wordSpans: HTMLElement[] = []
+        words.forEach((word, idx) => {
+          const span = document.createElement("span")
+          span.textContent = word
+          span.style.display = "inline-block"
+          span.style.opacity = "0"
+          span.style.transform = "translateY(12px)"
+          span.style.marginRight = "0.35em"
+          firstTextRef.current!.appendChild(span)
+          wordSpans.push(span)
+        })
+
+        // Phase 1 + 2: Words appear one by one with subtle rise
+        tl.fromTo(
+          wordSpans,
           {
-            // Typewriter effect: reveal text character by character
-            onUpdate: function () {
-              const progress = this.progress()
-              const charCount = Math.floor(progress * firstText.length)
-              firstTextRef.current!.textContent = firstText.slice(0, charCount)
-            },
-            duration: 1.5,
-            ease: "power1.inOut",
+            opacity: 0,
+            y: 12,
           },
-          0
-        )
-
-        // Add cursor blink at the end
-        tl.to(
-          firstTextRef.current,
           {
-            onUpdate: function () {
-              if (firstTextRef.current) {
-                firstTextRef.current.textContent = firstText
-              }
-            },
+            opacity: 1,
+            y: 0,
             duration: 0.3,
+            stagger: 0.25,
+            ease: "power2.out",
           },
-          0.8
+          0.1
         )
 
-        // Hide first text completely before second text appears
+        // Phase 3: Smooth zoom-out after all words are visible
+        // Words finish at: 0.1 + 0.3 + (3 * 0.25) = 1.15s
+        tl.to(
+          firstTextRef.current,
+          {
+            scale: 1,
+            duration: 0.7,
+            ease: "power2.out",
+          },
+          1.2
+        )
+
+        // Fade out first text before second text appears
         tl.to(
           firstTextRef.current,
           {
             opacity: 0,
             duration: 0.3,
           },
-          1.3
+          2.0
         )
       }
 
       // ============================================
       // 2️⃣ SECOND TEXT: Background transition + Word-by-word with drag effect
       // ============================================
-      // Transition background to black (starts at 1.3s when first text hides)
+      // Transition background to black (starts at 2.0s when first text fades)
       tl.to(
         containerRef.current,
         {
           backgroundColor: "#000000",
           duration: 0.6,
         },
-        1.3
+        2.0
       )
 
       if (secondTextRef.current && bgTransitionRef.current) {
@@ -103,7 +120,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
         // Phase 3: FULL ACCELERATION (1.1s+)
         //   Speed ramps from 90 → 340 px/s. Full conveyor cascade.
 
-        const PHASE_START = 1.5       // timeline position to show focal text
+        const PHASE_START = 2.2       // timeline position to show focal text
         const HOLD_DURATION = 0.6     // seconds of static focus
         const MOTION_START = PHASE_START + HOLD_DURATION  // when ticker begins
         const RUN_DURATION = 2.0      // total ticker running time
@@ -305,7 +322,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
               thirdTextRef.current.style.opacity = "0"
             }
           },
-          3.2
+          5.2
         )
 
         if (thirdTextRef.current) {
@@ -315,7 +332,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
               opacity: 1,
               duration: 0.2,
             },
-            3.2
+            5.2
           )
         }
 
@@ -328,7 +345,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             const baselineY = thirdRect.bottom + 18
             gsap.set(cursorRef.current, { x: startX, y: baselineY, opacity: 0 })
           },
-          3.24
+          5.24
         )
 
         tl.to(
@@ -337,7 +354,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             opacity: 1,
             duration: 0.12,
           },
-          3.25
+          5.25
         )
 
         // Cursor movement on a slight arc under the text (starts at 3.3s)
@@ -387,7 +404,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
               }
             },
           },
-          3.3
+          5.3
         )
 
         // Hide cursor at the end
@@ -397,7 +414,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             opacity: 0,
             duration: 0.3,
           },
-          4.8
+          6.8
         )
       }
 
@@ -411,7 +428,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           opacity: 0,
           duration: 0.4,
         },
-        4.9
+        6.9
       )
 
       if (finalNameRef.current) {
@@ -428,7 +445,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             duration: 0.8,
             ease: "power1.out",
           },
-          5.3
+          7.3
         )
       }
 
@@ -466,6 +483,8 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           maxWidth: "70%",
           fontFamily: "system-ui, -apple-system, sans-serif",
           opacity: 1,
+          transform: "scale(1.4)",
+          transformOrigin: "center center",
         }}
       />
 

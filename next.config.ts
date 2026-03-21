@@ -61,6 +61,22 @@ const nextConfig: NextConfig = {
   // Trailing slashes for S3 compatibility
   trailingSlash: true,
 
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.avadhootgm.in',
+          },
+        ],
+        destination: 'https://avadhootgm.in/:path*',
+        permanent: true,
+      },
+    ]
+  },
+
   async rewrites() {
     if (process.env.NODE_ENV !== 'development') {
       return []

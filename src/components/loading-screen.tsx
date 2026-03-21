@@ -88,79 +88,181 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       if (secondTextRef.current && bgTransitionRef.current) {
         // Clear container
         secondTextRef.current.innerHTML = ""
-        secondTextRef.current.style.opacity = "0"
-        
-        // Create main text
-        const mainText = document.createElement("div")
-        mainText.style.display = "flex"
-        mainText.style.justifyContent = "center"
-        mainText.style.alignItems = "center"
-        mainText.style.gap = "0.75rem"
-        mainText.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
-        secondTextRef.current.appendChild(mainText)
+        secondTextRef.current.style.opacity = "1"
+        secondTextRef.current.style.overflow = "hidden"
 
-        // Fade in main text container (after first text is done)
-        tl.to(secondTextRef.current, { opacity: 1, duration: 0.4 }, 1.5)
+        // --- 3-Phase Upward Pull Through Focus Plane ---
+        //
+        // Phase 1: STATIC FOCUS (0–0.6s)
+        //   One text at center, motionless, sharp, scaled up. Visual anchor.
+        //
+        // Phase 2: SLOW PULL (0.6–1.1s)
+        //   Ticker starts at low speed (~90 px/s). Hidden nodes below
+        //   gradually enter view. Feels like something is pulling the text.
+        //
+        // Phase 3: FULL ACCELERATION (1.1s+)
+        //   Speed ramps from 90 → 340 px/s. Full conveyor cascade.
 
-        // Create stacking layers
-        const stackingCount = 5
-        const stackLayers: HTMLElement[] = []
-        const viewportHeight = window.innerHeight
+        const PHASE_START = 1.5       // timeline position to show focal text
+        const HOLD_DURATION = 0.6     // seconds of static focus
+        const MOTION_START = PHASE_START + HOLD_DURATION  // when ticker begins
+        const RUN_DURATION = 2.0      // total ticker running time
 
-        for (let i = 0; i < stackingCount; i++) {
-          const layer = document.createElement("div")
-          layer.style.position = "absolute"
-          layer.style.left = "0"
-          layer.style.top = "0"
-          layer.style.width = "100%"
-          layer.style.height = "100%"
-          layer.style.display = "flex"
-          layer.style.justifyContent = "center"
-          layer.style.alignItems = "center"
-          layer.style.gap = "0.75rem"
-          layer.style.pointerEvents = "none"
-          layer.style.opacity = `${1 - (i * 0.22)}`
-          layer.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
-          
-          secondTextRef.current.appendChild(layer)
-          stackLayers.push(layer)
+        const INITIAL_SPEED = 90      // px/sec at motion start
+        const MAX_SPEED = 340         // px/sec at full cascade
+        const ACCEL = 300             // px/sec² acceleration rate
+
+        const NODE_COUNT = 7
+        const SPACING = 120           // px between nodes
+
+        const container = secondTextRef.current
+        const containerHeight = container.getBoundingClientRect().height || window.innerHeight
+
+        // Boundaries (relative to container center, y=0)
+        const TOP_EXIT = -(containerHeight / 2) - 60
+        const BOTTOM_ENTRY = (containerHeight / 2) + 60
+
+        // --- Create nodes ---
+        const nodes: HTMLElement[] = []
+        const nodePositions: number[] = []
+
+        for (let i = 0; i < NODE_COUNT; i++) {
+          const el = document.createElement("div")
+          el.style.position = "absolute"
+          el.style.left = "50%"
+          el.style.top = "50%"
+          el.style.transform = "translate(-50%, -50%)"
+          el.style.display = "flex"
+          el.style.justifyContent = "center"
+          el.style.alignItems = "center"
+          el.style.gap = "0.75rem"
+          el.style.pointerEvents = "none"
+          el.style.whiteSpace = "nowrap"
+          el.style.willChange = "transform, opacity, filter"
+          el.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
+          container.appendChild(el)
+          nodes.push(el)
+
+          if (i === 0) {
+            // First node: centered (y=0), visible — the focal anchor
+            nodePositions[i] = 0
+          } else {
+            // Rest: stacked below, hidden — will enter as motion begins
+            nodePositions[i] = i * SPACING
+          }
         }
 
-        // Animate each layer falling faster and further
-        stackLayers.forEach((layer, idx) => {
-          const startTime = 1.9 + idx * 0.1
-          const duration = 0.4 + idx * 0.15
-          const fallDistance = (viewportHeight * 0.7) + idx * (viewportHeight * 0.2)
+        // --- Depth styling based on vertical position ---
+        const applyDepth = (el: HTMLElement, y: number) => {
+          const halfRange = containerHeight / 2 + 60
+          const distFromCenter = Math.abs(y) / halfRange
+          const focus = Math.max(0, 1 - distFromCenter)
 
-          tl.to(
-            layer,
-            {
-              y: fallDistance,
-              duration: duration,
-              ease: "power2.in",
-            },
-            startTime
-          )
-        })
+          // Scale: 0.82 at edges → 1.15 at center
+          const scale = 0.82 + focus * 0.33
 
-        // Hide all stacking layers
+          // Opacity: quadratic falloff for sharper center emphasis
+          const opacity = Math.min(1, Math.max(0, focus * focus * 1.15))
+
+          // Blur: 3px at edges → 0px at center
+          const blur = (1 - focus) * 3
+
+          el.style.transform = `translate(-50%, -50%) translateY(${y}px) scale(${scale})`
+          el.style.opacity = String(opacity)
+          el.style.filter = `blur(${blur.toFixed(1)}px)`
+        }
+
+        // --- Phase 1: Show focal text (static, centered) ---
+        // Hide all nodes initially
+        for (let i = 0; i < NODE_COUNT; i++) {
+          nodes[i].style.opacity = "0"
+          nodes[i].style.transform = `translate(-50%, -50%) translateY(${nodePositions[i]}px) scale(0.82)`
+          nodes[i].style.filter = "blur(3px)"
+        }
+
+        // Fade in the focal node (index 0) at center
         tl.to(
-          stackLayers,
+          nodes[0],
           {
-            opacity: 0,
-            duration: 0.15,
+            opacity: 1,
+            scale: 1.08,
+            filter: "blur(0px)",
+            duration: 0.35,
+            ease: "power2.out",
+            onUpdate: function () {
+              // Keep the focal node at center with the animated scale
+              const s = 1 + this.progress() * 0.08
+              nodes[0].style.transform = `translate(-50%, -50%) translateY(0px) scale(${s})`
+              nodes[0].style.filter = `blur(${((1 - this.progress()) * 2).toFixed(1)}px)`
+            },
           },
-          2.9
+          PHASE_START
         )
 
-        // Hide main text container
+        // --- Phase 2 & 3: Ticker-driven motion with acceleration ---
+        let tickerActive = false
+        let speed = INITIAL_SPEED
+        let elapsedTime = 0
+
+        const tickerFn = () => {
+          if (!tickerActive) return
+
+          const dt = gsap.ticker.deltaRatio() / 60
+          elapsedTime += dt
+
+          // Progressive acceleration: ramp speed over time
+          if (speed < MAX_SPEED) {
+            speed = Math.min(MAX_SPEED, speed + ACCEL * dt)
+          }
+
+          const moveAmount = speed * dt
+
+          for (let i = 0; i < NODE_COUNT; i++) {
+            nodePositions[i] -= moveAmount // move upward
+
+            // Recycle: if exited above, wrap to below the lowest node
+            if (nodePositions[i] < TOP_EXIT) {
+              let maxY = -Infinity
+              for (let j = 0; j < NODE_COUNT; j++) {
+                if (j !== i && nodePositions[j] > maxY) maxY = nodePositions[j]
+              }
+              nodePositions[i] = maxY + SPACING
+            }
+
+            applyDepth(nodes[i], nodePositions[i])
+          }
+        }
+
+        // Start the ticker (motion begins) after the static hold
+        tl.add(() => {
+          tickerActive = true
+          gsap.ticker.add(tickerFn)
+        }, MOTION_START)
+
+        // Stop the ticker
+        const stopTime = MOTION_START + RUN_DURATION
+        tl.add(() => {
+          tickerActive = false
+          gsap.ticker.remove(tickerFn)
+        }, stopTime)
+
+        // Fade out all nodes and container
+        const fadeOutStart = stopTime + 0.1
+        tl.add(() => {
+          gsap.to(nodes, {
+            opacity: 0,
+            duration: 0.35,
+            ease: "power2.out",
+          })
+        }, fadeOutStart)
+
         tl.to(
           secondTextRef.current,
           {
             opacity: 0,
             duration: 0.15,
           },
-          3.05
+          fadeOutStart + 0.35
         )
       }
 
@@ -217,32 +319,72 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           )
         }
 
-        // Cursor movement across text (starts at 3.3s)
+        // Make cursor visible and place it just under text at path start
+        tl.add(
+          () => {
+            if (!thirdTextRef.current || !cursorRef.current) return
+            const thirdRect = thirdTextRef.current.getBoundingClientRect()
+            const startX = thirdRect.left + thirdRect.width * 0.08
+            const baselineY = thirdRect.bottom + 18
+            gsap.set(cursorRef.current, { x: startX, y: baselineY, opacity: 0 })
+          },
+          3.24
+        )
+
         tl.to(
           cursorRef.current,
           {
-            x: window.innerWidth * 0.3, // Move cursor across screen
-            duration: 1.5,
+            opacity: 1,
+            duration: 0.12,
+          },
+          3.25
+        )
+
+        // Cursor movement on a slight arc under the text (starts at 3.3s)
+        let previousWordIndex = -1
+        const cursorMotion = { progress: 0 }
+
+        tl.to(
+          cursorMotion,
+          {
+            progress: 1,
+            duration: 1.6,
             ease: "power1.inOut",
             onUpdate: function () {
-              const progress = this.progress()
-              const wordIndex = Math.floor(progress * wordSpans.length)
+              if (!thirdTextRef.current || !cursorRef.current) return
 
-              wordSpans.forEach((span, idx) => {
-                if (idx <= wordIndex) {
-                  gsap.to(span, {
-                    scale: 1.2,
-                    duration: 0.3,
-                    overwrite: "auto",
-                  })
-                } else {
-                  gsap.to(span, {
+              const thirdRect = thirdTextRef.current.getBoundingClientRect()
+              const startX = thirdRect.left + thirdRect.width * 0.08
+              const endX = thirdRect.right - thirdRect.width * 0.08
+              const baselineY = thirdRect.bottom + 18
+              const arcHeight = 12
+              const progress = cursorMotion.progress
+
+              const currentX = startX + (endX - startX) * progress
+              const currentY = baselineY - Math.sin(progress * Math.PI) * arcHeight
+              gsap.set(cursorRef.current, { x: currentX, y: currentY })
+
+              const currentWordIndex = Math.floor(progress * wordSpans.length)
+
+              if (currentWordIndex !== previousWordIndex) {
+                if (previousWordIndex >= 0 && previousWordIndex < wordSpans.length) {
+                  gsap.to(wordSpans[previousWordIndex], {
                     scale: 1,
-                    duration: 0.3,
+                    duration: 0.2,
                     overwrite: "auto",
                   })
                 }
-              })
+
+                if (currentWordIndex >= 0 && currentWordIndex < wordSpans.length) {
+                  gsap.to(wordSpans[currentWordIndex], {
+                    scale: 1.35,
+                    duration: 0.2,
+                    overwrite: "auto",
+                  })
+                }
+
+                previousWordIndex = currentWordIndex
+              }
             },
           },
           3.3
@@ -330,14 +472,10 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       {/* 2️⃣ Second Text */}
       <div
         ref={secondTextRef}
-        className="absolute text-[8vw] font-bold text-center leading-tight"
+        className="absolute inset-0 text-[8vw] font-bold text-center leading-tight"
         style={{
-          maxWidth: "70%",
           fontFamily: "system-ui, -apple-system, sans-serif",
           opacity: 0,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
         }}
       />
 
@@ -358,13 +496,25 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       {/* Cursor for third animation */}
       <div
         ref={cursorRef}
-        className="absolute w-1 h-[5vw] bg-white opacity-0 pointer-events-none"
+        className="absolute opacity-0 pointer-events-none"
         style={{
-          left: "25%",
-          top: "50%",
-          transform: "translateY(-50%)",
+          width: "12px",
+          height: "18px",
+          left: 0,
+          top: 0,
+          transform: "translate(-50%, -50%)",
         }}
-      />
+      >
+        <svg
+          viewBox="0 0 16 24"
+          width="100%"
+          height="100%"
+          fill="white"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M8 1L2 16h4l2-4 2 4h4L8 1Z" />
+        </svg>
+      </div>
 
       {/* 4️⃣ Final Name */}
       <div

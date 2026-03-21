@@ -10,6 +10,7 @@ interface LoadingScreenProps {
 export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
   const [animationComplete, setAnimationComplete] = useState(false)
   const [showScreen, setShowScreen] = useState(true)
+  const [ctaReady, setCtaReady] = useState(false)
 
   // Refs for animation targets
   const containerRef = useRef<HTMLDivElement>(null)
@@ -19,6 +20,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
   const thirdTextRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const finalNameRef = useRef<HTMLDivElement>(null)
+  const clickTextRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const runAnimationSequence = async () => {
@@ -284,7 +286,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       }
 
       // ============================================
-      // 3️⃣ THIRD TEXT: Cursor interaction with word scaling
+      // 3️⃣ THIRD TEXT: Cursor hover interaction with word scaling
       // ============================================
       if (thirdTextRef.current && cursorRef.current) {
         // Setup third text
@@ -304,6 +306,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             span.textContent = word
             span.className = "inline-block mr-2 whitespace-nowrap"
             span.style.transformOrigin = "center center"
+            span.style.transition = "none"  // GSAP handles transitions
             thirdTextRef.current.appendChild(span)
 
             if (idx < words.length - 1 && thirdTextRef.current) {
@@ -312,9 +315,11 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           })
         }
 
-        const wordSpans = thirdTextRef.current?.querySelectorAll("span") || []
+        const wordSpans = Array.from(
+          thirdTextRef.current?.querySelectorAll("span") || []
+        ) as HTMLElement[]
 
-        // Show third text container and fade in after pop effect
+        // Show third text container
         tl.add(
           () => {
             if (thirdTextRef.current) {
@@ -336,85 +341,104 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           )
         }
 
-        // Make cursor visible and place it just under text at path start
-        tl.add(
-          () => {
-            if (!thirdTextRef.current || !cursorRef.current) return
-            const thirdRect = thirdTextRef.current.getBoundingClientRect()
-            const startX = thirdRect.left + thirdRect.width * 0.08
-            const baselineY = thirdRect.bottom + 18
-            gsap.set(cursorRef.current, { x: startX, y: baselineY, opacity: 0 })
-          },
-          5.24
-        )
+        // --- Sequential word-by-word cursor hover ---
+        // Cursor moves directly to each word's center, triggering
+        // a scale-up on arrival and reset on departure.
 
+        const HOVER_START = 5.4        // when cursor appears and starts moving
+        const MOVE_DURATION = 0.3      // time to move cursor to each word
+        const DWELL_TIME = 0.15        // pause at each word before moving on
+        const SCALE_UP = 1.3           // word scale on hover
+        const SCALE_DURATION = 0.2     // scale animation duration
+
+        // Position cursor near the first word before showing it
+        tl.add(() => {
+          if (!cursorRef.current || wordSpans.length === 0) return
+          const firstRect = wordSpans[0].getBoundingClientRect()
+          gsap.set(cursorRef.current, {
+            x: firstRect.left + firstRect.width / 2,
+            y: firstRect.top + firstRect.height * 0.7,
+            opacity: 0,
+          })
+        }, HOVER_START - 0.05)
+
+        // Fade in cursor
         tl.to(
           cursorRef.current,
           {
             opacity: 1,
-            duration: 0.12,
+            duration: 0.15,
+            ease: "power2.out",
           },
-          5.25
+          HOVER_START
         )
 
-        // Cursor movement on a slight arc under the text (starts at 3.3s)
-        let previousWordIndex = -1
-        const cursorMotion = { progress: 0 }
+        // Move cursor word-by-word
+        let currentTime = HOVER_START + 0.15
 
-        tl.to(
-          cursorMotion,
-          {
-            progress: 1,
-            duration: 1.6,
-            ease: "power1.inOut",
-            onUpdate: function () {
-              if (!thirdTextRef.current || !cursorRef.current) return
+        wordSpans.forEach((span, idx) => {
+          // Move cursor to this word's center
+          tl.add(() => {
+            if (!cursorRef.current) return
+            const rect = span.getBoundingClientRect()
+            gsap.to(cursorRef.current, {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height * 0.7,
+              duration: idx === 0 ? 0.15 : MOVE_DURATION,
+              ease: "power2.out",
+            })
+          }, currentTime)
 
-              const thirdRect = thirdTextRef.current.getBoundingClientRect()
-              const startX = thirdRect.left + thirdRect.width * 0.08
-              const endX = thirdRect.right - thirdRect.width * 0.08
-              const baselineY = thirdRect.bottom + 18
-              const arcHeight = 12
-              const progress = cursorMotion.progress
-
-              const currentX = startX + (endX - startX) * progress
-              const currentY = baselineY - Math.sin(progress * Math.PI) * arcHeight
-              gsap.set(cursorRef.current, { x: currentX, y: currentY })
-
-              const currentWordIndex = Math.floor(progress * wordSpans.length)
-
-              if (currentWordIndex !== previousWordIndex) {
-                if (previousWordIndex >= 0 && previousWordIndex < wordSpans.length) {
-                  gsap.to(wordSpans[previousWordIndex], {
-                    scale: 1,
-                    duration: 0.2,
-                    overwrite: "auto",
-                  })
-                }
-
-                if (currentWordIndex >= 0 && currentWordIndex < wordSpans.length) {
-                  gsap.to(wordSpans[currentWordIndex], {
-                    scale: 1.35,
-                    duration: 0.2,
-                    overwrite: "auto",
-                  })
-                }
-
-                previousWordIndex = currentWordIndex
-              }
+          // Scale up this word (hover effect)
+          tl.to(
+            span,
+            {
+              scale: SCALE_UP,
+              duration: SCALE_DURATION,
+              ease: "power2.out",
+              overwrite: "auto",
             },
+            currentTime + (idx === 0 ? 0.08 : MOVE_DURATION * 0.6)
+          )
+
+          // Reset previous word
+          if (idx > 0) {
+            tl.to(
+              wordSpans[idx - 1],
+              {
+                scale: 1,
+                duration: SCALE_DURATION,
+                ease: "power2.out",
+                overwrite: "auto",
+              },
+              currentTime + 0.05
+            )
+          }
+
+          // Advance time: move duration + dwell
+          currentTime += (idx === 0 ? 0.25 : MOVE_DURATION) + DWELL_TIME
+        })
+
+        // Reset last word after all moves complete
+        tl.to(
+          wordSpans[wordSpans.length - 1],
+          {
+            scale: 1,
+            duration: SCALE_DURATION,
+            ease: "power2.out",
           },
-          5.3
+          currentTime
         )
 
-        // Hide cursor at the end
+        // Hide cursor
         tl.to(
           cursorRef.current,
           {
             opacity: 0,
-            duration: 0.3,
+            duration: 0.25,
+            ease: "power2.out",
           },
-          6.8
+          currentTime + 0.1
         )
       }
 
@@ -428,7 +452,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           opacity: 0,
           duration: 0.4,
         },
-        6.9
+        7.5
       )
 
       if (finalNameRef.current) {
@@ -445,7 +469,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
             duration: 0.8,
             ease: "power1.out",
           },
-          7.3
+          7.9
         )
       }
 
@@ -453,27 +477,75 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       tl.add(() => {
         setAnimationComplete(true)
       })
+
+      // --- "Click to enter" CTA ---
+      // Appears 0.3s after name finishes (name ends at ~8.7s)
+      if (clickTextRef.current) {
+        clickTextRef.current.style.opacity = "0"
+        clickTextRef.current.style.transform = "translateY(10px)"
+
+        // Fade in with subtle rise
+        tl.to(
+          clickTextRef.current,
+          {
+            opacity: 0.7,
+            y: 0,
+            duration: 0.5,
+            ease: "power2.out",
+            onComplete: () => {
+              setCtaReady(true)
+              // Start gentle opacity pulse
+              if (clickTextRef.current) {
+                gsap.to(clickTextRef.current, {
+                  opacity: 0.4,
+                  duration: 1.2,
+                  ease: "sine.inOut",
+                  repeat: -1,
+                  yoyo: true,
+                })
+              }
+            },
+          },
+          9.0
+        )
+      }
     }
 
     runAnimationSequence()
   }, [])
 
-  // Unmount when both animation is complete AND assets are loaded
-  useEffect(() => {
-    if (animationComplete && isLoaded) {
-      const timer = setTimeout(() => {
+  // Handle click to dismiss
+  const handleClick = () => {
+    if (!ctaReady || !animationComplete || !isLoaded) return
+    if (!containerRef.current) return
+
+    gsap.to(containerRef.current, {
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.out",
+      onComplete: () => {
         setShowScreen(false)
-      }, 300)
+      },
+    })
+  }
+
+  // Fallback: auto-dismiss if user doesn't click after 3s
+  useEffect(() => {
+    if (animationComplete && isLoaded && ctaReady) {
+      const timer = setTimeout(() => {
+        handleClick()
+      }, 5000)
       return () => clearTimeout(timer)
     }
-  }, [animationComplete, isLoaded])
+  }, [animationComplete, isLoaded, ctaReady])
 
   if (!showScreen) return null
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[99999] overflow-hidden flex items-center justify-center bg-white"
+      className="fixed inset-0 z-[99999] overflow-hidden flex items-center justify-center bg-white cursor-pointer"
+      onClick={handleClick}
     >
       {/* 1️⃣ First Text */}
       <div
@@ -535,15 +607,29 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
         </svg>
       </div>
 
-      {/* 4️⃣ Final Name */}
-      <div
-        ref={finalNameRef}
-        className="absolute text-emerald-400 italic font-bold text-[7vw] text-center leading-tight"
-        style={{
-          maxWidth: "80%",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-        }}
-      />
+      {/* 4️⃣ Final Name + CTA */}
+      <div className="absolute flex flex-col items-center gap-6">
+        <div
+          ref={finalNameRef}
+          className="text-emerald-400 italic font-bold text-[7vw] text-center leading-tight"
+          style={{
+            maxWidth: "80%",
+            fontFamily: "system-ui, -apple-system, sans-serif",
+          }}
+        />
+        <div
+          ref={clickTextRef}
+          className="text-white text-center"
+          style={{
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontSize: "1.2vw",
+            letterSpacing: "0.15em",
+            opacity: 0,
+          }}
+        >
+          Click to enter
+        </div>
+      </div>
     </div>
   )
 }

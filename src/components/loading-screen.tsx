@@ -109,8 +109,8 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
         const RUN_DURATION = 2.0      // total ticker running time
 
         const INITIAL_SPEED = 90      // px/sec at motion start
-        const MAX_SPEED = 340         // px/sec at full cascade
-        const ACCEL = 300             // px/sec² acceleration rate
+        const MAX_SPEED = 10000        // px/sec at full cascade
+        const ACCEL = 1000             // px/sec² acceleration rate
 
         const NODE_COUNT = 7
         const SPACING = 120           // px between nodes
@@ -278,11 +278,11 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
         }
 
         const words = thirdText.split(" ").filter(w => w.length > 0)
-        
+
         if (thirdTextRef.current) {
           words.forEach((word, idx) => {
             if (!thirdTextRef.current) return
-            
+
             const span = document.createElement("span")
             span.textContent = word
             span.className = "inline-block mr-2 whitespace-nowrap"

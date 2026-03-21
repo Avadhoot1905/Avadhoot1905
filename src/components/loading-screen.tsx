@@ -86,88 +86,81 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
       )
 
       if (secondTextRef.current && bgTransitionRef.current) {
-        // Word-by-word appearance
-        const words = [
-          { text: "Distributed", color: "text-emerald-400", style: "font-bold italic" },
-          { text: "underneath", color: "text-white", style: "italic" },
-        ]
-
+        // Clear container
         secondTextRef.current.innerHTML = ""
+        secondTextRef.current.style.opacity = "0"
+        
+        // Create main text
+        const mainText = document.createElement("div")
+        mainText.style.display = "flex"
+        mainText.style.justifyContent = "center"
+        mainText.style.alignItems = "center"
+        mainText.style.gap = "0.75rem"
+        mainText.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
+        secondTextRef.current.appendChild(mainText)
 
-        words.forEach((word, idx) => {
-          const span = document.createElement("span")
-          span.textContent = word.text
-          span.className = `${word.color} ${word.style} inline-block mr-3`
-          span.style.opacity = "0"
-          secondTextRef.current!.appendChild(span)
+        // Fade in main text container (after first text is done)
+        tl.to(secondTextRef.current, { opacity: 1, duration: 0.4 }, 1.5)
 
-          // Fade in each word (staggered start at 1.7s)
-          tl.to(
-            span,
-            {
-              opacity: 1,
-              duration: 0.4,
-            },
-            1.7 + idx * 0.3
-          )
-        })
+        // Create stacking layers
+        const stackingCount = 5
+        const stackLayers: HTMLElement[] = []
+        const viewportHeight = window.innerHeight
 
-        // Create stacking effect with duplicates falling faster and faster
-        const stackingCount = 6
-        for (let i = 1; i <= stackingCount; i++) {
-          const echoContainer = document.createElement("div")
-          echoContainer.className = "absolute w-full flex justify-center pointer-events-none"
-          echoContainer.style.left = "0"
-
-          const allSpans = secondTextRef.current.querySelectorAll("span:not([data-echo])")
+        for (let i = 0; i < stackingCount; i++) {
+          const layer = document.createElement("div")
+          layer.style.position = "absolute"
+          layer.style.left = "0"
+          layer.style.top = "0"
+          layer.style.width = "100%"
+          layer.style.height = "100%"
+          layer.style.display = "flex"
+          layer.style.justifyContent = "center"
+          layer.style.alignItems = "center"
+          layer.style.gap = "0.75rem"
+          layer.style.pointerEvents = "none"
+          layer.style.opacity = `${1 - (i * 0.22)}`
+          layer.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
           
-          allSpans.forEach((span) => {
-            const echoSpan = span.cloneNode(true) as HTMLElement
-            echoSpan.style.pointerEvents = "none"
-            echoContainer.appendChild(echoSpan)
-          })
+          secondTextRef.current.appendChild(layer)
+          stackLayers.push(layer)
+        }
 
-          secondTextRef.current.appendChild(echoContainer)
-
-          // Stacking effect: each echo falls lower and faster
-          const duration = 0.3 + (i - 1) * 0.1 // Increasing speed
-          const distance = 50 + i * 40 // Each stack goes lower
-          const startTime = 2.3 + (i - 1) * 0.15 // Staggered start, increasing speed
-          const opacity = 1 - (i / stackingCount) * 0.7
+        // Animate each layer falling faster and further
+        stackLayers.forEach((layer, idx) => {
+          const startTime = 1.9 + idx * 0.1
+          const duration = 0.4 + idx * 0.15
+          const fallDistance = (viewportHeight * 0.7) + idx * (viewportHeight * 0.2)
 
           tl.to(
-            echoContainer,
+            layer,
             {
-              y: distance,
-              opacity: opacity,
+              y: fallDistance,
               duration: duration,
-              ease: "power1.in",
+              ease: "power2.in",
             },
             startTime
           )
-        }
+        })
 
-        // Pop effect - scale up and fade out all stacks
-        const allEchoes = secondTextRef.current.querySelectorAll(".absolute:not([data-original])")
+        // Hide all stacking layers
         tl.to(
-          allEchoes,
+          stackLayers,
           {
-            scale: 1.5,
             opacity: 0,
-            duration: 0.2,
-            ease: "back.out",
+            duration: 0.15,
           },
           2.9
         )
 
-        // Hide all text (original and echoes)
+        // Hide main text container
         tl.to(
           secondTextRef.current,
           {
             opacity: 0,
-            duration: 0.1,
+            duration: 0.15,
           },
-          3.1
+          3.05
         )
       }
 
@@ -341,6 +334,10 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
         style={{
           maxWidth: "70%",
           fontFamily: "system-ui, -apple-system, sans-serif",
+          opacity: 0,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
         }}
       />
 

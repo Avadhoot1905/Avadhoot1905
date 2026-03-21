@@ -1,197 +1,383 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { SiApple } from "react-icons/si"
-import imagesLoaded from "imagesloaded"
-import NProgress from "nprogress"
+import { useState, useEffect, useRef } from "react"
+import gsap from "gsap"
 
 interface LoadingScreenProps {
-  onLoadingComplete: () => void
+  isLoaded: boolean
 }
 
-export function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
-  const [progress, setProgress] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
-  const [isImagesLoaded, setIsImagesLoaded] = useState(false)
+export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
+  const [animationComplete, setAnimationComplete] = useState(false)
+  const [showScreen, setShowScreen] = useState(true)
+
+  // Refs for animation targets
+  const containerRef = useRef<HTMLDivElement>(null)
+  const firstTextRef = useRef<HTMLDivElement>(null)
+  const bgTransitionRef = useRef<HTMLDivElement>(null)
+  const secondTextRef = useRef<HTMLDivElement>(null)
+  const thirdTextRef = useRef<HTMLDivElement>(null)
+  const cursorRef = useRef<HTMLDivElement>(null)
+  const finalNameRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Check if mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
+    const runAnimationSequence = async () => {
+      const tl = gsap.timeline()
 
-    // Configure NProgress
-    NProgress.configure({ 
-      showSpinner: false,
-      minimum: 0.1,
-      easing: 'ease',
-      speed: 500 
-    })
+      // ============================================
+      // 1️⃣ FIRST TEXT: Typewriter Effect
+      // ============================================
+      if (firstTextRef.current) {
+        const firstText = "Simple on the surface."
+        firstTextRef.current.textContent = ""
+        firstTextRef.current.style.opacity = "1"
 
-    // Start NProgress
-    NProgress.start()
+        tl.to(
+          firstTextRef.current,
+          {
+            // Typewriter effect: reveal text character by character
+            onUpdate: function () {
+              const progress = this.progress()
+              const charCount = Math.floor(progress * firstText.length)
+              firstTextRef.current!.textContent = firstText.slice(0, charCount)
+            },
+            duration: 1.5,
+            ease: "power1.inOut",
+          },
+          0
+        )
 
-    // Images to preload and track
-    const imagesToPreload = [
-      '/assets/v-dark.jpg',
-      '/assets/v-light.jpg',
-      '/assets/lock-screen-phone.jpeg',
-      '/assets/tahoejpg.webp'
-    ]
+        // Add cursor blink at the end
+        tl.to(
+          firstTextRef.current,
+          {
+            onUpdate: function () {
+              if (firstTextRef.current) {
+                firstTextRef.current.textContent = firstText
+              }
+            },
+            duration: 0.3,
+          },
+          0.8
+        )
 
-    // Create container for images
-    const imageContainer = document.createElement('div')
-    imageContainer.style.position = 'absolute'
-    imageContainer.style.top = '-9999px'
-    imageContainer.style.left = '-9999px'
-    document.body.appendChild(imageContainer)
-
-    // Load images and add to container
-    imagesToPreload.forEach(src => {
-      const img = document.createElement('img')
-      img.src = src
-      img.style.width = '1px'
-      img.style.height = '1px'
-      imageContainer.appendChild(img)
-    })
-
-    // Track image loading progress
-    const imgLoad = imagesLoaded(imageContainer)
-    let loadedCount = 0
-    const totalImages = imagesToPreload.length
-
-    imgLoad.on('progress', () => {
-      loadedCount++
-      const progressPercent = Math.round((loadedCount / totalImages) * 100)
-      setProgress(progressPercent)
-      NProgress.set(progressPercent / 100)
-    })
-
-    imgLoad.on('done', () => {
-      setProgress(100)
-      setIsImagesLoaded(true)
-      NProgress.done()
-
-      // Small delay to show 100% completion
-      setTimeout(() => {
-        onLoadingComplete()
-        if (document.body.contains(imageContainer)) {
-            document.body.removeChild(imageContainer)
-        }
-      }, 500)
-    })
-
-    imgLoad.on('fail', (_error) => {
-      // If some images fail to load, still proceed
-      console.warn('Some images failed to load', _error)
-      setProgress(100)
-      setIsImagesLoaded(true)
-      NProgress.done()
-      
-      setTimeout(() => {
-        onLoadingComplete()
-        document.body.removeChild(imageContainer)
-      }, 500)
-    })
-
-    // Fallback timer - complete loading after max 15 seconds regardless
-    const fallbackTimer = setTimeout(() => {
-      if (!isImagesLoaded) {
-        console.warn('Loading timeout reached, proceeding anyway')
-        setProgress(100)
-        setIsImagesLoaded(true)
-        NProgress.done()
-        onLoadingComplete()
-        if (document.body.contains(imageContainer)) {
-          document.body.removeChild(imageContainer)
-        }
+        // Hide first text completely before second text appears
+        tl.to(
+          firstTextRef.current,
+          {
+            opacity: 0,
+            duration: 0.3,
+          },
+          1.3
+        )
       }
-    }, 15000)
 
-    return () => {
-      window.removeEventListener('resize', checkMobile)
-      clearTimeout(fallbackTimer)
-      if (document.body.contains(imageContainer)) {
-        document.body.removeChild(imageContainer)
+      // ============================================
+      // 2️⃣ SECOND TEXT: Background transition + Word-by-word with drag effect
+      // ============================================
+      // Transition background to black (starts at 1.3s when first text hides)
+      tl.to(
+        containerRef.current,
+        {
+          backgroundColor: "#000000",
+          duration: 0.6,
+        },
+        1.3
+      )
+
+      if (secondTextRef.current && bgTransitionRef.current) {
+        // Word-by-word appearance
+        const words = [
+          { text: "Distributed", color: "text-emerald-400", style: "font-bold italic" },
+          { text: "underneath", color: "text-white", style: "italic" },
+        ]
+
+        secondTextRef.current.innerHTML = ""
+
+        words.forEach((word, idx) => {
+          const span = document.createElement("span")
+          span.textContent = word.text
+          span.className = `${word.color} ${word.style} inline-block mr-3`
+          span.style.opacity = "0"
+          secondTextRef.current!.appendChild(span)
+
+          // Fade in each word (staggered start at 1.7s)
+          tl.to(
+            span,
+            {
+              opacity: 1,
+              duration: 0.4,
+            },
+            1.7 + idx * 0.3
+          )
+        })
+
+        // Create stacking effect with duplicates falling faster and faster
+        const stackingCount = 6
+        for (let i = 1; i <= stackingCount; i++) {
+          const echoContainer = document.createElement("div")
+          echoContainer.className = "absolute w-full flex justify-center pointer-events-none"
+          echoContainer.style.left = "0"
+
+          const allSpans = secondTextRef.current.querySelectorAll("span:not([data-echo])")
+          
+          allSpans.forEach((span) => {
+            const echoSpan = span.cloneNode(true) as HTMLElement
+            echoSpan.style.pointerEvents = "none"
+            echoContainer.appendChild(echoSpan)
+          })
+
+          secondTextRef.current.appendChild(echoContainer)
+
+          // Stacking effect: each echo falls lower and faster
+          const duration = 0.3 + (i - 1) * 0.1 // Increasing speed
+          const distance = 50 + i * 40 // Each stack goes lower
+          const startTime = 2.3 + (i - 1) * 0.15 // Staggered start, increasing speed
+          const opacity = 1 - (i / stackingCount) * 0.7
+
+          tl.to(
+            echoContainer,
+            {
+              y: distance,
+              opacity: opacity,
+              duration: duration,
+              ease: "power1.in",
+            },
+            startTime
+          )
+        }
+
+        // Pop effect - scale up and fade out all stacks
+        const allEchoes = secondTextRef.current.querySelectorAll(".absolute:not([data-original])")
+        tl.to(
+          allEchoes,
+          {
+            scale: 1.5,
+            opacity: 0,
+            duration: 0.2,
+            ease: "back.out",
+          },
+          2.9
+        )
+
+        // Hide all text (original and echoes)
+        tl.to(
+          secondTextRef.current,
+          {
+            opacity: 0,
+            duration: 0.1,
+          },
+          3.1
+        )
       }
-      NProgress.done()
+
+      // ============================================
+      // 3️⃣ THIRD TEXT: Cursor interaction with word scaling
+      // ============================================
+      if (thirdTextRef.current && cursorRef.current) {
+        // Setup third text
+        const thirdText = "That's usually the goal."
+        if (thirdTextRef.current) {
+          thirdTextRef.current.textContent = ""
+          thirdTextRef.current.innerHTML = ""
+        }
+
+        const words = thirdText.split(" ").filter(w => w.length > 0)
+        
+        if (thirdTextRef.current) {
+          words.forEach((word, idx) => {
+            if (!thirdTextRef.current) return
+            
+            const span = document.createElement("span")
+            span.textContent = word
+            span.className = "inline-block mr-2 whitespace-nowrap"
+            span.style.transformOrigin = "center center"
+            thirdTextRef.current.appendChild(span)
+
+            if (idx < words.length - 1 && thirdTextRef.current) {
+              thirdTextRef.current.appendChild(document.createTextNode(" "))
+            }
+          })
+        }
+
+        const wordSpans = thirdTextRef.current?.querySelectorAll("span") || []
+
+        // Show third text container and fade in after pop effect
+        tl.add(
+          () => {
+            if (thirdTextRef.current) {
+              thirdTextRef.current.style.display = "block"
+              thirdTextRef.current.style.opacity = "0"
+            }
+          },
+          3.2
+        )
+
+        if (thirdTextRef.current) {
+          tl.to(
+            thirdTextRef.current,
+            {
+              opacity: 1,
+              duration: 0.2,
+            },
+            3.2
+          )
+        }
+
+        // Cursor movement across text (starts at 3.3s)
+        tl.to(
+          cursorRef.current,
+          {
+            x: window.innerWidth * 0.3, // Move cursor across screen
+            duration: 1.5,
+            ease: "power1.inOut",
+            onUpdate: function () {
+              const progress = this.progress()
+              const wordIndex = Math.floor(progress * wordSpans.length)
+
+              wordSpans.forEach((span, idx) => {
+                if (idx <= wordIndex) {
+                  gsap.to(span, {
+                    scale: 1.2,
+                    duration: 0.3,
+                    overwrite: "auto",
+                  })
+                } else {
+                  gsap.to(span, {
+                    scale: 1,
+                    duration: 0.3,
+                    overwrite: "auto",
+                  })
+                }
+              })
+            },
+          },
+          3.3
+        )
+
+        // Hide cursor at the end
+        tl.to(
+          cursorRef.current,
+          {
+            opacity: 0,
+            duration: 0.3,
+          },
+          4.8
+        )
+      }
+
+      // ============================================
+      // 4️⃣ FINAL SCREEN: Name display with fade-in + upward motion
+      // ============================================
+      // Hide third text
+      tl.to(
+        thirdTextRef.current,
+        {
+          opacity: 0,
+          duration: 0.4,
+        },
+        4.9
+      )
+
+      if (finalNameRef.current) {
+        finalNameRef.current.style.opacity = "0"
+        finalNameRef.current.style.transform = "translateY(20px)"
+        finalNameRef.current.textContent = "Avadhoot Ganesh Mahadik"
+
+        // Fade in + upward motion (starts at 5.3s)
+        tl.to(
+          finalNameRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power1.out",
+          },
+          5.3
+        )
+      }
+
+      // Mark animation as complete
+      tl.add(() => {
+        setAnimationComplete(true)
+      })
     }
-  }, [onLoadingComplete, isImagesLoaded])
+
+    runAnimationSequence()
+  }, [])
+
+  // Unmount when both animation is complete AND assets are loaded
+  useEffect(() => {
+    if (animationComplete && isLoaded) {
+      const timer = setTimeout(() => {
+        setShowScreen(false)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [animationComplete, isLoaded])
+
+  if (!showScreen) return null
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center"
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[99999] overflow-hidden flex items-center justify-center bg-white"
     >
-      {/* Apple Logo */}
-      <motion.div
-        className="mb-16"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5 }}
-      >
-        <SiApple className={`text-white ${isMobile ? 'text-8xl' : 'text-9xl'}`} />
-      </motion.div>
+      {/* 1️⃣ First Text */}
+      <div
+        ref={firstTextRef}
+        className="absolute text-black font-bold text-[8vw] text-center leading-tight"
+        style={{
+          maxWidth: "70%",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          opacity: 1,
+        }}
+      />
 
-      {/* Loading Bar Container */}
-      <motion.div
-        className={`relative ${isMobile ? 'w-64' : 'w-80'} h-1 bg-gray-800 rounded-full overflow-hidden`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1 }}
-      >
-        {/* Loading Bar */}
-        <motion.div
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-gray-300 to-white rounded-full"
-          initial={{ width: "0%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        />
-        
-        {/* Shimmer Effect */}
-        <motion.div
-          className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          animate={{
-            x: progress > 0 ? ["-100%", "200%"] : "-100%"
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: progress < 100 ? Infinity : 0,
-            ease: "easeInOut"
-          }}
-        />
-      </motion.div>
+      {/* 2️⃣ Second Text */}
+      <div
+        ref={secondTextRef}
+        className="absolute text-[8vw] font-bold text-center leading-tight"
+        style={{
+          maxWidth: "70%",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+        }}
+      />
 
-      {/* Boot Text */}
-      <motion.div
-        className={`mt-8 text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'} font-mono tracking-wider`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 2 }}
-      >
-        {progress === 0 && "Powering Up the System..."}
-        {progress > 0 && progress < 25 && "Loading Profile..."}
-        {progress >= 25 && progress < 50 && "Loading Projects..."}
-        {progress >= 50 && progress < 75 && "Loading User..."}
-        {progress >= 75 && progress < 100 && "Launching OS..."}
-        {progress === 100 && isImagesLoaded && "Ready to Start!"}
-      </motion.div>
+      {/* Background transition overlay */}
+      <div ref={bgTransitionRef} />
 
-      {/* Progress Percentage */}
-      <motion.div
-        className={`mt-2 text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'} font-mono`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 2.5 }}
-      >
-        {Math.round(progress)}%
-      </motion.div>
-    </motion.div>
+      {/* 3️⃣ Third Text */}
+      <div
+        ref={thirdTextRef}
+        className="absolute text-white font-bold text-[5vw] text-center leading-tight"
+        style={{
+          maxWidth: "80%",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          display: "none",
+        }}
+      />
+
+      {/* Cursor for third animation */}
+      <div
+        ref={cursorRef}
+        className="absolute w-1 h-[5vw] bg-white opacity-0 pointer-events-none"
+        style={{
+          left: "25%",
+          top: "50%",
+          transform: "translateY(-50%)",
+        }}
+      />
+
+      {/* 4️⃣ Final Name */}
+      <div
+        ref={finalNameRef}
+        className="absolute text-emerald-400 italic font-bold text-[7vw] text-center leading-tight"
+        style={{
+          maxWidth: "80%",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+        }}
+      />
+    </div>
   )
 }

@@ -53,6 +53,7 @@ export function MacOSDesktop() {
   const [activeWindow, setActiveWindow] = useState<string | null>("about")
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
   const [isShuttingDown, setIsShuttingDown] = useState(false)
   const [shutdownAction, setShutdownAction] = useState<'shutdown' | 'restart'>('shutdown')
   const [isLocked, setIsLocked] = useState(true) // Start with lock screen
@@ -64,6 +65,11 @@ export function MacOSDesktop() {
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
+    // Mark assets as loaded after animation completes (~5-6 seconds)
+    const timer = setTimeout(() => {
+      setIsAssetsLoaded(true)
+    }, 6500)
+    return () => clearTimeout(timer)
   }, [])
 
   // Reset terminal command after it's been processed
@@ -230,12 +236,17 @@ export function MacOSDesktop() {
   if (!mounted) return null
 
   // Show loading screen first
-  if (isLoading) {
+  if (isLoading && !isAssetsLoaded) {
     return (
       <AnimatePresence>
-        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+        <LoadingScreen isLoaded={isAssetsLoaded} />
       </AnimatePresence>
     )
+  }
+
+  // Mark loading as complete once assets are loaded
+  if (isLoading && isAssetsLoaded) {
+    setIsLoading(false)
   }
 
   // Show shutdown screen

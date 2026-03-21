@@ -127,10 +127,4 @@ npm run build
 - **Database**: PostgreSQL (Neon), Redis (Upstash)
 - **Deployment**: Vercel (Frontend), AWS Lambda (Backend)
 
-## 📝 License
-
-MIT
-
----
-
 Made with 💙 by Avadhoot Mahadik

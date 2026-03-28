@@ -5,9 +5,10 @@ import gsap from "gsap"
 
 interface LoadingScreenProps {
   isLoaded: boolean
+  onDismiss?: () => void
 }
 
-export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
+export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
   const [animationComplete, setAnimationComplete] = useState(false)
   const [showScreen, setShowScreen] = useState(true)
   const [ctaReady, setCtaReady] = useState(false)
@@ -23,125 +24,107 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
   const clickTextRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let tickerFnRef: (() => void) | null = null
+    let timelineRef: gsap.core.Timeline | null = null
+
     const runAnimationSequence = async () => {
       const tl = gsap.timeline()
+      timelineRef = tl
+
+      // ── Subtle container breathing pulse for cinematic life ──
+      if (containerRef.current) {
+        gsap.to(containerRef.current, {
+          scale: 1.005,
+          duration: 4,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+        })
+      }
 
       // ============================================
-      // 1️⃣ FIRST TEXT: Zoomed-in word-by-word reveal + zoom-out
+      // 1️⃣ FIRST TEXT: Zoomed-in word-by-word reveal + cinematic fade out
       // ============================================
       if (firstTextRef.current) {
         const words = ["Simple", "on", "the", "surface."]
 
-        // Clear and set up container — starts zoomed in
         firstTextRef.current.innerHTML = ""
         firstTextRef.current.style.opacity = "1"
-        firstTextRef.current.style.transform = "scale(1.4)"
+        firstTextRef.current.style.transform = "scale(1.15)"
         firstTextRef.current.style.transformOrigin = "center center"
+        firstTextRef.current.style.filter = "blur(0px)"
 
-        // Create word spans (hidden initially)
         const wordSpans: HTMLElement[] = []
-        words.forEach((word, idx) => {
+        words.forEach((word) => {
           const span = document.createElement("span")
           span.textContent = word
           span.style.display = "inline-block"
           span.style.opacity = "0"
-          span.style.transform = "translateY(12px)"
+          span.style.transform = "translateY(12px) scale(0.95)"
+          span.style.filter = "blur(4px)"
           span.style.marginRight = "0.35em"
           firstTextRef.current!.appendChild(span)
           wordSpans.push(span)
         })
 
-        // Phase 1 + 2: Words appear one by one with subtle rise
+        // Words appear sequentially
         tl.fromTo(
           wordSpans,
-          {
-            opacity: 0,
-            y: 12,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.3,
-            stagger: 0.25,
-            ease: "power2.out",
-          },
+          { opacity: 0, y: 12, scale: 0.95, filter: "blur(4px)" },
+          { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.6, stagger: 0.15, ease: "power2.out" },
           0.1
         )
 
-        // Phase 3: Smooth zoom-out after all words are visible
-        // Words finish at: 0.1 + 0.3 + (3 * 0.25) = 1.15s
+        // Cinematic exit: scale down, blur out — overlaps with Phase 2 entrance
         tl.to(
           firstTextRef.current,
           {
-            scale: 1,
-            duration: 0.7,
-            ease: "power2.out",
-          },
-          1.2
-        )
-
-        // Fade out first text before second text appears
-        tl.to(
-          firstTextRef.current,
-          {
+            scale: 0.9,
             opacity: 0,
-            duration: 0.3,
+            filter: "blur(8px)",
+            duration: 0.9,
+            ease: "power2.inOut",
           },
-          2.0
+          1.0
         )
       }
 
       // ============================================
-      // 2️⃣ SECOND TEXT: Background transition + Word-by-word with drag effect
+      // 2️⃣ BACKGROUND + CONVEYOR BELT — starts WHILE Phase 1 is still fading
       // ============================================
-      // Transition background to black (starts at 2.0s when first text fades)
+      // Background transition starts early, long duration for gradual feel
       tl.to(
         containerRef.current,
-        {
-          backgroundColor: "#000000",
-          duration: 0.6,
-        },
-        2.0
+        { backgroundColor: "#000000", duration: 1.2, ease: "power2.inOut" },
+        0.8
       )
 
+      let FADEOUT_START = 3.6
+
       if (secondTextRef.current && bgTransitionRef.current) {
-        // Clear container
         secondTextRef.current.innerHTML = ""
         secondTextRef.current.style.opacity = "1"
         secondTextRef.current.style.overflow = "hidden"
 
-        // --- 3-Phase Upward Pull Through Focus Plane ---
-        //
-        // Phase 1: STATIC FOCUS (0–0.6s)
-        //   One text at center, motionless, sharp, scaled up. Visual anchor.
-        //
-        // Phase 2: SLOW PULL (0.6–1.1s)
-        //   Ticker starts at low speed (~90 px/s). Hidden nodes below
-        //   gradually enter view. Feels like something is pulling the text.
-        //
-        // Phase 3: FULL ACCELERATION (1.1s+)
-        //   Speed ramps from 90 → 340 px/s. Full conveyor cascade.
+        const PHASE_START = 1.0       // Overlaps with Phase 1 exit (was 1.3)
+        const HOLD_DURATION = 0.5
+        const MOTION_START = PHASE_START + HOLD_DURATION  // 1.5
+        const RUN_DURATION = 2.0
+        const STOP_TIME = MOTION_START + RUN_DURATION     // 3.5
+        const PAUSE_BEFORE_FADE = 1.0
 
-        const PHASE_START = 2.2       // timeline position to show focal text
-        const HOLD_DURATION = 0.6     // seconds of static focus
-        const MOTION_START = PHASE_START + HOLD_DURATION  // when ticker begins
-        const RUN_DURATION = 2.0      // total ticker running time
-
-        const INITIAL_SPEED = 90      // px/sec at motion start
-        const MAX_SPEED = 10000        // px/sec at full cascade
-        const ACCEL = 1000             // px/sec² acceleration rate
+        const INITIAL_SPEED = 90
+        const MAX_SPEED = 1000
+        const ACCEL = 1000
 
         const NODE_COUNT = 7
-        const SPACING = 120           // px between nodes
+        const SPACING = 120
 
         const container = secondTextRef.current
         const containerHeight = container.getBoundingClientRect().height || window.innerHeight
 
-        // Boundaries (relative to container center, y=0)
         const TOP_EXIT = -(containerHeight / 2) - 60
-        const BOTTOM_ENTRY = (containerHeight / 2) + 60
 
-        // --- Create nodes ---
         const nodes: HTMLElement[] = []
         const nodePositions: number[] = []
 
@@ -163,73 +146,58 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           nodes.push(el)
 
           if (i === 0) {
-            // First node: centered (y=0), visible — the focal anchor
             nodePositions[i] = 0
           } else {
-            // Rest: stacked below, hidden — will enter as motion begins
             nodePositions[i] = i * SPACING
           }
         }
 
-        // --- Depth styling based on vertical position ---
         const applyDepth = (el: HTMLElement, y: number) => {
           const halfRange = containerHeight / 2 + 60
           const distFromCenter = Math.abs(y) / halfRange
           const focus = Math.max(0, 1 - distFromCenter)
 
-          // Scale: 0.82 at edges → 1.15 at center
           const scale = 0.82 + focus * 0.33
-
-          // Opacity: quadratic falloff for sharper center emphasis
           const opacity = Math.min(1, Math.max(0, focus * focus * 1.15))
-
-          // Blur: 3px at edges → 0px at center
-          const blur = (1 - focus) * 3
+          const blur = (1 - focus) * 4
 
           el.style.transform = `translate(-50%, -50%) translateY(${y}px) scale(${scale})`
           el.style.opacity = String(opacity)
           el.style.filter = `blur(${blur.toFixed(1)}px)`
         }
 
-        // --- Phase 1: Show focal text (static, centered) ---
-        // Hide all nodes initially
         for (let i = 0; i < NODE_COUNT; i++) {
           nodes[i].style.opacity = "0"
           nodes[i].style.transform = `translate(-50%, -50%) translateY(${nodePositions[i]}px) scale(0.82)`
-          nodes[i].style.filter = "blur(3px)"
+          nodes[i].style.filter = "blur(6px)" // Match Phase 1 exit blur for bridge
         }
 
-        // Fade in the focal node (index 0) at center
+        // Focal node emerges from blur (bridges Phase 1's blur exit)
         tl.to(
           nodes[0],
           {
             opacity: 1,
-            scale: 1.08,
             filter: "blur(0px)",
-            duration: 0.35,
+            duration: 0.8,
             ease: "power2.out",
             onUpdate: function () {
-              // Keep the focal node at center with the animated scale
-              const s = 1 + this.progress() * 0.08
+              const s = 1.1 + this.progress() * 0.05
               nodes[0].style.transform = `translate(-50%, -50%) translateY(0px) scale(${s})`
-              nodes[0].style.filter = `blur(${((1 - this.progress()) * 2).toFixed(1)}px)`
             },
           },
           PHASE_START
         )
 
-        // --- Phase 2 & 3: Ticker-driven motion with acceleration ---
         let tickerActive = false
         let speed = INITIAL_SPEED
         let elapsedTime = 0
 
-        const tickerFn = () => {
+        tickerFnRef = () => {
           if (!tickerActive) return
 
           const dt = gsap.ticker.deltaRatio() / 60
           elapsedTime += dt
 
-          // Progressive acceleration: ramp speed over time
           if (speed < MAX_SPEED) {
             speed = Math.min(MAX_SPEED, speed + ACCEL * dt)
           }
@@ -237,9 +205,8 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           const moveAmount = speed * dt
 
           for (let i = 0; i < NODE_COUNT; i++) {
-            nodePositions[i] -= moveAmount // move upward
+            nodePositions[i] -= moveAmount
 
-            // Recycle: if exited above, wrap to below the lowest node
             if (nodePositions[i] < TOP_EXIT) {
               let maxY = -Infinity
               for (let j = 0; j < NODE_COUNT; j++) {
@@ -252,266 +219,245 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           }
         }
 
-        // Start the ticker (motion begins) after the static hold
         tl.add(() => {
           tickerActive = true
-          gsap.ticker.add(tickerFn)
+          gsap.ticker.add(tickerFnRef!)
         }, MOTION_START)
 
-        // Stop the ticker
-        const stopTime = MOTION_START + RUN_DURATION
         tl.add(() => {
           tickerActive = false
-          gsap.ticker.remove(tickerFn)
-        }, stopTime)
+          if (tickerFnRef) gsap.ticker.remove(tickerFnRef)
 
-        // Fade out all nodes and container
-        const fadeOutStart = stopTime + 0.1
+          // Freeze all current cascaded frames in place during the pause.
+          for (let i = 0; i < NODE_COUNT; i++) {
+            applyDepth(nodes[i], nodePositions[i])
+          }
+        }, STOP_TIME)
+
+        // Pause on the last visible frame before fading out.
+        FADEOUT_START = STOP_TIME + PAUSE_BEFORE_FADE
+
+        // Individual nodes blur out first (micro delay before container fades)
         tl.add(() => {
           gsap.to(nodes, {
             opacity: 0,
-            duration: 0.35,
-            ease: "power2.out",
+            filter: "blur(6px)",
+            scale: 0.95,
+            y: "-=30",
+            duration: 0.8,
+            ease: "power2.inOut",
           })
-        }, fadeOutStart)
+        }, FADEOUT_START)
 
+        // Container fades 0.15s after nodes start blurring (micro delay)
         tl.to(
           secondTextRef.current,
-          {
-            opacity: 0,
-            duration: 0.15,
-          },
-          fadeOutStart + 0.35
+          { opacity: 0, duration: 0.7, ease: "power2.inOut" },
+          FADEOUT_START + 0.15
         )
+
+        // Fully clear conveyor nodes before Phase 3 begins to avoid visual flashback.
+        tl.add(() => {
+          nodes.forEach((node) => node.remove())
+          if (secondTextRef.current) {
+            secondTextRef.current.innerHTML = ""
+          }
+        }, FADEOUT_START + 0.9)
       }
 
       // ============================================
-      // 3️⃣ THIRD TEXT: Cursor hover interaction with word scaling
+      // 3️⃣ THIRD TEXT: Cursor hover — enters WHILE conveyor is still fading
       // ============================================
+      const THIRD_START = FADEOUT_START + 0.95
+
       if (thirdTextRef.current && cursorRef.current) {
-        // Setup third text
         const thirdText = "That's usually the goal."
-        if (thirdTextRef.current) {
-          thirdTextRef.current.textContent = ""
-          thirdTextRef.current.innerHTML = ""
-        }
+        thirdTextRef.current.innerHTML = ""
+        thirdTextRef.current.style.display = "block"
+        thirdTextRef.current.style.opacity = "1"
 
         const words = thirdText.split(" ").filter(w => w.length > 0)
+        let wordSpans: HTMLElement[] = []
 
-        if (thirdTextRef.current) {
-          words.forEach((word, idx) => {
-            if (!thirdTextRef.current) return
+        words.forEach((word, idx) => {
+          const span = document.createElement("span")
+          span.textContent = word
+          span.className = "inline-block mr-2 whitespace-nowrap"
+          span.style.transformOrigin = "center center"
+          span.style.transition = "none"
+          span.style.opacity = "0"
+          span.style.filter = "blur(6px)" // Match Phase 2 exit blur for bridge
+          span.style.transform = "translateY(-10px) scale(0.97)" // Enter from ABOVE (energy continuity)
+          thirdTextRef.current!.appendChild(span)
+          wordSpans.push(span)
 
-            const span = document.createElement("span")
-            span.textContent = word
-            span.className = "inline-block mr-2 whitespace-nowrap"
-            span.style.transformOrigin = "center center"
-            span.style.transition = "none"  // GSAP handles transitions
-            thirdTextRef.current.appendChild(span)
+          if (idx < words.length - 1) {
+            thirdTextRef.current!.appendChild(document.createTextNode(" "))
+          }
+        })
 
-            if (idx < words.length - 1 && thirdTextRef.current) {
-              thirdTextRef.current.appendChild(document.createTextNode(" "))
-            }
-          })
-        }
+        // Words settle downward into place (continuing upward energy from conveyor)
+        tl.to(wordSpans, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "power2.out"
+        }, THIRD_START)
 
-        const wordSpans = Array.from(
-          thirdTextRef.current?.querySelectorAll("span") || []
-        ) as HTMLElement[]
+        const HOVER_START = THIRD_START + 0.9
+        const MOVE_DURATION = 0.35
+        const DWELL_TIME = 0.1
+        const SCALE_UP = 1.25
+        const SCALE_DURATION = 0.25
 
-        // Show third text container
-        tl.add(
-          () => {
-            if (thirdTextRef.current) {
-              thirdTextRef.current.style.display = "block"
-              thirdTextRef.current.style.opacity = "0"
-            }
-          },
-          5.2
-        )
-
-        if (thirdTextRef.current) {
-          tl.to(
-            thirdTextRef.current,
-            {
-              opacity: 1,
-              duration: 0.2,
-            },
-            5.2
-          )
-        }
-
-        // --- Sequential word-by-word cursor hover ---
-        // Cursor moves directly to each word's center, triggering
-        // a scale-up on arrival and reset on departure.
-
-        const HOVER_START = 5.4        // when cursor appears and starts moving
-        const MOVE_DURATION = 0.3      // time to move cursor to each word
-        const DWELL_TIME = 0.15        // pause at each word before moving on
-        const SCALE_UP = 1.3           // word scale on hover
-        const SCALE_DURATION = 0.2     // scale animation duration
-
-        // Position cursor near the first word before showing it
         tl.add(() => {
           if (!cursorRef.current || wordSpans.length === 0) return
           const firstRect = wordSpans[0].getBoundingClientRect()
           gsap.set(cursorRef.current, {
             x: firstRect.left + firstRect.width / 2,
-            y: firstRect.top + firstRect.height * 0.7,
+            y: firstRect.top + firstRect.height * 0.7 + 25,
             opacity: 0,
+            scale: 0.8
           })
-        }, HOVER_START - 0.05)
+        }, HOVER_START - 0.1)
 
-        // Fade in cursor
-        tl.to(
-          cursorRef.current,
-          {
-            opacity: 1,
-            duration: 0.15,
-            ease: "power2.out",
-          },
-          HOVER_START
-        )
+        tl.to(cursorRef.current, {
+          opacity: 1,
+          scale: 1,
+          y: "-=25",
+          duration: 0.4,
+          ease: "power2.out",
+        }, HOVER_START)
 
-        // Move cursor word-by-word
-        let currentTime = HOVER_START + 0.15
+        let currentTime = HOVER_START + 0.25
 
         wordSpans.forEach((span, idx) => {
-          // Move cursor to this word's center
           tl.add(() => {
             if (!cursorRef.current) return
             const rect = span.getBoundingClientRect()
             gsap.to(cursorRef.current, {
               x: rect.left + rect.width / 2,
               y: rect.top + rect.height * 0.7,
-              duration: idx === 0 ? 0.15 : MOVE_DURATION,
-              ease: "power2.out",
+              duration: idx === 0 ? 0.2 : MOVE_DURATION,
+              ease: "expo.out",
             })
           }, currentTime)
 
-          // Scale up this word (hover effect)
-          tl.to(
-            span,
-            {
-              scale: SCALE_UP,
+          tl.to(span, {
+            scale: SCALE_UP,
+            color: "#6ee7b7",
+            duration: SCALE_DURATION,
+            ease: "power2.out",
+          }, currentTime + (idx === 0 ? 0.1 : MOVE_DURATION * 0.6))
+
+          if (idx > 0) {
+            tl.to(wordSpans[idx - 1], {
+              scale: 1,
+              color: "#ffffff",
               duration: SCALE_DURATION,
               ease: "power2.out",
-              overwrite: "auto",
-            },
-            currentTime + (idx === 0 ? 0.08 : MOVE_DURATION * 0.6)
-          )
-
-          // Reset previous word
-          if (idx > 0) {
-            tl.to(
-              wordSpans[idx - 1],
-              {
-                scale: 1,
-                duration: SCALE_DURATION,
-                ease: "power2.out",
-                overwrite: "auto",
-              },
-              currentTime + 0.05
-            )
+            }, currentTime + 0.05)
           }
 
-          // Advance time: move duration + dwell
           currentTime += (idx === 0 ? 0.25 : MOVE_DURATION) + DWELL_TIME
         })
 
-        // Reset last word after all moves complete
-        tl.to(
-          wordSpans[wordSpans.length - 1],
-          {
-            scale: 1,
-            duration: SCALE_DURATION,
-            ease: "power2.out",
-          },
-          currentTime
-        )
+        tl.to(wordSpans[wordSpans.length - 1], {
+          scale: 1,
+          color: "#ffffff",
+          duration: SCALE_DURATION,
+          ease: "power2.out",
+        }, currentTime)
 
-        // Hide cursor
-        tl.to(
-          cursorRef.current,
-          {
-            opacity: 0,
-            duration: 0.25,
-            ease: "power2.out",
-          },
-          currentTime + 0.1
-        )
-      }
-
-      // ============================================
-      // 4️⃣ FINAL SCREEN: Name display with fade-in + upward motion
-      // ============================================
-      // Hide third text
-      tl.to(
-        thirdTextRef.current,
-        {
+        // Cursor fades out
+        tl.to(cursorRef.current, {
           opacity: 0,
+          scale: 0.8,
+          y: "+=20",
           duration: 0.4,
-        },
-        7.5
-      )
+          ease: "power2.inOut",
+        }, currentTime + 0.1)
 
-      if (finalNameRef.current) {
-        finalNameRef.current.style.opacity = "0"
-        finalNameRef.current.style.transform = "translateY(20px)"
-        finalNameRef.current.textContent = "Avadhoot Ganesh Mahadik"
+        currentTime += 0.4
 
-        // Fade in + upward motion (starts at 5.3s)
-        tl.to(
-          finalNameRef.current,
-          {
+        // ============================================
+        // 4️⃣ FINAL SCREEN: Name emerges from Phase 3's exit state
+        // ============================================
+        const FINAL_TRANSITION_START = currentTime
+
+        // Third text drifts slightly upward while fading (energy continues)
+        tl.to(thirdTextRef.current, {
+          opacity: 0,
+          scale: 0.95,
+          y: -10,
+          filter: "blur(6px)",
+          duration: 0.8,
+          ease: "power2.inOut",
+        }, FINAL_TRANSITION_START)
+
+        if (finalNameRef.current) {
+          // Initial state bridges Phase 3's exit blur
+          finalNameRef.current.style.opacity = "0"
+          finalNameRef.current.style.transform = "scale(1.02) translateY(-8px)"
+          finalNameRef.current.style.filter = "blur(6px)" // Matches Phase 3 exit blur
+          finalNameRef.current.textContent = "Avadhoot Ganesh Mahadik"
+
+          const FINAL_START = FINAL_TRANSITION_START + 0.25 // Tighter overlap (was +0.4)
+
+          // Name emerges from blur — subtle scale and position shift
+          tl.to(finalNameRef.current, {
             opacity: 1,
+            scale: 1,
             y: 0,
-            duration: 0.8,
-            ease: "power1.out",
-          },
-          7.9
-        )
-      }
-
-      // Mark animation as complete
-      tl.add(() => {
-        setAnimationComplete(true)
-      })
-
-      // --- "Click to enter" CTA ---
-      // Appears 0.3s after name finishes (name ends at ~8.7s)
-      if (clickTextRef.current) {
-        clickTextRef.current.style.opacity = "0"
-        clickTextRef.current.style.transform = "translateY(10px)"
-
-        // Fade in with subtle rise
-        tl.to(
-          clickTextRef.current,
-          {
-            opacity: 0.7,
-            y: 0,
-            duration: 0.5,
+            filter: "blur(0px)",
+            duration: 1.0,
             ease: "power2.out",
-            onComplete: () => {
-              setCtaReady(true)
-              // Start gentle opacity pulse
-              if (clickTextRef.current) {
-                gsap.to(clickTextRef.current, {
-                  opacity: 0.4,
-                  duration: 1.2,
-                  ease: "sine.inOut",
-                  repeat: -1,
-                  yoyo: true,
-                })
-              }
-            },
-          },
-          9.0
-        )
+          }, FINAL_START)
+
+          if (clickTextRef.current) {
+            clickTextRef.current.style.opacity = "0"
+            clickTextRef.current.style.transform = "translateY(-4px)"
+            clickTextRef.current.style.filter = "blur(3px)"
+
+            tl.to(clickTextRef.current, {
+              opacity: 0.7,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.8,
+              ease: "power2.out",
+              onComplete: () => {
+                setCtaReady(true)
+                if (clickTextRef.current) {
+                  gsap.to(clickTextRef.current, {
+                    opacity: 0.3,
+                    duration: 1.5,
+                    ease: "sine.inOut",
+                    repeat: -1,
+                    yoyo: true,
+                  })
+                }
+              },
+            }, FINAL_START + 0.4) // Tighter (was +0.6)
+
+            tl.add(() => {
+              setAnimationComplete(true)
+            }, FINAL_START + 0.8)
+          }
+        }
       }
     }
 
     runAnimationSequence()
+
+    // Cleanup GSAP animations and tickers
+    return () => {
+      if (tickerFnRef) gsap.ticker.remove(tickerFnRef)
+      timelineRef?.kill()
+      gsap.killTweensOf("*")
+    }
   }, [])
 
   // Handle click to dismiss
@@ -521,15 +467,18 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
 
     gsap.to(containerRef.current, {
       opacity: 0,
-      duration: 0.4,
-      ease: "power2.out",
+      scale: 1.05,
+      filter: "blur(6px)",
+      duration: 1,
+      ease: "power2.inOut",
       onComplete: () => {
         setShowScreen(false)
+        onDismiss?.()
       },
     })
   }
 
-  // Fallback: auto-dismiss if user doesn't click after 3s
+  // Fallback: auto-dismiss if user doesn't click after 5s
   useEffect(() => {
     if (animationComplete && isLoaded && ctaReady) {
       const timer = setTimeout(() => {
@@ -555,7 +504,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           maxWidth: "70%",
           fontFamily: "system-ui, -apple-system, sans-serif",
           opacity: 1,
-          transform: "scale(1.4)",
+          transform: "scale(1.15)",
           transformOrigin: "center center",
         }}
       />
@@ -622,7 +571,7 @@ export function LoadingScreen({ isLoaded }: LoadingScreenProps) {
           className="text-white text-center"
           style={{
             fontFamily: "system-ui, -apple-system, sans-serif",
-            fontSize: "1.2vw",
+            fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)",
             letterSpacing: "0.15em",
             opacity: 0,
           }}

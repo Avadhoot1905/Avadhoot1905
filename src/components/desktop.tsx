@@ -227,6 +227,10 @@ export function MacOSDesktop() {
     })
   }, []) // Remove dependency on openWindows
 
+  const handleLoadingDismiss = useCallback(() => {
+    setIsLoading(false)
+  }, [])
+
   useEffect(() => {
     console.log('✅ Desktop component mounted')
     console.log('  openOrActivateWindow type:', typeof openOrActivateWindow)
@@ -236,17 +240,15 @@ export function MacOSDesktop() {
   if (!mounted) return null
 
   // Show loading screen first
-  if (isLoading && !isAssetsLoaded) {
+  if (isLoading) {
     return (
       <AnimatePresence>
-        <LoadingScreen isLoaded={isAssetsLoaded} />
+        <LoadingScreen
+          isLoaded={isAssetsLoaded}
+          onDismiss={handleLoadingDismiss}
+        />
       </AnimatePresence>
     )
-  }
-
-  // Mark loading as complete once assets are loaded
-  if (isLoading && isAssetsLoaded) {
-    setIsLoading(false)
   }
 
   // Show shutdown screen

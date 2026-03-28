@@ -141,7 +141,7 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
           el.style.pointerEvents = "none"
           el.style.whiteSpace = "nowrap"
           el.style.willChange = "transform, opacity, filter"
-          el.innerHTML = `<span class="text-emerald-400 font-bold italic">Efficient</span><span class="text-white italic">underneath</span>`
+          el.innerHTML = `<span class="font-bold italic" style="color:#39FF14;">Efficient</span><span class="text-white italic">underneath</span>`
           container.appendChild(el)
           nodes.push(el)
 
@@ -348,7 +348,7 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
 
           tl.to(span, {
             scale: SCALE_UP,
-            color: "#6ee7b7",
+            color: "#39FF14",
             duration: SCALE_DURATION,
             ease: "power2.out",
           }, currentTime + (idx === 0 ? 0.1 : MOVE_DURATION * 0.6))

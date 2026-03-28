@@ -68,16 +68,17 @@ export function MacOSDesktop() {
   useEffect(() => {
     setMounted(true)
 
-    const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined
-    const isReloadNavigation = navigationEntry?.type === "reload"
     const hasSeenLoading = localStorage.getItem(LOADING_SEEN_STORAGE_KEY) === "1"
-    const shouldShowLoading = !hasSeenLoading || isReloadNavigation
+    const shouldShowLoading = !hasSeenLoading
 
     if (!shouldShowLoading) {
       setIsLoading(false)
       setIsAssetsLoaded(true)
       return
     }
+
+    // Persist as soon as startup flow begins so subsequent reloads skip it.
+    localStorage.setItem(LOADING_SEEN_STORAGE_KEY, "1")
 
     setIsLoading(true)
     setIsAssetsLoaded(false)

@@ -48,6 +48,8 @@ import { TerminalApp } from "@/components/apps/TerminalApp"
 import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/AchievementsApp"
 import { Widgets } from "@/components/widgets"
 
+const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
+
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>(["terminal", "about"])
   const [activeWindow, setActiveWindow] = useState<string | null>("about")
@@ -65,10 +67,26 @@ export function MacOSDesktop() {
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
-    // Mark assets as loaded after animation completes (~5-6 seconds)
+
+    const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined
+    const isReloadNavigation = navigationEntry?.type === "reload"
+    const hasSeenLoading = localStorage.getItem(LOADING_SEEN_STORAGE_KEY) === "1"
+    const shouldShowLoading = !hasSeenLoading || isReloadNavigation
+
+    if (!shouldShowLoading) {
+      setIsLoading(false)
+      setIsAssetsLoaded(true)
+      return
+    }
+
+    setIsLoading(true)
+    setIsAssetsLoaded(false)
+
+    // Mark assets as loaded after animation placeholder completes.
     const timer = setTimeout(() => {
       setIsAssetsLoaded(true)
     }, 6500)
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -229,6 +247,7 @@ export function MacOSDesktop() {
 
   const handleLoadingDismiss = useCallback(() => {
     setIsLoading(false)
+    localStorage.setItem(LOADING_SEEN_STORAGE_KEY, "1")
   }, [])
 
   useEffect(() => {

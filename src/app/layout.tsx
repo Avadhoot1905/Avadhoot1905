@@ -26,6 +26,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://db.onlinewebfonts.com" />
+        <link href="https://db.onlinewebfonts.com/c/2222cf021b5f54c92d76328a2f7ec80b?family=Eckmannpsych+Small" rel="stylesheet" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className={inter.className}>

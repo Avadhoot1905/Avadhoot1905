@@ -141,7 +141,7 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
           el.style.pointerEvents = "none"
           el.style.whiteSpace = "nowrap"
           el.style.willChange = "transform, opacity, filter"
-          el.innerHTML = `<span class="text-emerald-400 font-bold italic">Distributed</span><span class="text-white italic">underneath</span>`
+          el.innerHTML = `<span class="text-emerald-400 font-bold italic">Efficient</span><span class="text-white italic">underneath</span>`
           container.appendChild(el)
           nodes.push(el)
 
@@ -560,19 +560,21 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
       <div className="absolute flex flex-col items-center gap-6">
         <div
           ref={finalNameRef}
-          className="text-emerald-400 italic font-bold text-[7vw] text-center leading-tight"
+          className="italic font-bold text-[7vw] text-center leading-tight"
           style={{
             maxWidth: "80%",
-            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontFamily: "'Eckmannpsych Small', Eckmannpsych, system-ui, -apple-system, sans-serif",
+            color: "#39FF14",
           }}
         />
         <div
           ref={clickTextRef}
-          className="text-white text-center"
+          className="text-center"
           style={{
-            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontFamily: "'Eckmannpsych Small', Eckmannpsych, system-ui, -apple-system, sans-serif",
             fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)",
             letterSpacing: "0.15em",
+            color: "#ffff3f",
             opacity: 0,
           }}
         >

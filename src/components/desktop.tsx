@@ -13,7 +13,6 @@ import { motion, AnimatePresence, type PanInfo } from "framer-motion"
 import { X } from "lucide-react"
 import { GiTicTacToe } from "react-icons/gi"
 import { 
-  FaFolder,
   FaSafari, 
   FaCommentDots, 
   FaImages, 
@@ -53,6 +52,15 @@ const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
 const MOBILE_WELCOME_TIMEOUT_MS = 9000
 
 type WelcomeNotificationExit = "right" | "left" | "up" | "pop-open" | "pop-close"
+
+const finderIcon = (
+  <img
+    src="/assets/macos/finder-svgrepo-com.svg"
+    alt="Finder"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -481,7 +489,7 @@ export function MacOSDesktop() {
         >
           <AppIcon
             name="Finder"
-            icon={<FaFolder className="text-blue-500" />}
+            icon={finderIcon}
             onClick={() => toggleWindow("finder")}
           />
           <AppIcon
@@ -746,7 +754,7 @@ export function MacOSDesktop() {
 
       <Dock
         apps={[
-          { id: "finder", icon: <FaFolder className="text-blue-500" />, isOpen: openWindows.includes("finder") },
+          { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
           { id: "about", icon: <FaUser className="text-purple-500" />, isOpen: openWindows.includes("about") },
           { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
           { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },

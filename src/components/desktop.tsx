@@ -9,7 +9,8 @@ import { LoadingScreen } from "@/components/loading-screen"
 import { ShutdownScreen } from "@/components/shutdown-screen"
 import { LockScreen } from "@/components/lock-screen"
 import { useTheme } from "next-themes"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, type PanInfo } from "framer-motion"
+import { X } from "lucide-react"
 import { GiTicTacToe } from "react-icons/gi"
 import { 
   FaFolder,
@@ -48,10 +49,16 @@ import { TerminalApp } from "@/components/apps/TerminalApp"
 import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/AchievementsApp"
 import { Widgets } from "@/components/widgets"
 
+const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
+const MOBILE_WELCOME_TIMEOUT_MS = 9000
+
+type WelcomeNotificationExit = "right" | "left" | "up" | "pop-open" | "pop-close"
+
 export function MacOSDesktop() {
-  const [openWindows, setOpenWindows] = useState<string[]>(["terminal", "about"])
-  const [activeWindow, setActiveWindow] = useState<string | null>("about")
+  const [openWindows, setOpenWindows] = useState<string[]>([])
+  const [activeWindow, setActiveWindow] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
   const [isShuttingDown, setIsShuttingDown] = useState(false)
@@ -60,17 +67,60 @@ export function MacOSDesktop() {
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [projectsFilter, setProjectsFilter] = useState<string>("all")
   const [terminalCommand, setTerminalCommand] = useState<string | undefined>(undefined)
+  const [showWelcomeNotification, setShowWelcomeNotification] = useState(true)
+  const [isWelcomeHovered, setIsWelcomeHovered] = useState(false)
+  const [welcomeNotificationExit, setWelcomeNotificationExit] = useState<WelcomeNotificationExit>("right")
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
-    // Mark assets as loaded after animation completes (~5-6 seconds)
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+
+    const hasSeenLoading = localStorage.getItem(LOADING_SEEN_STORAGE_KEY) === "1"
+    const shouldShowLoading = !hasSeenLoading
+
+    if (!shouldShowLoading) {
+      setIsLoading(false)
+      setIsAssetsLoaded(true)
+      return
+    }
+
+    // Persist as soon as startup flow begins so subsequent reloads skip it.
+    localStorage.setItem(LOADING_SEEN_STORAGE_KEY, "1")
+
+    setIsLoading(true)
+    setIsAssetsLoaded(false)
+
+    // Mark assets as loaded after animation placeholder completes.
     const timer = setTimeout(() => {
       setIsAssetsLoaded(true)
     }, 6500)
-    return () => clearTimeout(timer)
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener("resize", checkMobile)
+    }
   }, [])
+
+  useEffect(() => {
+    if (!showWelcomeNotification || !isMobile || isLocked || isLoading || isShuttingDown) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setWelcomeNotificationExit("up")
+      setShowWelcomeNotification(false)
+    }, MOBILE_WELCOME_TIMEOUT_MS)
+
+    return () => clearTimeout(timer)
+  }, [isLoading, isLocked, isMobile, isShuttingDown, showWelcomeNotification])
 
   // Reset terminal command after it's been processed
   useEffect(() => {
@@ -227,6 +277,81 @@ export function MacOSDesktop() {
     })
   }, []) // Remove dependency on openWindows
 
+  const handleLoadingDismiss = useCallback(() => {
+    setIsLoading(false)
+    localStorage.setItem(LOADING_SEEN_STORAGE_KEY, "1")
+  }, [])
+
+  const dismissWelcomeNotification = useCallback((direction: WelcomeNotificationExit) => {
+    setWelcomeNotificationExit(direction)
+    setShowWelcomeNotification(false)
+  }, [])
+
+  const handleWelcomeNotificationOpen = useCallback(() => {
+    dismissWelcomeNotification("pop-open")
+    setTimeout(() => {
+      openOrActivateWindow("about")
+    }, 140)
+  }, [dismissWelcomeNotification, openOrActivateWindow])
+
+  const handleWelcomeNotificationClose = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    dismissWelcomeNotification("pop-close")
+  }, [dismissWelcomeNotification])
+
+  const handleWelcomeSwipeEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!isMobile) {
+      return
+    }
+
+    const offsetX = info.offset.x
+    const offsetY = info.offset.y
+    const absX = Math.abs(offsetX)
+    const absY = Math.abs(offsetY)
+    const threshold = 80
+
+    if (absX < threshold && offsetY > -threshold) {
+      return
+    }
+
+    if (absX > absY && absX >= threshold) {
+      dismissWelcomeNotification(offsetX > 0 ? "right" : "left")
+      return
+    }
+
+    if (offsetY <= -threshold) {
+      dismissWelcomeNotification("up")
+    }
+  }, [dismissWelcomeNotification, isMobile])
+
+  const welcomeNotificationExitAnimation = useCallback((direction: WelcomeNotificationExit) => {
+    if (direction === "left") {
+      return { x: -220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
+    }
+
+    if (direction === "up") {
+      return { y: -160, opacity: 0, scale: 0.94, transition: { duration: 0.22 } }
+    }
+
+    if (direction === "pop-open") {
+      return {
+        scale: [1, 1.08, 0.68],
+        opacity: [1, 1, 0],
+        transition: { duration: 0.24, times: [0, 0.42, 1] },
+      }
+    }
+
+    if (direction === "pop-close") {
+      return {
+        scale: [1, 1.04, 0.72],
+        opacity: [1, 0.95, 0],
+        transition: { duration: 0.2, times: [0, 0.45, 1] },
+      }
+    }
+
+    return { x: 220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
+  }, [])
+
   useEffect(() => {
     console.log('✅ Desktop component mounted')
     console.log('  openOrActivateWindow type:', typeof openOrActivateWindow)
@@ -236,17 +361,15 @@ export function MacOSDesktop() {
   if (!mounted) return null
 
   // Show loading screen first
-  if (isLoading && !isAssetsLoaded) {
+  if (isLoading) {
     return (
       <AnimatePresence>
-        <LoadingScreen isLoaded={isAssetsLoaded} />
+        <LoadingScreen
+          isLoaded={isAssetsLoaded}
+          onDismiss={handleLoadingDismiss}
+        />
       </AnimatePresence>
     )
-  }
-
-  // Mark loading as complete once assets are loaded
-  if (isLoading && isAssetsLoaded) {
-    setIsLoading(false)
   }
 
   // Show shutdown screen
@@ -286,6 +409,68 @@ export function MacOSDesktop() {
             onRestart={handleRestart}
             activeApp={activeWindow} 
           />
+
+          <AnimatePresence>
+            {showWelcomeNotification && (
+              <motion.div
+                key="welcome-notification"
+                className="fixed right-4 top-12 z-[120] w-[min(360px,calc(100vw-2rem))]"
+                initial={{ opacity: 0, x: 80, scale: 0.92 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  scale: 1,
+                  transition: { type: "spring", stiffness: 340, damping: 28 },
+                }}
+                exit={welcomeNotificationExitAnimation(welcomeNotificationExit)}
+                drag={isMobile}
+                dragConstraints={{ top: 0, right: 0, bottom: 0, left: 0 }}
+                dragElastic={0.2}
+                dragMomentum={false}
+                onDragEnd={isMobile ? handleWelcomeSwipeEnd : undefined}
+                onMouseEnter={!isMobile ? () => setIsWelcomeHovered(true) : undefined}
+                onMouseLeave={!isMobile ? () => setIsWelcomeHovered(false) : undefined}
+                onClick={handleWelcomeNotificationOpen}
+              >
+                <div
+                  className="relative cursor-pointer overflow-visible rounded-2xl border border-gray-200/90 bg-white/90 px-4 py-3 text-gray-800 shadow-2xl transition-transform duration-200"
+                  style={{
+                    backdropFilter: "blur(26px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(26px) saturate(180%)",
+                  }}
+                >
+                  {!isMobile && (
+                    <button
+                      aria-label="Dismiss welcome notification"
+                      onClick={handleWelcomeNotificationClose}
+                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${
+                        isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
+                      }`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gray-900/10">
+                      <img
+                        src="/favicon.ico"
+                        alt="Avadhoot Portfolio"
+                        className="h-6 w-6 object-contain"
+                        draggable={false}
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-semibold tracking-wide">Welcome to Avadhoot&apos;s Portfolio</p>
+                      <p className="text-xs leading-5 text-gray-600">
+                        Click this notification to know more about me.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
         <motion.div

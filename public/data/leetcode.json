@@ -4,7 +4,7 @@
     "easySolved": 72,
     "mediumSolved": 99,
     "hardSolved": 10,
-    "ranking": 838308,
+    "ranking": 837807,
     "contributionPoints": 0
   },
   "recentProblems": [
@@ -44,6 +44,6 @@
       "lang": "java"
     }
   ],
-  "fetchedAt": "2026-03-21T15:53:20.237Z",
+  "fetchedAt": "2026-03-20T23:45:31.216Z",
   "success": true
 }

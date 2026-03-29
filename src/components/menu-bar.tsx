@@ -13,6 +13,43 @@ interface MenuBarProps {
   activeApp?: string | null
 }
 
+const ControlCenterIcon = ({ className = "" }: { className?: string }) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`text-black dark:text-white ${className}`}
+    >
+      <rect
+        x="2"
+        y="5"
+        width="20"
+        height="6"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <circle cx="5" cy="8" r="1.5" fill="currentColor" />
+
+      <rect
+        x="2"
+        y="13"
+        width="20"
+        height="6"
+        rx="3"
+        fill="currentColor"
+      />
+      <circle
+        cx="19"
+        cy="16"
+        r="1.5"
+        className="fill-white dark:fill-neutral-950"
+      />
+    </svg>
+  )
+}
+
 export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -760,11 +797,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
         </div>
 
         <div className={iconTriggerClass} title="Control Center">
-          <img
-            src="/assets/macos/control-center.svg"
-            alt="Control Center"
-            className="h-3.5 w-3.5"
-          />
+          <ControlCenterIcon className="h-3.5 w-3.5" />
         </div>
 
         <div className={`px-2 py-0.5 text-sm font-medium leading-none tracking-tight ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>

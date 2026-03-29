@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Moon, Sun, Monitor, Wifi, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize } from "lucide-react"
+import { Moon, Sun, Monitor, WifiHigh, BatteryHigh, SpeakerHigh, Lightbulb, CellSignalHigh, Bluetooth, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -133,6 +133,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     }
 
     return (
+      <IconContext.Provider value={{ weight: "fill" }}>
       <>
         {/* iOS Status Bar - Fixed position, non-draggable */}
         <motion.div
@@ -158,8 +159,8 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           
           {/* Status Icons */}
           <div className="flex items-center space-x-2">
-            <Wifi className="h-4 w-4" />
-            <BatteryCharging className="h-4 w-4" />
+            <WifiHigh className="h-4 w-4" />
+            <BatteryHigh className="h-4 w-4" />
           </div>
         </motion.div>
 
@@ -245,7 +246,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Plane className="h-5 w-5 mb-1" />
+                        <Airplane className="h-5 w-5 mb-1" />
                         <span className="text-[9px] font-medium">Airplane</span>
                       </button>
 
@@ -262,7 +263,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Signal className="h-5 w-5 mb-1" />
+                        <CellSignalHigh className="h-5 w-5 mb-1" />
                         <span className="text-[9px] font-medium">Cellular</span>
                       </button>
 
@@ -279,7 +280,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Wifi className="h-5 w-5 mb-1" />
+                        <WifiHigh className="h-5 w-5 mb-1" />
                         <span className="text-[9px] font-medium">Wi-Fi</span>
                       </button>
 
@@ -316,7 +317,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <RotateCcw className="h-5 w-5 mb-1" />
+                        <ArrowsCounterClockwise className="h-5 w-5 mb-1" />
                         <span className="text-[9px] font-medium">Rotation</span>
                       </button>
 
@@ -440,7 +441,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         setVolume(Math.round(percentage))
                       }}
                     >
-                      <Volume2 className="h-5 w-5 flex-shrink-0 mr-3" />
+                      <SpeakerHigh className="h-5 w-5 flex-shrink-0 mr-3" />
                       <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${
                         theme === "dark" ? "bg-white/10" : "bg-black/10"
                       }`}>
@@ -449,7 +450,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                           style={{ width: `${volume}%` }} 
                         />
                       </div>
-                      <Volume2 className="h-5 w-5 flex-shrink-0 ml-3" />
+                      <SpeakerHigh className="h-5 w-5 flex-shrink-0 ml-3" />
                     </div>
                   </div>
                 </div>
@@ -466,6 +467,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           )}
         </AnimatePresence>
       </>
+      </IconContext.Provider>
     )
   }
 
@@ -502,6 +504,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   const desktopTime = currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 
   return (
+    <IconContext.Provider value={{ weight: "fill" }}>
     <motion.div
       className={`fixed left-0 top-0 z-[10000] flex h-8 w-full items-center px-3 text-sm backdrop-blur-2xl ${
         theme === "dark" 
@@ -715,9 +718,9 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         >
           {isFullscreen ? (
-            <Minimize className="h-3.5 w-3.5" />
+            <ArrowsInSimple className="h-3.5 w-3.5" />
           ) : (
-            <Maximize className="h-3.5 w-3.5" />
+            <ArrowsOutSimple className="h-3.5 w-3.5" />
           )}
         </button>
 
@@ -785,19 +788,27 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
         </div>
 
         <div className={iconTriggerClass} title="Wi-Fi">
-          <Wifi className="h-3.5 w-3.5" />
+          <WifiHigh className="h-3.5 w-3.5" />
         </div>
 
         <div className={iconTriggerClass} title="Battery">
-          <BatteryCharging className="h-3.5 w-3.5" />
+          <BatteryHigh className="h-3.5 w-3.5" />
         </div>
 
         <div className={iconTriggerClass} title="Volume">
-          <Volume2 className="h-3.5 w-3.5" />
+          <SpeakerHigh className="h-3.5 w-3.5" />
         </div>
 
         <div className={iconTriggerClass} title="Control Center">
-          <ControlCenterIcon className="h-3.5 w-3.5" />
+          {theme === "dark" ? (
+            <ControlCenterIcon className="h-3.5 w-3.5" />
+          ) : (
+            <img
+              src="/assets/macos/control-center.svg"
+              alt="Control Center"
+              className="h-3.5 w-3.5"
+            />
+          )}
         </div>
 
         <div className={`px-2 py-0.5 text-sm font-medium leading-none tracking-tight ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>
@@ -809,5 +820,6 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
         </div>
       </div>
     </motion.div>
+      </IconContext.Provider>
   )
 }

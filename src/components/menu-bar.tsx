@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Moon, Sun, Monitor, Wifi, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize, SlidersHorizontal } from "lucide-react"
+import { Moon, Sun, Monitor, Wifi, BatteryCharging, Volume2, Lightbulb, Signal, Bluetooth, Lock, RotateCcw, Flashlight, Plane, Maximize, Minimize } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -760,7 +760,11 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
         </div>
 
         <div className={iconTriggerClass} title="Control Center">
-          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <img
+            src="/assets/macos/control-center.svg"
+            alt="Control Center"
+            className="h-3.5 w-3.5"
+          />
         </div>
 
         <div className={`px-2 py-0.5 text-sm font-medium leading-none tracking-tight ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>

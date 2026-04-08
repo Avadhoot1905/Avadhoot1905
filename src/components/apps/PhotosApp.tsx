@@ -24,10 +24,13 @@ const albumImages: AlbumMap = {
     { src: "/assets/images/camera/riviera.jpeg", alt: "Riviera" },
     { src: "/assets/images/camera/vit.jpeg", alt: "Vit" },
     { src: "/assets/images/camera/yantra.jpeg", alt: "Yantra" },
+    { src: "/assets/images/camera/yantra_winners.jpeg", alt: "Yantra Winners" },
   ],
   informal: [
     { src: "/assets/images/informal/bruh_alien.jpeg", alt: "Bruh Alien" },
     { src: "/assets/images/informal/hack_informal.jpeg", alt: "Hack Informal" },
+    { src: "/assets/images/informal/mcd_boys.jpeg", alt: "Mcd Boys" },
+    { src: "/assets/images/informal/mcd_gng.jpeg", alt: "Mcd Gng" },
     { src: "/assets/images/informal/sami.jpeg", alt: "Sami" },
   ],
   leetcode: [

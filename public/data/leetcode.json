@@ -4,46 +4,46 @@
     "easySolved": 72,
     "mediumSolved": 99,
     "hardSolved": 10,
-    "ranking": 837807,
+    "ranking": 847893,
     "contributionPoints": 0
   },
   "recentProblems": [
     {
-      "title": "Rotate List",
-      "titleSlug": "rotate-list",
-      "timestamp": "1772950790",
+      "title": "Valid Anagram",
+      "titleSlug": "valid-anagram",
+      "timestamp": "1774815540",
       "statusDisplay": "Accepted",
       "lang": "java"
     },
     {
-      "title": "Rotate List",
-      "titleSlug": "rotate-list",
-      "timestamp": "1772950782",
+      "title": "Valid Anagram",
+      "titleSlug": "valid-anagram",
+      "timestamp": "1774815534",
       "statusDisplay": "Accepted",
       "lang": "java"
     },
     {
-      "title": "Reverse Linked List",
-      "titleSlug": "reverse-linked-list",
-      "timestamp": "1772949220",
+      "title": "Valid Anagram",
+      "titleSlug": "valid-anagram",
+      "timestamp": "1774815469",
       "statusDisplay": "Accepted",
       "lang": "java"
     },
     {
-      "title": "Reverse Linked List",
-      "titleSlug": "reverse-linked-list",
-      "timestamp": "1772949197",
+      "title": "Valid Anagram",
+      "titleSlug": "valid-anagram",
+      "timestamp": "1774815462",
       "statusDisplay": "Accepted",
       "lang": "java"
     },
     {
-      "title": "Merge Two Sorted Lists",
-      "titleSlug": "merge-two-sorted-lists",
-      "timestamp": "1772947522",
+      "title": "Valid Anagram",
+      "titleSlug": "valid-anagram",
+      "timestamp": "1774815329",
       "statusDisplay": "Accepted",
       "lang": "java"
     }
   ],
-  "fetchedAt": "2026-03-20T23:45:31.216Z",
+  "fetchedAt": "2026-04-08T20:46:34.381Z",
   "success": true
 }

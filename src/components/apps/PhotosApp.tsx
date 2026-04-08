@@ -231,14 +231,15 @@ export function PhotosApp() {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
-              className="relative max-w-4xl max-h-[90vh] w-full h-full"
+              className="relative max-w-4xl max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               <Image
                 src={selectedImage.src}
                 alt={selectedImage.alt}
-                fill
-                className="object-contain"
+                width={1600}
+                height={1200}
+                className="h-auto max-h-[90vh] w-auto max-w-full object-contain"
               />
             </motion.div>
           </motion.div>

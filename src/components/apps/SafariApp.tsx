@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { FaChevronLeft, FaChevronRight, FaStar, FaCodeBranch, FaBook } from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
+import { DinoGame } from "./DinoGame"
 
 // ===================================================
 // STATIC DATA IMPORTS
@@ -478,25 +479,25 @@ export function SafariApp() {
 
         {/* LinkedIn Tab - Fallback UI */}
         {activeSafariTab === "linkedin" && (
-          <div className="w-full h-full flex items-center justify-center p-8">
-            <div className={`max-w-md text-center space-y-6 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-              <div className="w-24 h-24 mx-auto rounded-full bg-blue-600 flex items-center justify-center">
-                <SiLinkedin className="text-5xl text-white" />
-              </div>
-              <h2 className="text-2xl font-bold">LinkedIn Profile</h2>
-              <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-                Connect with me on LinkedIn to see my professional experience,
-                skills, endorsements, and network.
+          <div className="w-full h-full flex items-center justify-center p-6 md:p-8">
+            <div className="w-full max-w-2xl flex flex-col items-center justify-center gap-5 text-center">
+              <DinoGame />
+              <p className={`text-base md:text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                Website unavailable :(
               </p>
-              <a
-                href="https://www.linkedin.com/in/avadhoot-mahadik-125362295/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+              <button
+                onClick={() => window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank", "noopener,noreferrer")}
+                className={`inline-flex items-center gap-2 rounded-md border px-5 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-all ${theme === "dark"
+                  ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+                  : "border-black/10 bg-white/70 text-gray-800 hover:bg-white"
+                }`}
               >
-                <SiLinkedin />
-                <span>View LinkedIn Profile</span>
-              </a>
+                <SiLinkedin className="text-blue-500" />
+                <span>Click here to view my LinkedIn</span>
+              </button>
+              <div className={`text-xs ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}>
+                Play while the page is unavailable.
+              </div>
             </div>
           </div>
         )}

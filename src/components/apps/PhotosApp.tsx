@@ -31,6 +31,7 @@ const albumImages: AlbumMap = {
     { src: "/assets/images/informal/hack_informal.jpeg", alt: "Hack Informal" },
     { src: "/assets/images/informal/mcd_boys.jpeg", alt: "Mcd Boys" },
     { src: "/assets/images/informal/mcd_gng.jpeg", alt: "Mcd Gng" },
+    { src: "/assets/images/informal/tblock.jpeg", alt: "Tblock" },
     { src: "/assets/images/informal/sami.jpeg", alt: "Sami" },
   ],
   leetcode: [

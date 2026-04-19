@@ -34,7 +34,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   const [obstacles, setObstacles] = useState<Obstacle[]>([])
   const [score, setScore] = useState(0)
   const [isGameOver, setIsGameOver] = useState(false)
-  const [isRunning, setIsRunning] = useState(true)
+  const [isRunning, setIsRunning] = useState(false)
   const [dinoFrame, setDinoFrame] = useState<"left" | "right">("left")
 
   const rafRef = useRef<number | null>(null)
@@ -56,7 +56,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     setScore(Math.floor(scoreRef.current))
   }, [])
 
-  const resetGame = useCallback(() => {
+  const resetGame = useCallback((startRunning = false) => {
     velocityYRef.current = 0
     dinoYRef.current = DINO_GROUND_Y
     obstaclesRef.current = []
@@ -68,13 +68,13 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     sameSpriteStreakRef.current = 0
     setDinoFrame("left")
     setIsGameOver(false)
-    setIsRunning(true)
+    setIsRunning(startRunning)
     syncState()
   }, [syncState])
 
   const jump = useCallback(() => {
     if (isGameOver) {
-      resetGame()
+      resetGame(true)
       return
     }
 
@@ -297,7 +297,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
 
         {!isGameOver && score < 4 && (
           <div className="absolute inset-x-0 bottom-3 text-center text-[11px] text-black/50 dark:text-white/50">
-            Press space or click to jump
+            {isRunning ? "Press space or click to jump" : "Press space or click to start"}
           </div>
         )}
       </div>

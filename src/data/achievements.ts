@@ -1,9 +1,9 @@
 export type Achievement = {
-  id: string
-  title: string
-  date: string
-  summary: string
-  content: string
+    id: string
+    title: string
+    date: string
+    summary: string
+    content: string
 }
 
 export const achievements: Achievement[] = [
@@ -30,5 +30,13 @@ export const achievements: Achievement[] = [
         summary: "iOS Fusion'25 Best Idea",
         content:
             "Won Best Idea among 60 participating teams for conceptualizing and developing a mobile application aimed at enabling early detection of common eye diseases using on-device machine learning. The solution focused on making preliminary eye health screening more accessible by allowing users to capture images of their eyes through a simple mobile interface. The application was built using Swift and designed to run inference locally, ensuring faster results, offline capability, and improved user privacy by avoiding the need to transmit sensitive medical images to external servers.\n\nThe core detection system was built using TensorFlow and OpenCV, where a machine learning model was trained to identify visual indicators of conditions such as cataract, glaucoma, and conjunctivitis from eye images. Once trained, the model was converted into Apple’s .mlmodel format using the CoreML framework, allowing it to run natively on the device. This integration enabled real-time analysis directly on the user’s phone, leveraging Apple’s optimized on-device ML pipeline for efficient and responsive predictions without requiring cloud-based processing.\n\nBeyond detection, the application also aimed to guide users toward timely medical consultation. Based on the analysis results, the app could suggest nearby ophthalmologists or clinics for further diagnosis and treatment. Authentication and user management were handled through OAuth, ensuring secure access while maintaining a smooth user experience. The project demonstrated how mobile development and on-device machine learning could be combined to create accessible, privacy-conscious healthcare screening tools.",
+    },
+    {
+        id: "vit-top-coder-25",
+        title: "VIT Top Coder Badge",
+        date: "2025",
+        summary: "Earned VIT's Top Coder distinction",
+        content:
+            "Awarded the prestigious Top Coder badge by VIT after successfully clearing the institute's competitive coding examination, designed to identify students with strong problem-solving and data structures & algorithms (DSA) skills. The assessment featured medium to hard-level algorithmic challenges requiring efficient solutions under strict time and space constraints, testing concepts such as graph traversal, dynamic programming, greedy algorithms, and advanced data structures.\n\nThe examination evaluates a candidate's ability to analyze complex problems, design optimal algorithms, and implement robust solutions within limited time. Successfully earning the Top Coder distinction demonstrates proficiency in competitive programming fundamentals, algorithmic thinking, and coding efficiency, placing recipients among the college's recognized problem solvers.\n\nThe Top Coder badge is regarded as a notable academic and technical achievement within VIT's placement ecosystem, recognizing students who excel in algorithmic problem-solving beyond standard coursework. It serves as an acknowledgment of strong DSA fundamentals and consistent coding ability, complementing academic performance and software engineering skills."
     }
 ]

@@ -65,7 +65,7 @@ export function SafariApp() {
   const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium">("github")
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
-  
+
   const [githubUser, setGithubUser] = useState<GitHubUser | null>(null)
   const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
   const [leetcodeStats, setLeetcodeStats] = useState<LeetCodeStats | null>(null)
@@ -79,7 +79,7 @@ export function SafariApp() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -90,15 +90,15 @@ export function SafariApp() {
     if (activeSafariTab === "github" && !githubUser) {
       setLoading(true)
       setError(null)
-      
+
       try {
-        const data = githubData as unknown as { 
+        const data = githubData as unknown as {
           success: boolean
           user?: GitHubUser
           repos?: GitHubRepo[]
           error?: string
         }
-        
+
         if (data.success && data.user && data.repos) {
           setGithubUser(data.user)
           setGithubRepos(data.repos)
@@ -119,7 +119,7 @@ export function SafariApp() {
     if (activeSafariTab === "leetcode" && !leetcodeStats) {
       setLoading(true)
       setError(null)
-      
+
       try {
         const data = leetcodeData as unknown as {
           success: boolean
@@ -127,7 +127,7 @@ export function SafariApp() {
           recentProblems?: LeetCodeSubmission[]
           error?: string
         }
-        
+
         if (data.success && data.stats) {
           const stats = data.stats
           setLeetcodeStats({
@@ -138,7 +138,7 @@ export function SafariApp() {
             ranking: stats.ranking || 0,
             contributionPoints: stats.contributionPoints || 0
           })
-          
+
           // Set recent problems if available
           if (data.recentProblems && data.recentProblems.length > 0) {
             const recentSolved = data.recentProblems
@@ -185,14 +185,14 @@ export function SafariApp() {
     if (activeSafariTab === "medium" && mediumArticles.length === 0) {
       setLoading(true)
       setError(null)
-      
+
       try {
         const data = mediumData as unknown as {
           success: boolean
           items?: MediumArticle[]
           error?: string
         }
-        
+
         if (data.success && data.items) {
           const articles = data.items.map((item: MediumArticle) => ({
             title: item.title || '',
@@ -220,68 +220,60 @@ export function SafariApp() {
         <div className={`flex ${isMobile ? 'overflow-x-auto space-x-0.5 p-1 scrollbar-hide' : 'space-x-1 p-2'} w-full`}>
           <button
             onClick={() => setActiveSafariTab("github")}
-            className={`flex items-center rounded-t whitespace-nowrap ${
-              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-            } ${
-              activeSafariTab === "github"
+            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+              } ${activeSafariTab === "github"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
                   : "bg-white text-black"
                 : theme === "dark"
-                ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-            }`}
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
           >
             <SiGithub className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
             <span>GitHub</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("linkedin")}
-            className={`flex items-center rounded-t whitespace-nowrap ${
-              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-            } ${
-              activeSafariTab === "linkedin"
+            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+              } ${activeSafariTab === "linkedin"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
                   : "bg-white text-black"
                 : theme === "dark"
-                ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-            }`}
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
           >
             <SiLinkedin className={`text-blue-500 ${isMobile ? 'text-sm' : ''}`} />
             <span>LinkedIn</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("leetcode")}
-            className={`flex items-center rounded-t whitespace-nowrap ${
-              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-            } ${
-              activeSafariTab === "leetcode"
+            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+              } ${activeSafariTab === "leetcode"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
                   : "bg-white text-black"
                 : theme === "dark"
-                ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-            }`}
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
           >
             <SiLeetcode className={`text-orange-500 ${isMobile ? 'text-sm' : ''}`} />
             <span>LeetCode</span>
           </button>
           <button
             onClick={() => setActiveSafariTab("medium")}
-            className={`flex items-center rounded-t whitespace-nowrap ${
-              isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-            } ${
-              activeSafariTab === "medium"
+            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
+              } ${activeSafariTab === "medium"
                 ? theme === "dark"
                   ? "bg-gray-900 text-white"
                   : "bg-white text-black"
                 : theme === "dark"
-                ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-            }`}
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
           >
             <SiMedium className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
             <span>Medium</span>
@@ -316,12 +308,12 @@ export function SafariApp() {
           )}
           {activeSafariTab === "linkedin" && (
             <a
-              href="https://www.linkedin.com/in/avadhoot-mahadik-125362295/"
+              href="https://www.linkedin.com/in/avadhoot-mahadik/"
               target="_blank"
               rel="noopener noreferrer"
               className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
             >
-              https://www.linkedin.com/in/avadhoot-mahadik-125362295/
+              https://www.linkedin.com/in/avadhoot-mahadik/
             </a>
           )}
           {activeSafariTab === "leetcode" && (
@@ -382,8 +374,8 @@ export function SafariApp() {
                 {/* Profile Header */}
                 <div className="flex items-start space-x-6">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={githubUser.avatar_url} 
+                  <img
+                    src={githubUser.avatar_url}
                     alt={githubUser.name}
                     className="w-32 h-32 rounded-full border-4 border-gray-200 dark:border-gray-700"
                   />
@@ -424,11 +416,10 @@ export function SafariApp() {
                         href={repo.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`p-4 rounded-lg border hover:shadow-lg transition-all ${
-                          theme === "dark" 
-                            ? "bg-gray-800 border-gray-700 hover:border-gray-600" 
-                            : "bg-white border-gray-200 hover:border-gray-300"
-                        }`}
+                        className={`p-4 rounded-lg border hover:shadow-lg transition-all ${theme === "dark"
+                          ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                          : "bg-white border-gray-200 hover:border-gray-300"
+                          }`}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="font-semibold text-blue-600 dark:text-blue-400 flex items-center">
@@ -486,11 +477,11 @@ export function SafariApp() {
                 Website unavailable :(
               </p>
               <button
-                onClick={() => window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank", "noopener,noreferrer")}
+                onClick={() => window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank", "noopener,noreferrer")}
                 className={`inline-flex items-center gap-2 rounded-md border px-5 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-all ${theme === "dark"
                   ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   : "border-black/10 bg-white/70 text-gray-800 hover:bg-white"
-                }`}
+                  }`}
               >
                 <SiLinkedin className="text-blue-500" />
                 <span>Click here to view my LinkedIn</span>
@@ -558,11 +549,10 @@ export function SafariApp() {
                           href={`https://leetcode.com/problems/${submission.titleSlug}/`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`block p-4 rounded-lg border hover:shadow-lg transition-all ${
-                            theme === "dark" 
-                              ? "bg-gray-800 border-gray-700 hover:border-gray-600" 
-                              : "bg-white border-gray-200 hover:border-gray-300"
-                          }`}
+                          className={`block p-4 rounded-lg border hover:shadow-lg transition-all ${theme === "dark"
+                            ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                            : "bg-white border-gray-200 hover:border-gray-300"
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -643,11 +633,10 @@ export function SafariApp() {
                       href={article.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`block p-6 rounded-lg border hover:shadow-lg transition-all ${
-                        theme === "dark" 
-                          ? "bg-gray-800 border-gray-700 hover:border-gray-600" 
-                          : "bg-white border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={`block p-6 rounded-lg border hover:shadow-lg transition-all ${theme === "dark"
+                        ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                        : "bg-white border-gray-200 hover:border-gray-300"
+                        }`}
                     >
                       <h3 className="text-xl font-semibold mb-2 hover:text-blue-600 dark:hover:text-blue-400">
                         {article.title}
@@ -659,7 +648,7 @@ export function SafariApp() {
                           day: 'numeric'
                         })}
                       </p>
-                      <div 
+                      <div
                         className="text-gray-600 dark:text-gray-400 line-clamp-3"
                         dangerouslySetInnerHTML={{ __html: article.content.substring(0, 200) + '...' }}
                       />
@@ -673,11 +662,10 @@ export function SafariApp() {
                     href="https://medium.com/@arcsmo19"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors font-medium text-white ${
-                      theme === "dark" 
-                        ? "bg-black hover:bg-gray-200 text-black" 
-                        : "bg-black hover:bg-gray-800"
-                    }`}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors font-medium text-white ${theme === "dark"
+                      ? "bg-black hover:bg-gray-200 text-black"
+                      : "bg-black hover:bg-gray-800"
+                      }`}
                   >
                     <SiMedium />
                     <span>View All Articles on Medium</span>

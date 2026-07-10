@@ -442,7 +442,7 @@ export function MacOSDesktop() {
       return
     }
     if (appId === "linkedin") {
-      window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank")
+      window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank")
       return
     }
     if (appId === "github") {
@@ -758,9 +758,8 @@ export function MacOSDesktop() {
                     <button
                       aria-label="Dismiss welcome notification"
                       onClick={handleWelcomeNotificationClose}
-                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${
-                        isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
-                      }`}
+                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
+                        }`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1050,31 +1049,41 @@ export function MacOSDesktop() {
               { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
               { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
               { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
-              { id: "gmail", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
-                  <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
-                </div>
-              ), isOpen: false },
-              { id: "github", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
-                  <SiGithub className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
-              { id: "linkedin", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
-                  <SiLinkedin className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
-              { id: "leetcode", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
-                  <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
-                </div>
-              ), isOpen: false },
-              { id: "medium", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
-                  <SiMedium className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
+              {
+                id: "gmail", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
+                    <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "github", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
+                    <SiGithub className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "linkedin", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
+                    <SiLinkedin className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "leetcode", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
+                    <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "medium", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
+                    <SiMedium className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
             ]}
             onAppClick={openOrActivateWindow}
           />

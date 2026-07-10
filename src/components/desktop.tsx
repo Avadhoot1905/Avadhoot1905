@@ -58,7 +58,7 @@ const finderIcon = (
   <img
     src="/assets/macos/finder-svgrepo-com.svg"
     alt="Finder"
-    className="h-full w-full object-contain drop-shadow-sm"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -94,7 +94,7 @@ const profileIcon = (
   <img
     src="/assets/macos/contacts.svg"
     alt="About Me"
-    className="h-full w-full object-contain drop-shadow-sm"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -103,7 +103,7 @@ const projectsIcon = (
   <img
     src="/assets/macos/Xcode.svg"
     alt="Projects"
-    className="h-full w-full object-contain scale-110 drop-shadow-sm"
+    className="h-full w-full object-contain scale-[1.15] drop-shadow-sm"
     draggable={false}
   />
 )
@@ -112,7 +112,7 @@ const achievementsIcon = (
   <img
     src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
     alt="Achievements"
-    className="h-full w-full object-contain scale-105 drop-shadow-sm"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -121,7 +121,7 @@ const educationIcon = (
   <img
     src="/assets/macos/notion-svgrepo-com.svg"
     alt="Education"
-    className="h-full w-full object-contain scale-95 drop-shadow-sm"
+    className="h-[86%] w-[86%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -130,7 +130,7 @@ const experienceIcon = (
   <img
     src="/assets/macos/mail.svg"
     alt="Experience"
-    className="h-full w-full object-contain drop-shadow-sm"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -139,13 +139,13 @@ const terminalIcon = (
   <img
     src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
     alt="Terminal"
-    className="h-full w-full object-contain scale-105 drop-shadow-sm"
+    className="h-full w-full object-contain scale-110 drop-shadow-sm"
     draggable={false}
   />
 )
 
 const flappyBirdIcon = (
-  <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-gradient-to-b from-[#f8d040] to-[#e07020] p-2 shadow-sm">
+  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-gradient-to-b from-[#f8d040] to-[#e07020] p-2 shadow-sm">
     <img
       src="/assets/macos/Video-Game-Flappy-Bird--Streamline-Ultimate.svg"
       alt="Flappy Bird"
@@ -159,7 +159,7 @@ const game2048Icon = (
   <img
     src="https://upload.wikimedia.org/wikipedia/commons/1/18/2048_logo.svg"
     alt="2048"
-    className="h-full w-full object-contain scale-[1.18] drop-shadow-sm"
+    className="h-[92%] w-[92%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -168,7 +168,7 @@ const ticTacToeIcon = (
   <img
     src="/assets/macos/tic-tac-toe.svg"
     alt="Tic Tac Toe"
-    className="h-full w-full object-contain scale-105 drop-shadow-sm"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
@@ -1039,27 +1039,27 @@ export function MacOSDesktop() {
               { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
               { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
               { id: "gmail", icon: (
-                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-white shadow-sm">
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
                   <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
                 </div>
               ), isOpen: false },
               { id: "github", icon: (
-                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
                   <SiGithub className="h-3/5 w-3/5 text-white" />
                 </div>
               ), isOpen: false },
               { id: "linkedin", icon: (
-                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
                   <SiLinkedin className="h-3/5 w-3/5 text-white" />
                 </div>
               ), isOpen: false },
               { id: "leetcode", icon: (
-                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
                   <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
                 </div>
               ), isOpen: false },
               { id: "medium", icon: (
-                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
                   <SiMedium className="h-3/5 w-3/5 text-white" />
                 </div>
               ), isOpen: false },

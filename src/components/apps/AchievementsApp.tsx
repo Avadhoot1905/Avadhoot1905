@@ -76,7 +76,7 @@ export function AchievementsAppIcon() {
     <img
       src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
       alt="Achievements"
-      className="h-full w-full object-contain drop-shadow-sm"
+      className="h-[88%] w-[88%] object-contain drop-shadow-sm"
       draggable={false}
     />
   )

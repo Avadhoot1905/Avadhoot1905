@@ -76,7 +76,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
             "===================",
             "",
             "📧 Email: arcsmo19@gmail.com",
-            "🔗 LinkedIn: linkedin.com/in/avadhoot-mahadik-125362295/",
+            "🔗 LinkedIn: linkedin.com/in/avadhoot-mahadik/",
             "🐙 GitHub: github.com/Avadhoot1905",
             "📝 Medium: medium.com/@arcsmo19",
             "💻 LeetCode: leetcode.com/u/arcsmo19/",
@@ -438,7 +438,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           "-------------------",
           "• Gmail: arcsmo19@gmail.com",
           "• GitHub: github.com/Avadhoot1905",
-          "• LinkedIn: linkedin.com/in/avadhoot-mahadik-125362295/",
+          "• LinkedIn: linkedin.com/in/avadhoot-mahadik/",
           "• LeetCode: leetcode.com/u/arcsmo19/",
           "• Medium: medium.com/@arcsmo19",
           ""

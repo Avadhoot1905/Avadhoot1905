@@ -186,6 +186,7 @@ interface DesktopAppDefinition {
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
+  const [minimizedWindows, setMinimizedWindows] = useState<string[]>([])
   const [activeWindow, setActiveWindow] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -442,7 +443,7 @@ export function MacOSDesktop() {
       return
     }
     if (appId === "linkedin") {
-      window.open("https://www.linkedin.com/in/avadhoot-mahadik-125362295/", "_blank")
+      window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank")
       return
     }
     if (appId === "github") {
@@ -468,10 +469,23 @@ export function MacOSDesktop() {
         return [...prev, appId]
       }
     })
+    setMinimizedWindows((prev) => prev.filter((id) => id !== appId))
   }, [])
+
+  const minimizeWindow = useCallback((appId: string) => {
+    setMinimizedWindows((prev) => (prev.includes(appId) ? prev : [...prev, appId]))
+    setActiveWindow((prevActive) => {
+      if (prevActive === appId) {
+        const remaining = openWindows.filter((id) => id !== appId && !minimizedWindows.includes(id))
+        return remaining.length > 0 ? remaining[remaining.length - 1] : null
+      }
+      return prevActive
+    })
+  }, [openWindows, minimizedWindows])
 
   const activateWindow = useCallback((appId: string) => {
     setActiveWindow(appId)
+    setMinimizedWindows((prev) => prev.filter((id) => id !== appId))
   }, [])
 
   const openOrActivateWindow = useCallback((appId: string, params?: { filter?: string; command?: string }) => {
@@ -495,6 +509,7 @@ export function MacOSDesktop() {
         return [...prevWindows, appId]
       }
     })
+    setMinimizedWindows((prev) => prev.filter((id) => id !== appId))
   }, [])
 
   const handleLoadingDismiss = useCallback(() => {
@@ -758,9 +773,8 @@ export function MacOSDesktop() {
                     <button
                       aria-label="Dismiss welcome notification"
                       onClick={handleWelcomeNotificationClose}
-                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${
-                        isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
-                      }`}
+                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
+                        }`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -795,6 +809,8 @@ export function MacOSDesktop() {
             onPointerUp={handleDesktopPointerUp}
             onContextMenu={handleDesktopContextMenu}
           >
+            {/* Boundary element keeping app windows below the 36px menu bar */}
+            <div id="desktop-window-area" className="absolute top-9 bottom-0 left-0 right-0 pointer-events-none" />
             {isMobile ? (
               /* Mobile Grid View (unchanged) */
               <motion.div
@@ -852,6 +868,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "finder"}
                   onActivate={() => activateWindow("finder")}
                   onClose={() => toggleWindow("finder")}
+                  onMinimize={() => minimizeWindow("finder")}
+                  isMinimized={minimizedWindows.includes("finder")}
                   initialPosition={{ x: 100, y: 100 }}
                   initialSize={{ width: 600, height: 400 }}
                 >
@@ -866,6 +884,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "safari"}
                   onActivate={() => activateWindow("safari")}
                   onClose={() => toggleWindow("safari")}
+                  onMinimize={() => minimizeWindow("safari")}
+                  isMinimized={minimizedWindows.includes("safari")}
                   initialPosition={{ x: 150, y: 150 }}
                   initialSize={{ width: 800, height: 600 }}
                 >
@@ -880,6 +900,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "messages"}
                   onActivate={() => activateWindow("messages")}
                   onClose={() => toggleWindow("messages")}
+                  onMinimize={() => minimizeWindow("messages")}
+                  isMinimized={minimizedWindows.includes("messages")}
                   initialPosition={{ x: 200, y: 200 }}
                   initialSize={{ width: 900, height: 600 }}
                 >
@@ -894,6 +916,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "photos"}
                   onActivate={() => activateWindow("photos")}
                   onClose={() => toggleWindow("photos")}
+                  onMinimize={() => minimizeWindow("photos")}
+                  isMinimized={minimizedWindows.includes("photos")}
                   initialPosition={{ x: 250, y: 150 }}
                   initialSize={{ width: 750, height: 600 }}
                 >
@@ -908,6 +932,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "about"}
                   onActivate={() => activateWindow("about")}
                   onClose={() => toggleWindow("about")}
+                  onMinimize={() => minimizeWindow("about")}
+                  isMinimized={minimizedWindows.includes("about")}
                   initialPosition={{ x: 50, y: 80 }}
                   initialSize={{ width: 650, height: 680 }}
                 >
@@ -922,6 +948,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "projects"}
                   onActivate={() => activateWindow("projects")}
                   onClose={() => toggleWindow("projects")}
+                  onMinimize={() => minimizeWindow("projects")}
+                  isMinimized={minimizedWindows.includes("projects")}
                   initialPosition={{ x: 200, y: 120 }}
                   initialSize={{ width: 700, height: 550 }}
                 >
@@ -936,6 +964,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "achievements"}
                   onActivate={() => activateWindow("achievements")}
                   onClose={() => toggleWindow("achievements")}
+                  onMinimize={() => minimizeWindow("achievements")}
+                  isMinimized={minimizedWindows.includes("achievements")}
                   initialPosition={{ x: 240, y: 140 }}
                   initialSize={{ width: 820, height: 560 }}
                 >
@@ -950,6 +980,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "education"}
                   onActivate={() => activateWindow("education")}
                   onClose={() => toggleWindow("education")}
+                  onMinimize={() => minimizeWindow("education")}
+                  isMinimized={minimizedWindows.includes("education")}
                   initialPosition={{ x: 180, y: 140 }}
                   initialSize={{ width: 750, height: 600 }}
                 >
@@ -964,6 +996,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "experience"}
                   onActivate={() => activateWindow("experience")}
                   onClose={() => toggleWindow("experience")}
+                  onMinimize={() => minimizeWindow("experience")}
+                  isMinimized={minimizedWindows.includes("experience")}
                   initialPosition={{ x: 220, y: 160 }}
                   initialSize={{ width: 1000, height: 550 }}
                 >
@@ -978,6 +1012,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "tictactoe"}
                   onActivate={() => activateWindow("tictactoe")}
                   onClose={() => toggleWindow("tictactoe")}
+                  onMinimize={() => minimizeWindow("tictactoe")}
+                  isMinimized={minimizedWindows.includes("tictactoe")}
                   initialPosition={{ x: 300, y: 100 }}
                   initialSize={{ width: 500, height: 600 }}
                 >
@@ -992,6 +1028,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "2048"}
                   onActivate={() => activateWindow("2048")}
                   onClose={() => toggleWindow("2048")}
+                  onMinimize={() => minimizeWindow("2048")}
+                  isMinimized={minimizedWindows.includes("2048")}
                   initialPosition={{ x: 350, y: 80 }}
                   initialSize={{ width: 550, height: 700 }}
                 >
@@ -1006,6 +1044,8 @@ export function MacOSDesktop() {
                   isActive={activeWindow === "flappybird"}
                   onActivate={() => activateWindow("flappybird")}
                   onClose={() => toggleWindow("flappybird")}
+                  onMinimize={() => minimizeWindow("flappybird")}
+                  isMinimized={minimizedWindows.includes("flappybird")}
                   initialPosition={{ x: 380, y: 90 }}
                   initialSize={{ width: 520, height: 700 }}
                 >
@@ -1023,6 +1063,8 @@ export function MacOSDesktop() {
                     toggleWindow("terminal")
                     setTerminalCommand(undefined)
                   }}
+                  onMinimize={() => minimizeWindow("terminal")}
+                  isMinimized={minimizedWindows.includes("terminal")}
                   initialPosition={{ x: 720, y: 80 }}
                   initialSize={{ width: 650, height: 600 }}
                 >
@@ -1050,31 +1092,41 @@ export function MacOSDesktop() {
               { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
               { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
               { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
-              { id: "gmail", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
-                  <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
-                </div>
-              ), isOpen: false },
-              { id: "github", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
-                  <SiGithub className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
-              { id: "linkedin", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
-                  <SiLinkedin className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
-              { id: "leetcode", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
-                  <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
-                </div>
-              ), isOpen: false },
-              { id: "medium", icon: (
-                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
-                  <SiMedium className="h-3/5 w-3/5 text-white" />
-                </div>
-              ), isOpen: false },
+              {
+                id: "gmail", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
+                    <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "github", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
+                    <SiGithub className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "linkedin", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
+                    <SiLinkedin className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "leetcode", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
+                    <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
+                  </div>
+                ), isOpen: false
+              },
+              {
+                id: "medium", icon: (
+                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
+                    <SiMedium className="h-3/5 w-3/5 text-white" />
+                  </div>
+                ), isOpen: false
+              },
             ]}
             onAppClick={openOrActivateWindow}
           />

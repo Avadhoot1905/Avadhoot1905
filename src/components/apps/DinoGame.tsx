@@ -35,6 +35,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   const [score, setScore] = useState(0)
   const [isGameOver, setIsGameOver] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [isIntroJump, setIsIntroJump] = useState(false)
   const [dinoFrame, setDinoFrame] = useState<"left" | "right">("left")
 
   const rafRef = useRef<number | null>(null)
@@ -49,6 +50,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   const runFrameElapsedRef = useRef(0)
   const lastCactusSpriteRef = useRef<"single" | "multi">("single")
   const sameSpriteStreakRef = useRef(0)
+  const isIntroJumpRef = useRef(false)
 
   const syncState = useCallback(() => {
     setDinoY(dinoYRef.current)
@@ -56,8 +58,8 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     setScore(Math.floor(scoreRef.current))
   }, [])
 
-  const resetGame = useCallback((startRunning = false) => {
-    velocityYRef.current = 0
+  const resetGame = useCallback((startRunning = false, startWithIntroJump = false) => {
+    velocityYRef.current = startWithIntroJump ? -9.5 : 0
     dinoYRef.current = DINO_GROUND_Y
     obstaclesRef.current = []
     scoreRef.current = 0
@@ -66,6 +68,8 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     dinoFrameRef.current = "left"
     lastCactusSpriteRef.current = "single"
     sameSpriteStreakRef.current = 0
+    isIntroJumpRef.current = startWithIntroJump
+    setIsIntroJump(startWithIntroJump)
     setDinoFrame("left")
     setIsGameOver(false)
     setIsRunning(startRunning)
@@ -74,18 +78,22 @@ export function DinoGame({ className = "" }: DinoGameProps) {
 
   const jump = useCallback(() => {
     if (isGameOver) {
-      resetGame(true)
+      resetGame(false, true)
       return
     }
 
-    if (!isRunning) {
-      setIsRunning(true)
-      return
-    }
-
-    const onGround = dinoYRef.current >= DINO_GROUND_Y - 0.5
-    if (onGround) {
+    if (!isRunning && !isIntroJumpRef.current) {
+      isIntroJumpRef.current = true
+      setIsIntroJump(true)
       velocityYRef.current = -9.5
+      return
+    }
+
+    if (isRunning) {
+      const onGround = dinoYRef.current >= DINO_GROUND_Y - 0.5
+      if (onGround) {
+        velocityYRef.current = -9.5
+      }
     }
   }, [isGameOver, isRunning, resetGame])
 
@@ -104,7 +112,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.code === "Space") {
+      if (event.code === "Space" || event.code === "ArrowUp") {
         event.preventDefault()
         jump()
       }
@@ -124,14 +132,23 @@ export function DinoGame({ className = "" }: DinoGameProps) {
       lastFrameRef.current = timestamp
       const frameScale = dt / 16.67
 
-      if (isRunning && !isGameOver) {
+      if ((isRunning || isIntroJumpRef.current) && !isGameOver) {
         velocityYRef.current += 0.48 * frameScale
         dinoYRef.current += velocityYRef.current * frameScale
 
-        if (dinoYRef.current > DINO_GROUND_Y) {
+        if (dinoYRef.current >= DINO_GROUND_Y && velocityYRef.current >= 0) {
           dinoYRef.current = DINO_GROUND_Y
           velocityYRef.current = 0
+
+          if (isIntroJumpRef.current) {
+            isIntroJumpRef.current = false
+            setIsIntroJump(false)
+            setIsRunning(true)
+          }
         }
+      }
+
+      if (isRunning && !isGameOver) {
 
         const isGrounded = dinoYRef.current >= DINO_GROUND_Y - 0.5
         if (isGrounded) {
@@ -231,7 +248,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
         role="button"
         tabIndex={0}
         onKeyDown={(event) => {
-          if (event.code === "Space" || event.code === "Enter") {
+          if (event.code === "Space" || event.code === "Enter" || event.code === "ArrowUp") {
             event.preventDefault()
             jump()
           }
@@ -297,7 +314,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
 
         {!isGameOver && score < 4 && (
           <div className="absolute inset-x-0 bottom-3 text-center text-[11px] text-black/50 dark:text-white/50">
-            {isRunning ? "Press space or click to jump" : "Press space or click to start"}
+            {isRunning || isIntroJump ? "Press space or click to jump" : "Press space or click to start"}
           </div>
         )}
       </div>

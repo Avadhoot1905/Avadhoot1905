@@ -182,25 +182,36 @@ export function Window({
       dragHandleClassName="window-drag-handle"
       onMouseDown={onActivate}
       style={{ 
-        zIndex: isActive ? 20 : 10 
+        zIndex: isActive ? 40 : 20 
       }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.2 }}
-        style={{ transition: 'background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease' }}
-        className={`h-full w-full overflow-hidden rounded-2xl border shadow-lg ${
+        initial={{ opacity: 0, scale: 0.88 }}
+        animate={{ opacity: isActive ? 1 : 0.98, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.92 }}
+        transition={{ type: "spring", stiffness: 380, damping: 28 }}
+        style={{ transition: 'background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease' }}
+        className={`h-full w-full overflow-hidden rounded-2xl border ${
+          isActive
+            ? "shadow-[0_22px_55px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+            : "shadow-[0_10px_30px_rgba(0,0,0,0.22)]"
+        } ${
           theme === "dark"
-            ? `border-gray-700 bg-gray-800 ${isActive ? "shadow-xl" : ""}`
-            : `border-gray-200 bg-white ${isActive ? "shadow-xl" : ""}`
+            ? `border-gray-700/80 bg-gray-900/95`
+            : `border-gray-200/90 bg-white/95`
         }`}
+        onMouseDown={onActivate}
       >
         <div
-          style={{ transition: 'background-color 0.3s ease' }}
-          className={`flex h-8 items-center px-3 ${
-            theme === "dark" ? (isActive ? "bg-gray-700" : "bg-gray-800") : isActive ? "bg-gray-200" : "bg-gray-100"
+          style={{ transition: 'background-color 0.25s ease, color 0.25s ease' }}
+          className={`flex h-9 items-center px-3 select-none ${
+            theme === "dark"
+              ? isActive
+                ? "bg-gray-800/95 text-gray-100"
+                : "bg-gray-850/60 text-gray-400"
+              : isActive
+                ? "bg-gray-200/95 text-gray-900"
+                : "bg-gray-100/70 text-gray-500"
           }`}
         >
           <div className="flex space-x-2 z-10">
@@ -209,24 +220,24 @@ export function Window({
                 e.stopPropagation()
                 onClose()
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 hover:text-white z-10"
+              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 hover:text-white z-10 transition-colors"
             >
               <X className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 hover:text-white z-10">
+            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 hover:text-white z-10 transition-colors">
               <Minus className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 hover:text-white z-10">
+            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 hover:text-white z-10 transition-colors">
               <Square className="h-2 w-2" />
             </button>
           </div>
-          <div className={`window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center ${
-            theme === "dark" ? "text-gray-200" : "text-gray-700"
-          }`}>{title}</div>
+          <div className="window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center">
+            {title}
+          </div>
           <div className="w-16"></div>
         </div>
         <div 
-          className={`h-[calc(100%-2rem)] overflow-auto ${
+          className={`h-[calc(100%-2.25rem)] overflow-auto ${
             theme === "dark" ? "text-gray-200" : "text-gray-900"
           }`}
           style={{ pointerEvents: 'auto', userSelect: 'auto' }}
@@ -234,7 +245,9 @@ export function Window({
             e.stopPropagation()
             onActivate()
           }}
-        >{children}</div>
+        >
+          {children}
+        </div>
       </motion.div>
     </Rnd>
   )

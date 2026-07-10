@@ -47,7 +47,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
     <motion.div
       key={app.id}
       className={`relative flex items-center justify-center ${
-        isMobile ? 'mx-2' : 'mx-1'
+        isMobile ? 'mx-1' : 'mx-1.5'
       }`}
       whileHover={{ scale: isMobile ? 1.1 : 1.2, y: isMobile ? -5 : -10 }}
       whileTap={{ scale: 0.9 }}
@@ -60,20 +60,15 @@ export function Dock({ apps, onAppClick }: DockProps) {
     >
       <div className="relative">
         <div 
-          className={`flex items-center justify-center backdrop-blur-xl border ${
-            theme === "dark" 
-              ? "bg-black/30 border-white/20" 
-              : "bg-white/30 border-black/20"
-          } ${isMobile ? 'h-14 w-14 rounded-2xl text-2xl' : 'h-12 w-12 rounded-xl text-3xl'}`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex items-center justify-center drop-shadow-md"
+          style={{ width: isMobile ? 50 : 52, height: isMobile ? 50 : 52 }}
         >
           {app.icon}
         </div>
         {app.isOpen && (
-          <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gray-400"></div>
+          <div className={`absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full shadow-sm ${
+            theme === "dark" ? "bg-white" : "bg-gray-800"
+          }`}></div>
         )}
       </div>
       {!isMobile && hoveredApp === app.id && (
@@ -99,14 +94,20 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 flex items-end justify-center z-50 ${
-      isMobile ? 'h-20 pb-2' : 'h-16'
+      isMobile ? 'h-24 pb-3' : 'h-20 pb-2.5'
     }`}>
       <motion.div
+        data-dock="true"
+        onPointerDown={(e) => e.stopPropagation()}
         className={`flex items-center backdrop-blur-xl border ${
           theme === "dark" 
             ? "bg-black/20 border-white/10" 
             : "bg-white/20 border-black/10"
-        } ${isMobile ? 'rounded-3xl px-4 py-2 mb-2' : 'rounded-2xl p-1 mb-2 h-16'}`}
+        } ${
+          isMobile
+            ? 'w-[calc(100%-24px)] max-w-[430px] justify-around rounded-3xl px-5 py-3 mb-2 shadow-2xl'
+            : 'rounded-2xl px-3 py-2 mb-2 h-[72px]'
+        }`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -120,7 +121,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
         {showFinderSeparator && (
           <div
-            className={`mx-2 w-px self-center ${isMobile ? 'h-8' : 'h-7'} ${
+            className={`mx-2 w-px self-center ${isMobile ? 'h-8' : 'h-8'} ${
               theme === 'dark' ? 'bg-white/30' : 'bg-black/20'
             }`}
           />
@@ -130,7 +131,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
         {showSocialSeparator && (
           <div
-            className={`mx-2 w-px self-center ${isMobile ? 'h-8' : 'h-7'} ${
+            className={`mx-2 w-px self-center ${isMobile ? 'h-8' : 'h-8'} ${
               theme === 'dark' ? 'bg-white/30' : 'bg-black/20'
             }`}
           />

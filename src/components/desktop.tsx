@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { MenuBar } from "@/components/menu-bar"
 import { Dock } from "@/components/dock"
 import { Window } from "@/components/window"
@@ -8,6 +8,8 @@ import { AppIcon } from "@/components/app-icon"
 import { LoadingScreen } from "@/components/loading-screen"
 import { ShutdownScreen } from "@/components/shutdown-screen"
 import { LockScreen } from "@/components/lock-screen"
+import { SelectionBox, SelectionRect } from "@/components/selection-box"
+import { ContextMenu, ContextMenuPosition } from "@/components/context-menu"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence, type PanInfo } from "framer-motion"
 import { X } from "lucide-react"
@@ -23,9 +25,7 @@ import {
   FaGamepad,
   FaTerminal
 } from "react-icons/fa"
-
-import { PiBirdFill } from "react-icons/pi";
-
+import { PiBirdFill } from "react-icons/pi"
 import {
   SiGithub,
   SiLinkedin,
@@ -49,6 +49,7 @@ import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/Achievem
 import { Widgets } from "@/components/widgets"
 
 const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
+const ICON_POSITIONS_STORAGE_KEY = "macos_desktop_icon_positions"
 const MOBILE_WELCOME_TIMEOUT_MS = 9000
 
 type WelcomeNotificationExit = "right" | "left" | "up" | "pop-open" | "pop-close"
@@ -57,10 +58,131 @@ const finderIcon = (
   <img
     src="/assets/macos/finder-svgrepo-com.svg"
     alt="Finder"
-    className="h-9 w-9 object-contain"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
   />
 )
+
+const safariIcon = (
+  <img
+    src="/assets/macos/safari-svgrepo-com.svg"
+    alt="Safari"
+    className="h-full w-full object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const messagesIcon = (
+  <img
+    src="/assets/macos/messages-svgrepo-com.svg"
+    alt="Messages"
+    className="h-full w-full object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const photosIcon = (
+  <img
+    src="/assets/macos/apple-photos.svg"
+    alt="Photos"
+    className="h-full w-full object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const profileIcon = (
+  <img
+    src="/assets/macos/contacts.svg"
+    alt="About Me"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const projectsIcon = (
+  <img
+    src="/assets/macos/Xcode.svg"
+    alt="Projects"
+    className="h-full w-full object-contain scale-[1.15] drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const achievementsIcon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
+    alt="Achievements"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const educationIcon = (
+  <img
+    src="/assets/macos/notion-svgrepo-com.svg"
+    alt="Education"
+    className="h-[86%] w-[86%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const experienceIcon = (
+  <img
+    src="/assets/macos/mail.svg"
+    alt="Experience"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const terminalIcon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+    alt="Terminal"
+    className="h-full w-full object-contain scale-110 drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const flappyBirdIcon = (
+  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-gradient-to-b from-[#f8d040] to-[#e07020] p-2 shadow-sm">
+    <img
+      src="/assets/macos/Video-Game-Flappy-Bird--Streamline-Ultimate.svg"
+      alt="Flappy Bird"
+      className="h-full w-full object-contain drop-shadow-sm"
+      draggable={false}
+    />
+  </div>
+)
+
+const game2048Icon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/1/18/2048_logo.svg"
+    alt="2048"
+    className="h-[92%] w-[92%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const ticTacToeIcon = (
+  <img
+    src="/assets/macos/tic-tac-toe.svg"
+    alt="Tic Tac Toe"
+    className="h-[88%] w-[88%] object-contain drop-shadow-sm"
+    draggable={false}
+  />
+)
+
+const CELL_WIDTH = 104
+const CELL_HEIGHT = 112
+const RIGHT_MARGIN = 16
+const TOP_MARGIN = 52
+
+interface DesktopAppDefinition {
+  id: string
+  name: string
+  icon: React.ReactElement
+}
 
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -71,7 +193,7 @@ export function MacOSDesktop() {
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
   const [isShuttingDown, setIsShuttingDown] = useState(false)
   const [shutdownAction, setShutdownAction] = useState<'shutdown' | 'restart'>('shutdown')
-  const [isLocked, setIsLocked] = useState(true) // Start with lock screen
+  const [isLocked, setIsLocked] = useState(true)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [projectsFilter, setProjectsFilter] = useState<string>("all")
   const [terminalCommand, setTerminalCommand] = useState<string | undefined>(undefined)
@@ -80,7 +202,128 @@ export function MacOSDesktop() {
   const [welcomeNotificationExit, setWelcomeNotificationExit] = useState<WelcomeNotificationExit>("right")
   const { theme } = useTheme()
 
-  // Prevent hydration mismatch
+  // Desktop selection & layout states
+  const [selectedIcons, setSelectedIcons] = useState<string[]>([])
+  const [iconPositions, setIconPositions] = useState<Record<string, { x: number; y: number }>>({})
+  const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null)
+  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null)
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null)
+  const desktopAreaRef = useRef<HTMLDivElement>(null)
+
+  const desktopApps: DesktopAppDefinition[] = React.useMemo(() => [
+    { id: "finder", name: "Finder", icon: finderIcon },
+    { id: "safari", name: "Safari", icon: safariIcon },
+    { id: "messages", name: "Messages", icon: messagesIcon },
+    { id: "photos", name: "Photos", icon: photosIcon },
+    { id: "about", name: "About Me", icon: profileIcon },
+    { id: "projects", name: "Projects", icon: projectsIcon },
+    { id: "achievements", name: "Achievements", icon: achievementsIcon },
+    { id: "education", name: "Education", icon: educationIcon },
+    { id: "experience", name: "Experience", icon: experienceIcon },
+    { id: "tictactoe", name: "Tic Tac Toe", icon: ticTacToeIcon },
+    { id: "2048", name: "2048", icon: game2048Icon },
+    { id: "flappybird", name: "Flappy Bird", icon: flappyBirdIcon },
+    { id: "terminal", name: "Terminal", icon: terminalIcon },
+  ], [])
+
+  // Helper to generate default macOS right-to-left vertical column layout
+  const computeDefaultPositions = useCallback((containerWidth: number, containerHeight: number, apps: DesktopAppDefinition[]) => {
+    const availHeight = Math.max(300, containerHeight - 120)
+    const maxRows = Math.max(1, Math.floor(availHeight / CELL_HEIGHT))
+    const positions: Record<string, { x: number; y: number }> = {}
+
+    apps.forEach((app, idx) => {
+      const col = Math.floor(idx / maxRows)
+      const row = idx % maxRows
+      const x = containerWidth - RIGHT_MARGIN - CELL_WIDTH - col * CELL_WIDTH
+      const y = TOP_MARGIN + row * CELL_HEIGHT
+      positions[app.id] = { x: Math.max(10, x), y: Math.max(10, y) }
+    })
+
+    return positions
+  }, [])
+
+  // Initialize or load saved icon positions
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const updateLayout = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      const defaults = computeDefaultPositions(width, height, desktopApps)
+
+      const savedJson = localStorage.getItem(ICON_POSITIONS_STORAGE_KEY)
+      if (savedJson) {
+        try {
+          const parsed = JSON.parse(savedJson) as Record<string, { x: number; y: number }>
+          const merged: Record<string, { x: number; y: number }> = {}
+          desktopApps.forEach((app) => {
+            if (
+              parsed[app.id] &&
+              parsed[app.id].x >= 0 &&
+              parsed[app.id].x <= width - 60 &&
+              parsed[app.id].y >= TOP_MARGIN &&
+              parsed[app.id].y <= height - 80
+            ) {
+              merged[app.id] = parsed[app.id]
+            } else {
+              merged[app.id] = defaults[app.id]
+            }
+          })
+          setIconPositions(merged)
+          return
+        } catch {
+          // ignore error and fallback to defaults
+        }
+      }
+      setIconPositions(defaults)
+    }
+
+    updateLayout()
+  }, [computeDefaultPositions, desktopApps])
+
+  const savePositionsToStorage = useCallback((newPos: Record<string, { x: number; y: number }>) => {
+    setIconPositions(newPos)
+    try {
+      localStorage.setItem(ICON_POSITIONS_STORAGE_KEY, JSON.stringify(newPos))
+    } catch {
+      // ignore storage errors
+    }
+  }, [])
+
+  // Snap an icon to grid on drag end
+  const handleIconDragEnd = useCallback((id: string, rawX: number, rawY: number) => {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    const colFromRight = Math.max(0, Math.round((width - RIGHT_MARGIN - CELL_WIDTH - rawX) / CELL_WIDTH))
+    const rowFromTop = Math.max(0, Math.round((rawY - TOP_MARGIN) / CELL_HEIGHT))
+
+    const snappedX = width - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH
+    const snappedY = TOP_MARGIN + rowFromTop * CELL_HEIGHT
+
+    savePositionsToStorage({
+      ...iconPositions,
+      [id]: {
+        x: Math.max(10, Math.min(width - CELL_WIDTH, snappedX)),
+        y: Math.max(TOP_MARGIN, Math.min(height - CELL_HEIGHT - 60, snappedY)),
+      },
+    })
+  }, [iconPositions, savePositionsToStorage])
+
+  // Clean up icons to macOS clean right-aligned grid
+  const handleCleanUp = useCallback(() => {
+    const newPositions = computeDefaultPositions(window.innerWidth, window.innerHeight, desktopApps)
+    savePositionsToStorage(newPositions)
+  }, [computeDefaultPositions, desktopApps, savePositionsToStorage])
+
+  // Sort by name and arrange
+  const handleSortByName = useCallback(() => {
+    const sorted = [...desktopApps].sort((a, b) => a.name.localeCompare(b.name))
+    const newPositions = computeDefaultPositions(window.innerWidth, window.innerHeight, sorted)
+    savePositionsToStorage(newPositions)
+  }, [computeDefaultPositions, desktopApps, savePositionsToStorage])
+
+  // Prevent hydration mismatch & check mobile
   useEffect(() => {
     setMounted(true)
 
@@ -100,13 +343,10 @@ export function MacOSDesktop() {
       return
     }
 
-    // Persist as soon as startup flow begins so subsequent reloads skip it.
     localStorage.setItem(LOADING_SEEN_STORAGE_KEY, "1")
-
     setIsLoading(true)
     setIsAssetsLoaded(false)
 
-    // Mark assets as loaded after animation placeholder completes.
     const timer = setTimeout(() => {
       setIsAssetsLoaded(true)
     }, 6500)
@@ -130,10 +370,8 @@ export function MacOSDesktop() {
     return () => clearTimeout(timer)
   }, [isLoading, isLocked, isMobile, isShuttingDown, showWelcomeNotification])
 
-  // Reset terminal command after it's been processed
   useEffect(() => {
     if (openWindows.includes("terminal") && terminalCommand) {
-      // Reset after a short delay to ensure the command is processed
       const timer = setTimeout(() => {
         setTerminalCommand(undefined)
       }, 500)
@@ -141,7 +379,6 @@ export function MacOSDesktop() {
     }
   }, [terminalCommand, openWindows])
 
-  // Activity tracking
   const updateActivity = useCallback(() => {
     setLastActivity(Date.now())
     if (isLocked) {
@@ -149,7 +386,6 @@ export function MacOSDesktop() {
     }
   }, [isLocked])
 
-  // Inactivity detection
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keydown', 'keyup', 'scroll', 'touchstart', 'click', 'input']
 
@@ -164,13 +400,12 @@ export function MacOSDesktop() {
     }
   }, [updateActivity])
 
-  // Auto-lock after 5 minutes of inactivity
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastActivity > 300000) { // 300 seconds (5 minutes)
+      if (Date.now() - lastActivity > 300000) {
         setIsLocked(true)
       }
-    }, 5000) // Check every 5 seconds
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [lastActivity])
@@ -196,22 +431,12 @@ export function MacOSDesktop() {
   }
 
   const handleShutdownComplete = () => {
-    if (shutdownAction === 'restart') {
-      // For restart, show loading screen again
-      setIsShuttingDown(false)
-      setIsLoading(true)
-      setIsLocked(true)
-    } else {
-      // For shutdown, you could redirect or show a different screen
-      // For now, we'll just restart the loading sequence
-      setIsShuttingDown(false)
-      setIsLoading(true)
-      setIsLocked(true)
-    }
+    setIsShuttingDown(false)
+    setIsLoading(true)
+    setIsLocked(true)
   }
 
-  const toggleWindow = (appId: string) => {
-    // Handle external links for social media apps
+  const toggleWindow = useCallback((appId: string) => {
     if (appId === "gmail") {
       window.open("mailto:arcsmo19@gmail.com", "_blank")
       return
@@ -233,57 +458,44 @@ export function MacOSDesktop() {
       return
     }
 
-    // Handle regular window toggling
-    if (openWindows.includes(appId)) {
-      setOpenWindows(openWindows.filter((id) => id !== appId))
-      setActiveWindow(openWindows.length > 1 ? openWindows[0] : null)
-    } else {
-      setOpenWindows([...openWindows, appId])
-      setActiveWindow(appId)
-    }
-  }
+    setOpenWindows((prev) => {
+      if (prev.includes(appId)) {
+        const next = prev.filter((id) => id !== appId)
+        setActiveWindow(next.length > 0 ? next[next.length - 1] : null)
+        return next
+      } else {
+        setActiveWindow(appId)
+        return [...prev, appId]
+      }
+    })
+  }, [])
 
-  const activateWindow = (appId: string) => {
+  const activateWindow = useCallback((appId: string) => {
     setActiveWindow(appId)
-  }
+  }, [])
 
   const openOrActivateWindow = useCallback((appId: string, params?: { filter?: string; command?: string }) => {
-    console.log('🚀 openOrActivateWindow called!')
-    console.log('  appId:', appId)
-    console.log('  params:', params)
-
-    // Handle projects filter if provided
     if (appId === 'projects' && params?.filter) {
-      console.log('  Setting projects filter:', params.filter)
       setProjectsFilter(params.filter)
     }
 
-    // Handle terminal command if provided
     if (appId === 'terminal' && params?.command) {
-      console.log('  Setting terminal command:', params.command)
       setTerminalCommand(params.command)
     }
 
-    // Use functional update to avoid stale closure
     setOpenWindows((prevWindows) => {
-      console.log('  prevWindows:', prevWindows)
-
-      // If window is already open, just bring it to front
       if (prevWindows.includes(appId)) {
-        console.log('  Window already open, activating:', appId)
         setActiveWindow(appId)
-        // If terminal command provided and window is already open, update the command
         if (appId === 'terminal' && params?.command) {
           setTerminalCommand(params.command)
         }
-        return prevWindows // No change to openWindows
+        return prevWindows
       } else {
-        console.log('  Opening new window:', appId)
         setActiveWindow(appId)
         return [...prevWindows, appId]
       }
     })
-  }, []) // Remove dependency on openWindows
+  }, [])
 
   const handleLoadingDismiss = useCallback(() => {
     setIsLoading(false)
@@ -308,39 +520,26 @@ export function MacOSDesktop() {
   }, [dismissWelcomeNotification])
 
   const handleWelcomeSwipeEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!isMobile) {
-      return
-    }
-
+    if (!isMobile) return
     const offsetX = info.offset.x
     const offsetY = info.offset.y
     const absX = Math.abs(offsetX)
     const absY = Math.abs(offsetY)
     const threshold = 80
 
-    if (absX < threshold && offsetY > -threshold) {
-      return
-    }
-
+    if (absX < threshold && offsetY > -threshold) return
     if (absX > absY && absX >= threshold) {
       dismissWelcomeNotification(offsetX > 0 ? "right" : "left")
       return
     }
-
     if (offsetY <= -threshold) {
       dismissWelcomeNotification("up")
     }
   }, [dismissWelcomeNotification, isMobile])
 
   const welcomeNotificationExitAnimation = useCallback((direction: WelcomeNotificationExit) => {
-    if (direction === "left") {
-      return { x: -220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
-    }
-
-    if (direction === "up") {
-      return { y: -160, opacity: 0, scale: 0.94, transition: { duration: 0.22 } }
-    }
-
+    if (direction === "left") return { x: -220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
+    if (direction === "up") return { y: -160, opacity: 0, scale: 0.94, transition: { duration: 0.22 } }
     if (direction === "pop-open") {
       return {
         scale: [1, 1.08, 0.68],
@@ -348,7 +547,6 @@ export function MacOSDesktop() {
         transition: { duration: 0.24, times: [0, 0.42, 1] },
       }
     }
-
     if (direction === "pop-close") {
       return {
         scale: [1, 1.04, 0.72],
@@ -356,19 +554,127 @@ export function MacOSDesktop() {
         transition: { duration: 0.2, times: [0, 0.45, 1] },
       }
     }
-
     return { x: 220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
   }, [])
 
+  // Desktop selection box handlers
+  const handleDesktopPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile) return
+    if (e.button !== 0) return
+
+    // Ensure click is on the desktop background itself
+    const target = e.target as Element
+    if (
+      !target ||
+      target.closest(".window-drag-handle") ||
+      target.closest("[data-window]") ||
+      target.closest("[data-app-icon]") ||
+      target.closest("[data-widget]") ||
+      target.closest("[data-context-menu]") ||
+      target.closest("[data-dock]") ||
+      target.closest("[data-menu-bar]")
+    ) {
+      return
+    }
+
+    setContextMenuPos(null)
+
+    if (!e.shiftKey && !e.metaKey) {
+      setSelectedIcons([])
+    }
+
+    const rect = desktopAreaRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const startX = e.clientX - rect.left
+    const startY = e.clientY - rect.top
+
+    dragStartRef.current = { x: startX, y: startY }
+    setSelectionRect({ left: startX, top: startY, width: 0, height: 0 })
+  }
+
+  const handleDesktopPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile || !dragStartRef.current || !desktopAreaRef.current) return
+
+    const rect = desktopAreaRef.current.getBoundingClientRect()
+    const currentX = e.clientX - rect.left
+    const currentY = e.clientY - rect.top
+
+    const left = Math.min(dragStartRef.current.x, currentX)
+    const top = Math.min(dragStartRef.current.y, currentY)
+    const width = Math.abs(currentX - dragStartRef.current.x)
+    const height = Math.abs(currentY - dragStartRef.current.y)
+
+    setSelectionRect({ left, top, width, height })
+
+    // Check intersections with icons
+    if (width > 4 || height > 4) {
+      const intersectingIds: string[] = []
+      desktopApps.forEach((app) => {
+        const pos = iconPositions[app.id]
+        if (!pos) return
+        const iconRect = { left: pos.x, top: pos.y, right: pos.x + 88, bottom: pos.y + 88 }
+        const intersects = !(
+          iconRect.right < left ||
+          iconRect.left > left + width ||
+          iconRect.bottom < top ||
+          iconRect.top > top + height
+        )
+        if (intersects) {
+          intersectingIds.push(app.id)
+        }
+      })
+      setSelectedIcons(intersectingIds)
+    }
+  }
+
+  const handleDesktopPointerUp = () => {
+    dragStartRef.current = null
+    setSelectionRect(null)
+  }
+
+  const handleDesktopContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return
+    e.preventDefault()
+    setContextMenuPos({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleIconClick = (appId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setContextMenuPos(null)
+
+    if (e.shiftKey || e.metaKey) {
+      setSelectedIcons((prev) =>
+        prev.includes(appId) ? prev.filter((id) => id !== appId) : [...prev, appId]
+      )
+    } else {
+      setSelectedIcons([appId])
+    }
+  }
+
+  const handleIconDoubleClick = (appId: string) => {
+    openOrActivateWindow(appId)
+  }
+
+  // Keyboard navigation for desktop icons
   useEffect(() => {
-    console.log('✅ Desktop component mounted')
-    console.log('  openOrActivateWindow type:', typeof openOrActivateWindow)
-    console.log('  openOrActivateWindow value:', openOrActivateWindow)
-  }, [openOrActivateWindow])
+    if (isMobile || isLocked) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedIcons([])
+        setContextMenuPos(null)
+      } else if (e.key === "Enter") {
+        selectedIcons.forEach((id) => openOrActivateWindow(id))
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isMobile, isLocked, selectedIcons, openOrActivateWindow])
 
   if (!mounted) return null
 
-  // Show loading screen first
   if (isLoading) {
     return (
       <AnimatePresence>
@@ -380,7 +686,6 @@ export function MacOSDesktop() {
     )
   }
 
-  // Show shutdown screen
   if (isShuttingDown) {
     return (
       <AnimatePresence>
@@ -394,7 +699,7 @@ export function MacOSDesktop() {
 
   return (
     <div
-      className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative"
+      className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative select-none"
       style={{
         backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light.jpg' : 'v-dark.jpg'})`,
         backgroundSize: 'cover',
@@ -441,6 +746,8 @@ export function MacOSDesktop() {
                 onClick={handleWelcomeNotificationOpen}
               >
                 <div
+                  data-widget="true"
+                  onPointerDown={(e) => e.stopPropagation()}
                   className="relative cursor-pointer overflow-visible rounded-2xl border border-gray-200/90 bg-white/90 px-4 py-3 text-gray-800 shadow-2xl transition-transform duration-200"
                   style={{
                     backdropFilter: "blur(26px) saturate(180%)",
@@ -451,8 +758,9 @@ export function MacOSDesktop() {
                     <button
                       aria-label="Dismiss welcome notification"
                       onClick={handleWelcomeNotificationClose}
-                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
-                        }`}
+                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${
+                        isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
+                      }`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -479,79 +787,62 @@ export function MacOSDesktop() {
             )}
           </AnimatePresence>
 
-          <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
-            <motion.div
-              className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, staggerChildren: 0.1 }}
-            >
-              <AppIcon
-                name="Finder"
-                icon={finderIcon}
-                onClick={() => toggleWindow("finder")}
-              />
-              <AppIcon
-                name="Safari"
-                icon={<FaSafari className="text-blue-600" />}
-                onClick={() => toggleWindow("safari")}
-              />
-              <AppIcon
-                name="Messages"
-                icon={<FaCommentDots className="text-green-500" />}
-                onClick={() => toggleWindow("messages")}
-              />
-              <AppIcon
-                name="Photos"
-                icon={<FaImages className="text-yellow-500" />}
-                onClick={() => toggleWindow("photos")}
-              />
-              <AppIcon
-                name="About Me"
-                icon={<FaUser className="text-purple-500" />}
-                onClick={() => toggleWindow("about")}
-              />
-              <AppIcon
-                name="Projects"
-                icon={<FaCode className="text-green-600" />}
-                onClick={() => toggleWindow("projects")}
-              />
-              <AppIcon
-                name="Achievements"
-                icon={<AchievementsAppIcon />}
-                onClick={() => toggleWindow("achievements")}
-              />
-              <AppIcon
-                name="Education"
-                icon={<FaGraduationCap className="text-blue-700" />}
-                onClick={() => toggleWindow("education")}
-              />
-              <AppIcon
-                name="Experience"
-                icon={<FaBriefcase className="text-gray-700" />}
-                onClick={() => toggleWindow("experience")}
-              />
-              <AppIcon
-                name="Tic Tac Toe"
-                icon={<GiTicTacToe className="text-pink-500" />}
-                onClick={() => toggleWindow("tictactoe")}
-              />
-              <AppIcon
-                name="2048"
-                icon={<FaGamepad className="text-amber-500" />}
-                onClick={() => toggleWindow("2048")}
-              />
-              <AppIcon
-                name="Flappy Bird"
-                icon={<PiBirdFill className="text-yellow-400" />}
-                onClick={() => toggleWindow("flappybird")}
-              />
-              <AppIcon
-                name="Terminal"
-                icon={<FaTerminal className="text-gray-300" />}
-                onClick={() => toggleWindow("terminal")}
-              />
-            </motion.div>
+          <div
+            ref={desktopAreaRef}
+            className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24"
+            onPointerDown={handleDesktopPointerDown}
+            onPointerMove={handleDesktopPointerMove}
+            onPointerUp={handleDesktopPointerUp}
+            onContextMenu={handleDesktopContextMenu}
+          >
+            {isMobile ? (
+              /* Mobile Grid View (unchanged) */
+              <motion.div
+                className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, staggerChildren: 0.1 }}
+              >
+                {desktopApps.map((app) => (
+                  <AppIcon
+                    key={app.id}
+                    id={app.id}
+                    name={app.name}
+                    icon={app.icon}
+                    onClick={() => openOrActivateWindow(app.id)}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              /* Desktop macOS Layout View */
+              <div className="absolute inset-0 pt-14 pb-24 pointer-events-auto">
+                <SelectionBox rect={selectionRect} />
+                <ContextMenu
+                  position={contextMenuPos}
+                  onClose={() => setContextMenuPos(null)}
+                  onCleanUp={handleCleanUp}
+                  onSortByName={handleSortByName}
+                  onOpenAbout={() => openOrActivateWindow("about")}
+                />
+                {desktopApps.map((app) => {
+                  const pos = iconPositions[app.id] || { x: 0, y: 0 }
+                  return (
+                    <AppIcon
+                      key={app.id}
+                      id={app.id}
+                      name={app.name}
+                      icon={app.icon}
+                      x={pos.x}
+                      y={pos.y}
+                      isSelected={selectedIcons.includes(app.id)}
+                      onClick={(e) => handleIconClick(app.id, e)}
+                      onDoubleClick={() => handleIconDoubleClick(app.id)}
+                      onDragEnd={handleIconDragEnd}
+                    />
+                  )
+                })}
+              </div>
+            )}
 
             <AnimatePresence>
               {openWindows.includes("finder") && (
@@ -747,26 +1038,45 @@ export function MacOSDesktop() {
               )}
             </AnimatePresence>
 
-            {/* Widgets */}
             <Widgets />
           </div>
 
           <Dock
             apps={[
               { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
-              { id: "about", icon: <FaUser className="text-purple-500" />, isOpen: openWindows.includes("about") },
-              { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
-              { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
-              { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
-              { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
-              { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
-              { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
-              { id: "github", icon: <SiGithub className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
-              { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
-              { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
-              { id: "medium", icon: <SiMedium className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
+              { id: "about", icon: profileIcon, isOpen: openWindows.includes("about") },
+              { id: "experience", icon: experienceIcon, isOpen: openWindows.includes("experience") },
+              { id: "projects", icon: projectsIcon, isOpen: openWindows.includes("projects") },
+              { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
+              { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
+              { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
+              { id: "gmail", icon: (
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
+                  <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
+                </div>
+              ), isOpen: false },
+              { id: "github", icon: (
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
+                  <SiGithub className="h-3/5 w-3/5 text-white" />
+                </div>
+              ), isOpen: false },
+              { id: "linkedin", icon: (
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
+                  <SiLinkedin className="h-3/5 w-3/5 text-white" />
+                </div>
+              ), isOpen: false },
+              { id: "leetcode", icon: (
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
+                  <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
+                </div>
+              ), isOpen: false },
+              { id: "medium", icon: (
+                <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
+                  <SiMedium className="h-3/5 w-3/5 text-white" />
+                </div>
+              ), isOpen: false },
             ]}
-            onAppClick={toggleWindow}
+            onAppClick={openOrActivateWindow}
           />
         </>
       )}

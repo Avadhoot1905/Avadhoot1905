@@ -85,6 +85,8 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
   if (isMobile || !isDesktopPositioned) {
     return (
       <motion.div
+        data-app-icon={id}
+        onPointerDown={(e) => e.stopPropagation()}
         className="flex flex-col items-center cursor-pointer select-none"
         onClick={handleClick}
         whileHover={{ scale: isMobile ? 1 : 1.05 }}
@@ -124,6 +126,8 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
   // Desktop macOS Sonoma/Sequoia icon layout
   return (
     <motion.div
+      data-app-icon={id}
+      onPointerDown={(e) => e.stopPropagation()}
       className="absolute flex w-[88px] flex-col items-center select-none cursor-pointer group"
       style={{
         left: 0,

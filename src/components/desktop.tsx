@@ -563,7 +563,17 @@ export function MacOSDesktop() {
     if (e.button !== 0) return
 
     // Ensure click is on the desktop background itself
-    if ((e.target as HTMLElement).closest(".window-drag-handle") || (e.target as HTMLElement).closest('[data-window]')) {
+    const target = e.target as Element
+    if (
+      !target ||
+      target.closest(".window-drag-handle") ||
+      target.closest("[data-window]") ||
+      target.closest("[data-app-icon]") ||
+      target.closest("[data-widget]") ||
+      target.closest("[data-context-menu]") ||
+      target.closest("[data-dock]") ||
+      target.closest("[data-menu-bar]")
+    ) {
       return
     }
 
@@ -736,6 +746,8 @@ export function MacOSDesktop() {
                 onClick={handleWelcomeNotificationOpen}
               >
                 <div
+                  data-widget="true"
+                  onPointerDown={(e) => e.stopPropagation()}
                   className="relative cursor-pointer overflow-visible rounded-2xl border border-gray-200/90 bg-white/90 px-4 py-3 text-gray-800 shadow-2xl transition-transform duration-200"
                   style={{
                     backdropFilter: "blur(26px) saturate(180%)",

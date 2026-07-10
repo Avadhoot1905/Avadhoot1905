@@ -99,6 +99,8 @@ export function Window({
         
         {/* Modal Content */}
         <motion.div
+          data-window="true"
+          onPointerDown={(e) => e.stopPropagation()}
           className={`relative w-full h-[90vh] flex flex-col backdrop-blur-xl border-t ${
             theme === "dark"
               ? "border-gray-700 bg-gray-900/95"
@@ -186,6 +188,8 @@ export function Window({
       }}
     >
       <motion.div
+        data-window="true"
+        onPointerDown={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.88 }}
         animate={{ opacity: isActive ? 1 : 0.98, scale: 1 }}
         exit={{ opacity: 0, scale: 0.92 }}

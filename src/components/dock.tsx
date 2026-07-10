@@ -47,7 +47,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
     <motion.div
       key={app.id}
       className={`relative flex items-center justify-center ${
-        isMobile ? 'mx-2' : 'mx-1.5'
+        isMobile ? 'mx-1' : 'mx-1.5'
       }`}
       whileHover={{ scale: isMobile ? 1.1 : 1.2, y: isMobile ? -5 : -10 }}
       whileTap={{ scale: 0.9 }}
@@ -61,7 +61,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
       <div className="relative">
         <div 
           className="flex items-center justify-center drop-shadow-md"
-          style={{ width: isMobile ? 44 : 52, height: isMobile ? 44 : 52 }}
+          style={{ width: isMobile ? 50 : 52, height: isMobile ? 50 : 52 }}
         >
           {app.icon}
         </div>
@@ -94,14 +94,20 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 flex items-end justify-center z-50 ${
-      isMobile ? 'h-20 pb-2' : 'h-20 pb-2.5'
+      isMobile ? 'h-24 pb-3' : 'h-20 pb-2.5'
     }`}>
       <motion.div
+        data-dock="true"
+        onPointerDown={(e) => e.stopPropagation()}
         className={`flex items-center backdrop-blur-xl border ${
           theme === "dark" 
             ? "bg-black/20 border-white/10" 
             : "bg-white/20 border-black/10"
-        } ${isMobile ? 'rounded-3xl px-4 py-2 mb-2' : 'rounded-2xl px-3 py-2 mb-2 h-[72px]'}`}
+        } ${
+          isMobile
+            ? 'w-[calc(100%-24px)] max-w-[430px] justify-around rounded-3xl px-5 py-3 mb-2 shadow-2xl'
+            : 'rounded-2xl px-3 py-2 mb-2 h-[72px]'
+        }`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',

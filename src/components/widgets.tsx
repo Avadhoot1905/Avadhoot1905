@@ -101,6 +101,8 @@ export function Widgets() {
 
   return (
     <div 
+      data-widget="true"
+      onPointerDown={(e) => e.stopPropagation()}
       className={`fixed z-[1] flex gap-4 ${
         isMobile 
           ? 'top-16 left-0 right-0 px-4 justify-between' 

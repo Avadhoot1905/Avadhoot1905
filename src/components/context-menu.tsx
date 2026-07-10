@@ -55,6 +55,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   return (
     <div
+      data-context-menu="true"
+      onPointerDown={(e) => e.stopPropagation()}
       className={`fixed z-50 min-w-[210px] select-none rounded-xl border p-1.5 shadow-2xl transition-opacity duration-100 ${
         isDark
           ? "border-white/15 bg-gray-900/80 text-gray-100"

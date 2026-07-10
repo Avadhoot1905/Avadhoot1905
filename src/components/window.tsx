@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Rnd } from "react-rnd"
 import { X, Minus, Square } from "lucide-react"
 import { motion } from "framer-motion"
@@ -23,9 +23,11 @@ interface WindowProps {
   isActive: boolean
   onActivate: () => void
   onClose: () => void
+  onMinimize?: () => void
+  isMinimized?: boolean
   initialPosition: Position
   initialSize: Size
-  
+  bounds?: string
 }
 
 export function Window({
@@ -34,13 +36,20 @@ export function Window({
   isActive,
   onActivate,
   onClose,
+  onMinimize,
+  isMinimized = false,
   initialPosition,
   initialSize,
+  bounds = "#desktop-window-area",
 }: WindowProps) {
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [dragY, setDragY] = useState(0)
   const [isGame2048Locked, setIsGame2048Locked] = useState(false)
+  const [position, setPosition] = useState<Position>(initialPosition)
+  const [size, setSize] = useState<Size>(initialSize)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const preFullScreenRectRef = useRef<{ position: Position; size: Size } | null>(null)
   const { theme } = useTheme()
 
   // Prevent hydration mismatch
@@ -68,6 +77,39 @@ export function Window({
     }
   }, [])
 
+  const toggleFullScreen = useCallback(() => {
+    if (!isFullScreen) {
+      preFullScreenRectRef.current = { position, size }
+      setPosition({ x: 0, y: 36 })
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight - 36,
+      })
+      setIsFullScreen(true)
+    } else {
+      if (preFullScreenRectRef.current) {
+        setPosition(preFullScreenRectRef.current.position)
+        setSize(preFullScreenRectRef.current.size)
+      } else {
+        setPosition(initialPosition)
+        setSize(initialSize)
+      }
+      setIsFullScreen(false)
+    }
+  }, [isFullScreen, position, size, initialPosition, initialSize])
+
+  useEffect(() => {
+    if (!isFullScreen) return
+    const handleResize = () => {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight - 36,
+      })
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [isFullScreen])
+
   // Handle drag to dismiss on mobile
   const handleDragEnd = (_event: unknown, info: { offset: { y: number } }) => {
     // If dragged down more than 150px, close the modal
@@ -80,6 +122,14 @@ export function Window({
   }
 
   if (!mounted) return null
+
+  if (isMinimized) {
+    return (
+      <div style={{ display: "none" }}>
+        {children}
+      </div>
+    )
+  }
 
   // Mobile iOS-style modal
   if (isMobile) {
@@ -172,19 +222,28 @@ export function Window({
   // Desktop window
   return (
     <Rnd
-      default={{
-        x: initialPosition.x,
-        y: initialPosition.y,
-        width: initialSize.width,
-        height: initialSize.height,
+      position={position}
+      size={size}
+      onDragStop={(_e, d) => {
+        if (!isFullScreen) {
+          setPosition({ x: d.x, y: d.y })
+        }
+      }}
+      onResizeStop={(_e, _direction, ref, _delta, pos) => {
+        if (!isFullScreen) {
+          setSize({ width: parseInt(ref.style.width, 10), height: parseInt(ref.style.height, 10) })
+          setPosition(pos)
+        }
       }}
       minWidth={300}
       minHeight={200}
-      bounds="window"
+      bounds={bounds}
       dragHandleClassName="window-drag-handle"
       onMouseDown={onActivate}
+      disableDragging={isFullScreen}
+      enableResizing={!isFullScreen}
       style={{ 
-        zIndex: isActive ? 40 : 20 
+        zIndex: isFullScreen ? 60 : isActive ? 40 : 20 
       }}
     >
       <motion.div
@@ -195,7 +254,9 @@ export function Window({
         exit={{ opacity: 0, scale: 0.92 }}
         transition={{ type: "spring", stiffness: 380, damping: 28 }}
         style={{ transition: 'background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease' }}
-        className={`h-full w-full overflow-hidden rounded-2xl border ${
+        className={`h-full w-full overflow-hidden transition-all duration-200 ${
+          isFullScreen ? "rounded-none border-0" : "rounded-2xl border"
+        } ${
           isActive
             ? "shadow-[0_22px_55px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
             : "shadow-[0_10px_30px_rgba(0,0,0,0.22)]"
@@ -207,6 +268,7 @@ export function Window({
         onMouseDown={onActivate}
       >
         <div
+          onDoubleClick={toggleFullScreen}
           style={{ transition: 'background-color 0.25s ease, color 0.25s ease' }}
           className={`flex h-9 items-center px-3 select-none ${
             theme === "dark"
@@ -218,20 +280,39 @@ export function Window({
                 : "bg-gray-100/70 text-gray-500"
           }`}
         >
-          <div className="flex space-x-2 z-10">
+          <div className="flex space-x-2 z-10 group/buttons">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onClose()
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 hover:text-white z-10 transition-colors"
+              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 group-hover/buttons:text-white hover:bg-red-600 z-10 transition-all"
+              title="Close"
             >
               <X className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 hover:text-white z-10 transition-colors">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onMinimize) {
+                  onMinimize()
+                } else {
+                  onClose()
+                }
+              }}
+              className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 group-hover/buttons:text-black hover:bg-yellow-600 z-10 transition-all"
+              title="Minimize"
+            >
               <Minus className="h-2 w-2" />
             </button>
-            <button className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 hover:text-white z-10 transition-colors">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleFullScreen()
+              }}
+              className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 group-hover/buttons:text-black hover:bg-green-600 z-10 transition-all"
+              title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
+            >
               <Square className="h-2 w-2" />
             </button>
           </div>

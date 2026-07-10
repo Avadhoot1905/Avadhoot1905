@@ -12,10 +12,10 @@ import { useTheme } from "next-themes"
 import { motion, AnimatePresence, type PanInfo } from "framer-motion"
 import { X } from "lucide-react"
 import { GiTicTacToe } from "react-icons/gi"
-import { 
-  FaSafari, 
-  FaCommentDots, 
-  FaImages, 
+import {
+  FaSafari,
+  FaCommentDots,
+  FaImages,
   FaUser,
   FaCode,
   FaGraduationCap,
@@ -26,7 +26,7 @@ import {
 
 import { PiBirdFill } from "react-icons/pi";
 
-import { 
+import {
   SiGithub,
   SiLinkedin,
   SiLeetcode,
@@ -152,7 +152,7 @@ export function MacOSDesktop() {
   // Inactivity detection
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keydown', 'keyup', 'scroll', 'touchstart', 'click', 'input']
-    
+
     events.forEach(event => {
       document.addEventListener(event, updateActivity, true)
     })
@@ -232,7 +232,7 @@ export function MacOSDesktop() {
       window.open("https://medium.com/@arcsmo19", "_blank")
       return
     }
-    
+
     // Handle regular window toggling
     if (openWindows.includes(appId)) {
       setOpenWindows(openWindows.filter((id) => id !== appId))
@@ -251,23 +251,23 @@ export function MacOSDesktop() {
     console.log('🚀 openOrActivateWindow called!')
     console.log('  appId:', appId)
     console.log('  params:', params)
-    
+
     // Handle projects filter if provided
     if (appId === 'projects' && params?.filter) {
       console.log('  Setting projects filter:', params.filter)
       setProjectsFilter(params.filter)
     }
-    
+
     // Handle terminal command if provided
     if (appId === 'terminal' && params?.command) {
       console.log('  Setting terminal command:', params.command)
       setTerminalCommand(params.command)
     }
-    
+
     // Use functional update to avoid stale closure
     setOpenWindows((prevWindows) => {
       console.log('  prevWindows:', prevWindows)
-      
+
       // If window is already open, just bring it to front
       if (prevWindows.includes(appId)) {
         console.log('  Window already open, activating:', appId)
@@ -384,9 +384,9 @@ export function MacOSDesktop() {
   if (isShuttingDown) {
     return (
       <AnimatePresence>
-        <ShutdownScreen 
+        <ShutdownScreen
           action={shutdownAction}
-          onShutdownComplete={handleShutdownComplete} 
+          onShutdownComplete={handleShutdownComplete}
         />
       </AnimatePresence>
     )
@@ -403,19 +403,19 @@ export function MacOSDesktop() {
       }}
     >
       <AnimatePresence mode="wait">
-        <LockScreen 
+        <LockScreen
           key="lockscreen"
-          isLocked={isLocked} 
-          onUnlock={handleUnlock} 
+          isLocked={isLocked}
+          onUnlock={handleUnlock}
         />
       </AnimatePresence>
       {!isLocked && (
         <>
-          <MenuBar 
-            onLockScreen={handleLockScreen} 
+          <MenuBar
+            onLockScreen={handleLockScreen}
             onShutdown={handleShutdown}
             onRestart={handleRestart}
-            activeApp={activeWindow} 
+            activeApp={activeWindow}
           />
 
           <AnimatePresence>
@@ -451,9 +451,8 @@ export function MacOSDesktop() {
                     <button
                       aria-label="Dismiss welcome notification"
                       onClick={handleWelcomeNotificationClose}
-                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${
-                        isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
-                      }`}
+                      className={`absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-md transition-all duration-200 ${isWelcomeHovered ? "opacity-100" : "pointer-events-none opacity-0"
+                        }`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -464,7 +463,7 @@ export function MacOSDesktop() {
                       <img
                         src="/favicon.ico"
                         alt="Avadhoot Portfolio"
-                        className="h-6 w-6 object-contain"
+                        className="h-full w-full object-cover"
                         draggable={false}
                       />
                     </div>
@@ -481,294 +480,294 @@ export function MacOSDesktop() {
           </AnimatePresence>
 
           <div className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24">
-        <motion.div
-          className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, staggerChildren: 0.1 }}
-        >
-          <AppIcon
-            name="Finder"
-            icon={finderIcon}
-            onClick={() => toggleWindow("finder")}
-          />
-          <AppIcon
-            name="Safari"
-            icon={<FaSafari className="text-blue-600" />}
-            onClick={() => toggleWindow("safari")}
-          />
-          <AppIcon
-            name="Messages"
-            icon={<FaCommentDots className="text-green-500" />}
-            onClick={() => toggleWindow("messages")}
-          />
-          <AppIcon
-            name="Photos"
-            icon={<FaImages className="text-yellow-500" />}
-            onClick={() => toggleWindow("photos")}
-          />
-          <AppIcon
-            name="About Me"
-            icon={<FaUser className="text-purple-500" />}
-            onClick={() => toggleWindow("about")}
-          />
-          <AppIcon
-            name="Projects"
-            icon={<FaCode className="text-green-600" />}
-            onClick={() => toggleWindow("projects")}
-          />
-          <AppIcon
-            name="Achievements"
-            icon={<AchievementsAppIcon />}
-            onClick={() => toggleWindow("achievements")}
-          />
-          <AppIcon
-            name="Education"
-            icon={<FaGraduationCap className="text-blue-700" />}
-            onClick={() => toggleWindow("education")}
-          />
-          <AppIcon
-            name="Experience"
-            icon={<FaBriefcase className="text-gray-700" />}
-            onClick={() => toggleWindow("experience")}
-          />
-          <AppIcon
-            name="Tic Tac Toe"
-            icon={<GiTicTacToe className="text-pink-500" />}
-            onClick={() => toggleWindow("tictactoe")}
-          />
-          <AppIcon
-            name="2048"
-            icon={<FaGamepad className="text-amber-500" />}
-            onClick={() => toggleWindow("2048")}
-          />
-          <AppIcon
-            name="Flappy Bird"
-            icon={<PiBirdFill className="text-yellow-400" />}
-            onClick={() => toggleWindow("flappybird")}
-          />
-          <AppIcon
-            name="Terminal"
-            icon={<FaTerminal className="text-gray-300" />}
-            onClick={() => toggleWindow("terminal")}
-          />
-        </motion.div>
-
-        <AnimatePresence>
-          {openWindows.includes("finder") && (
-            <Window
-              key="finder"
-              title="Finder"
-              isActive={activeWindow === "finder"}
-              onActivate={() => activateWindow("finder")}
-              onClose={() => toggleWindow("finder")}
-              initialPosition={{ x: 100, y: 100 }}
-              initialSize={{ width: 600, height: 400 }}
+            <motion.div
+              className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, staggerChildren: 0.1 }}
             >
-              <FinderApp />
-            </Window>
-          )}
-
-          {openWindows.includes("safari") && (
-            <Window
-              key="safari"
-              title="Safari"
-              isActive={activeWindow === "safari"}
-              onActivate={() => activateWindow("safari")}
-              onClose={() => toggleWindow("safari")}
-              initialPosition={{ x: 150, y: 150 }}
-              initialSize={{ width: 800, height: 600 }}
-            >
-              <SafariApp />
-            </Window>
-          )}
-
-          {openWindows.includes("messages") && (
-            <Window
-              key="messages"
-              title="Messages"
-              isActive={activeWindow === "messages"}
-              onActivate={() => activateWindow("messages")}
-              onClose={() => toggleWindow("messages")}
-              initialPosition={{ x: 200, y: 200 }}
-              initialSize={{ width: 900, height: 600 }}
-            >
-              <MessagesApp onOpenApp={openOrActivateWindow} />
-            </Window>
-          )}
-
-          {openWindows.includes("photos") && (
-            <Window
-              key="photos"
-              title="Photos"
-              isActive={activeWindow === "photos"}
-              onActivate={() => activateWindow("photos")}
-              onClose={() => toggleWindow("photos")}
-              initialPosition={{ x: 250, y: 150 }}
-              initialSize={{ width: 750, height: 600 }}
-            >
-              <PhotosApp />
-            </Window>
-          )}
-
-          {openWindows.includes("about") && (
-            <Window
-              key="about"
-              title="About Me"
-              isActive={activeWindow === "about"}
-              onActivate={() => activateWindow("about")}
-              onClose={() => toggleWindow("about")}
-              initialPosition={{ x: 50, y: 80 }}
-              initialSize={{ width: 650, height: 680 }}
-            >
-              <AboutApp onOpenApp={openOrActivateWindow} />
-            </Window>
-          )}
-
-          {openWindows.includes("projects") && (
-            <Window
-              key="projects"
-              title="Projects"
-              isActive={activeWindow === "projects"}
-              onActivate={() => activateWindow("projects")}
-              onClose={() => toggleWindow("projects")}
-              initialPosition={{ x: 200, y: 120 }}
-              initialSize={{ width: 700, height: 550 }}
-            >
-              <ProjectsApp initialFilter={projectsFilter} />
-            </Window>
-          )}
-
-          {openWindows.includes("achievements") && (
-            <Window
-              key="achievements"
-              title="Achievements"
-              isActive={activeWindow === "achievements"}
-              onActivate={() => activateWindow("achievements")}
-              onClose={() => toggleWindow("achievements")}
-              initialPosition={{ x: 240, y: 140 }}
-              initialSize={{ width: 820, height: 560 }}
-            >
-              <AchievementsApp />
-            </Window>
-          )}
-
-          {openWindows.includes("education") && (
-            <Window
-              key="education"
-              title="Education"
-              isActive={activeWindow === "education"}
-              onActivate={() => activateWindow("education")}
-              onClose={() => toggleWindow("education")}
-              initialPosition={{ x: 180, y: 140 }}
-              initialSize={{ width: 750, height: 600 }}
-            >
-              <EducationApp />
-            </Window>
-          )}
-
-          {openWindows.includes("experience") && (
-            <Window
-              key="experience"
-              title="Experience"
-              isActive={activeWindow === "experience"}
-              onActivate={() => activateWindow("experience")}
-              onClose={() => toggleWindow("experience")}
-              initialPosition={{ x: 220, y: 160 }}
-              initialSize={{ width: 1000, height: 550 }}
-            >
-              <ExperienceApp />
-            </Window>
-          )}
-
-          {openWindows.includes("tictactoe") && (
-            <Window
-              key="tictactoe"
-              title="Tic Tac Toe"
-              isActive={activeWindow === "tictactoe"}
-              onActivate={() => activateWindow("tictactoe")}
-              onClose={() => toggleWindow("tictactoe")}
-              initialPosition={{ x: 300, y: 100 }}
-              initialSize={{ width: 500, height: 600 }}
-            >
-              <TicTacToeApp />
-            </Window>
-          )}
-
-          {openWindows.includes("2048") && (
-            <Window
-              key="2048"
-              title="2048"
-              isActive={activeWindow === "2048"}
-              onActivate={() => activateWindow("2048")}
-              onClose={() => toggleWindow("2048")}
-              initialPosition={{ x: 350, y: 80 }}
-              initialSize={{ width: 550, height: 700 }}
-            >
-              <Game2048App />
-            </Window>
-          )}
-
-          {openWindows.includes("flappybird") && (
-            <Window
-              key="flappybird"
-              title="Flappy Bird"
-              isActive={activeWindow === "flappybird"}
-              onActivate={() => activateWindow("flappybird")}
-              onClose={() => toggleWindow("flappybird")}
-              initialPosition={{ x: 380, y: 90 }}
-              initialSize={{ width: 520, height: 700 }}
-            >
-              <FlappyBirdApp />
-            </Window>
-          )}
-
-          {openWindows.includes("terminal") && (
-            <Window
-              key="terminal"
-              title="Terminal"
-              isActive={activeWindow === "terminal"}
-              onActivate={() => activateWindow("terminal")}
-              onClose={() => {
-                toggleWindow("terminal")
-                setTerminalCommand(undefined)
-              }}
-              initialPosition={{ x: 720, y: 80 }}
-              initialSize={{ width: 650, height: 600 }}
-            >
-              <TerminalApp 
-                onClose={() => {
-                  toggleWindow("terminal")
-                  setTerminalCommand(undefined)
-                }} 
-                onOpenApp={openOrActivateWindow}
-                initialCommand={terminalCommand}
+              <AppIcon
+                name="Finder"
+                icon={finderIcon}
+                onClick={() => toggleWindow("finder")}
               />
-            </Window>
-          )}
-        </AnimatePresence>
+              <AppIcon
+                name="Safari"
+                icon={<FaSafari className="text-blue-600" />}
+                onClick={() => toggleWindow("safari")}
+              />
+              <AppIcon
+                name="Messages"
+                icon={<FaCommentDots className="text-green-500" />}
+                onClick={() => toggleWindow("messages")}
+              />
+              <AppIcon
+                name="Photos"
+                icon={<FaImages className="text-yellow-500" />}
+                onClick={() => toggleWindow("photos")}
+              />
+              <AppIcon
+                name="About Me"
+                icon={<FaUser className="text-purple-500" />}
+                onClick={() => toggleWindow("about")}
+              />
+              <AppIcon
+                name="Projects"
+                icon={<FaCode className="text-green-600" />}
+                onClick={() => toggleWindow("projects")}
+              />
+              <AppIcon
+                name="Achievements"
+                icon={<AchievementsAppIcon />}
+                onClick={() => toggleWindow("achievements")}
+              />
+              <AppIcon
+                name="Education"
+                icon={<FaGraduationCap className="text-blue-700" />}
+                onClick={() => toggleWindow("education")}
+              />
+              <AppIcon
+                name="Experience"
+                icon={<FaBriefcase className="text-gray-700" />}
+                onClick={() => toggleWindow("experience")}
+              />
+              <AppIcon
+                name="Tic Tac Toe"
+                icon={<GiTicTacToe className="text-pink-500" />}
+                onClick={() => toggleWindow("tictactoe")}
+              />
+              <AppIcon
+                name="2048"
+                icon={<FaGamepad className="text-amber-500" />}
+                onClick={() => toggleWindow("2048")}
+              />
+              <AppIcon
+                name="Flappy Bird"
+                icon={<PiBirdFill className="text-yellow-400" />}
+                onClick={() => toggleWindow("flappybird")}
+              />
+              <AppIcon
+                name="Terminal"
+                icon={<FaTerminal className="text-gray-300" />}
+                onClick={() => toggleWindow("terminal")}
+              />
+            </motion.div>
 
-        {/* Widgets */}
-        <Widgets />
-      </div>
+            <AnimatePresence>
+              {openWindows.includes("finder") && (
+                <Window
+                  key="finder"
+                  title="Finder"
+                  isActive={activeWindow === "finder"}
+                  onActivate={() => activateWindow("finder")}
+                  onClose={() => toggleWindow("finder")}
+                  initialPosition={{ x: 100, y: 100 }}
+                  initialSize={{ width: 600, height: 400 }}
+                >
+                  <FinderApp />
+                </Window>
+              )}
 
-      <Dock
-        apps={[
-          { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
-          { id: "about", icon: <FaUser className="text-purple-500" />, isOpen: openWindows.includes("about") },
-          { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
-          { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
-          { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
-          { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
-          { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
-          { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
-          { id: "github", icon: <SiGithub className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
-          { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
-          { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
-          { id: "medium", icon: <SiMedium className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
-        ]}
-        onAppClick={toggleWindow}
-      />
+              {openWindows.includes("safari") && (
+                <Window
+                  key="safari"
+                  title="Safari"
+                  isActive={activeWindow === "safari"}
+                  onActivate={() => activateWindow("safari")}
+                  onClose={() => toggleWindow("safari")}
+                  initialPosition={{ x: 150, y: 150 }}
+                  initialSize={{ width: 800, height: 600 }}
+                >
+                  <SafariApp />
+                </Window>
+              )}
+
+              {openWindows.includes("messages") && (
+                <Window
+                  key="messages"
+                  title="Messages"
+                  isActive={activeWindow === "messages"}
+                  onActivate={() => activateWindow("messages")}
+                  onClose={() => toggleWindow("messages")}
+                  initialPosition={{ x: 200, y: 200 }}
+                  initialSize={{ width: 900, height: 600 }}
+                >
+                  <MessagesApp onOpenApp={openOrActivateWindow} />
+                </Window>
+              )}
+
+              {openWindows.includes("photos") && (
+                <Window
+                  key="photos"
+                  title="Photos"
+                  isActive={activeWindow === "photos"}
+                  onActivate={() => activateWindow("photos")}
+                  onClose={() => toggleWindow("photos")}
+                  initialPosition={{ x: 250, y: 150 }}
+                  initialSize={{ width: 750, height: 600 }}
+                >
+                  <PhotosApp />
+                </Window>
+              )}
+
+              {openWindows.includes("about") && (
+                <Window
+                  key="about"
+                  title="About Me"
+                  isActive={activeWindow === "about"}
+                  onActivate={() => activateWindow("about")}
+                  onClose={() => toggleWindow("about")}
+                  initialPosition={{ x: 50, y: 80 }}
+                  initialSize={{ width: 650, height: 680 }}
+                >
+                  <AboutApp onOpenApp={openOrActivateWindow} />
+                </Window>
+              )}
+
+              {openWindows.includes("projects") && (
+                <Window
+                  key="projects"
+                  title="Projects"
+                  isActive={activeWindow === "projects"}
+                  onActivate={() => activateWindow("projects")}
+                  onClose={() => toggleWindow("projects")}
+                  initialPosition={{ x: 200, y: 120 }}
+                  initialSize={{ width: 700, height: 550 }}
+                >
+                  <ProjectsApp initialFilter={projectsFilter} />
+                </Window>
+              )}
+
+              {openWindows.includes("achievements") && (
+                <Window
+                  key="achievements"
+                  title="Achievements"
+                  isActive={activeWindow === "achievements"}
+                  onActivate={() => activateWindow("achievements")}
+                  onClose={() => toggleWindow("achievements")}
+                  initialPosition={{ x: 240, y: 140 }}
+                  initialSize={{ width: 820, height: 560 }}
+                >
+                  <AchievementsApp />
+                </Window>
+              )}
+
+              {openWindows.includes("education") && (
+                <Window
+                  key="education"
+                  title="Education"
+                  isActive={activeWindow === "education"}
+                  onActivate={() => activateWindow("education")}
+                  onClose={() => toggleWindow("education")}
+                  initialPosition={{ x: 180, y: 140 }}
+                  initialSize={{ width: 750, height: 600 }}
+                >
+                  <EducationApp />
+                </Window>
+              )}
+
+              {openWindows.includes("experience") && (
+                <Window
+                  key="experience"
+                  title="Experience"
+                  isActive={activeWindow === "experience"}
+                  onActivate={() => activateWindow("experience")}
+                  onClose={() => toggleWindow("experience")}
+                  initialPosition={{ x: 220, y: 160 }}
+                  initialSize={{ width: 1000, height: 550 }}
+                >
+                  <ExperienceApp />
+                </Window>
+              )}
+
+              {openWindows.includes("tictactoe") && (
+                <Window
+                  key="tictactoe"
+                  title="Tic Tac Toe"
+                  isActive={activeWindow === "tictactoe"}
+                  onActivate={() => activateWindow("tictactoe")}
+                  onClose={() => toggleWindow("tictactoe")}
+                  initialPosition={{ x: 300, y: 100 }}
+                  initialSize={{ width: 500, height: 600 }}
+                >
+                  <TicTacToeApp />
+                </Window>
+              )}
+
+              {openWindows.includes("2048") && (
+                <Window
+                  key="2048"
+                  title="2048"
+                  isActive={activeWindow === "2048"}
+                  onActivate={() => activateWindow("2048")}
+                  onClose={() => toggleWindow("2048")}
+                  initialPosition={{ x: 350, y: 80 }}
+                  initialSize={{ width: 550, height: 700 }}
+                >
+                  <Game2048App />
+                </Window>
+              )}
+
+              {openWindows.includes("flappybird") && (
+                <Window
+                  key="flappybird"
+                  title="Flappy Bird"
+                  isActive={activeWindow === "flappybird"}
+                  onActivate={() => activateWindow("flappybird")}
+                  onClose={() => toggleWindow("flappybird")}
+                  initialPosition={{ x: 380, y: 90 }}
+                  initialSize={{ width: 520, height: 700 }}
+                >
+                  <FlappyBirdApp />
+                </Window>
+              )}
+
+              {openWindows.includes("terminal") && (
+                <Window
+                  key="terminal"
+                  title="Terminal"
+                  isActive={activeWindow === "terminal"}
+                  onActivate={() => activateWindow("terminal")}
+                  onClose={() => {
+                    toggleWindow("terminal")
+                    setTerminalCommand(undefined)
+                  }}
+                  initialPosition={{ x: 720, y: 80 }}
+                  initialSize={{ width: 650, height: 600 }}
+                >
+                  <TerminalApp
+                    onClose={() => {
+                      toggleWindow("terminal")
+                      setTerminalCommand(undefined)
+                    }}
+                    onOpenApp={openOrActivateWindow}
+                    initialCommand={terminalCommand}
+                  />
+                </Window>
+              )}
+            </AnimatePresence>
+
+            {/* Widgets */}
+            <Widgets />
+          </div>
+
+          <Dock
+            apps={[
+              { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
+              { id: "about", icon: <FaUser className="text-purple-500" />, isOpen: openWindows.includes("about") },
+              { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
+              { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
+              { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
+              { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
+              { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
+              { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
+              { id: "github", icon: <SiGithub className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
+              { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },
+              { id: "leetcode", icon: <SiLeetcode className="text-orange-500" />, isOpen: false },
+              { id: "medium", icon: <SiMedium className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
+            ]}
+            onAppClick={toggleWindow}
+          />
         </>
       )}
     </div>

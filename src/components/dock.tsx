@@ -60,15 +60,8 @@ export function Dock({ apps, onAppClick }: DockProps) {
     >
       <div className="relative">
         <div 
-          className={`flex items-center justify-center backdrop-blur-xl border ${
-            theme === "dark" 
-              ? "bg-black/30 border-white/20" 
-              : "bg-white/30 border-black/20"
-          } ${isMobile ? 'h-14 w-14 rounded-2xl text-2xl' : 'h-14 w-14 rounded-2xl text-3xl'}`}
-          style={{
-            backdropFilter: 'blur(15px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(15px) saturate(160%)'
-          }}
+          className="flex items-center justify-center drop-shadow-md"
+          style={{ width: isMobile ? 44 : 52, height: isMobile ? 44 : 52 }}
         >
           {app.icon}
         </div>

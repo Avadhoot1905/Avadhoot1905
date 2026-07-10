@@ -91,24 +91,13 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
         whileTap={{ scale: 0.9 }}
       >
         <motion.div
-          className={`mb-1 shadow-xl backdrop-blur-xl border ${
-            isMobile ? "rounded-2xl p-2" : "rounded-xl p-2"
-          } ${
-            theme === "dark"
-              ? "bg-black/20 hover:bg-black/30 border-white/10"
-              : "bg-white/20 hover:bg-white/30 border-black/10"
-          }`}
-          style={{
-            backdropFilter: "blur(20px) saturate(180%)",
-            WebkitBackdropFilter: "blur(20px) saturate(180%)",
-            transition: "background-color 0.3s ease, border-color 0.3s ease",
-          }}
-          whileHover={isMobile ? {} : { y: -5 }}
+          className="mb-1 drop-shadow-xl"
+          whileHover={isMobile ? {} : { y: -5, scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <div
             className={`flex items-center justify-center ${
-              isMobile ? "h-11 w-11 text-3xl" : "h-12 w-12 text-3xl"
+              isMobile ? "h-14 w-14 text-4xl" : "h-14 w-14 text-4xl"
             }`}
           >
             {icon}
@@ -153,19 +142,12 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       whileHover={{ y: y - 2 }}
     >
       <div
-        className={`relative mb-1.5 flex h-[68px] w-[68px] items-center justify-center rounded-[18px] border transition-all duration-200 ${
-          theme === "dark"
-            ? "border-white/20 bg-gradient-to-b from-white/15 via-white/10 to-black/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.35),0_4px_12px_rgba(0,0,0,0.25)] group-hover:border-white/30 group-hover:brightness-110 group-hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_6px_16px_rgba(0,0,0,0.35)]"
-            : "border-white/40 bg-gradient-to-b from-white/30 via-white/20 to-black/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.18)] group-hover:border-white/50 group-hover:brightness-105 group-hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),0_6px_16px_rgba(0,0,0,0.25)]"
-        } ${isSelected ? "ring-2 ring-blue-500/70 brightness-105" : ""}`}
-        style={{
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        }}
+        className={`relative mb-1.5 flex h-[60px] w-[60px] items-center justify-center transition-all duration-200 drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)] group-hover:scale-105 group-hover:brightness-105 group-hover:drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)] ${
+          isSelected ? "ring-2 ring-blue-500/70 rounded-[14px] brightness-105" : ""
+        }`}
+        style={{ width: 60, height: 60 }}
       >
-        {/* Subtle macOS glass top shine */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 rounded-t-[17px] bg-gradient-to-b from-white/25 to-transparent opacity-70" />
-        <div className="relative z-10 flex h-11 w-11 items-center justify-center text-3xl">
+        <div className="relative z-10 flex h-full w-full items-center justify-center">
           {icon}
         </div>
       </div>

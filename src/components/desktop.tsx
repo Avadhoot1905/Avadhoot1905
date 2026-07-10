@@ -63,6 +63,114 @@ const finderIcon = (
   />
 )
 
+const safariIcon = (
+  <img
+    src="/assets/macos/safari-svgrepo-com.svg"
+    alt="Safari"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const messagesIcon = (
+  <img
+    src="/assets/macos/messages-svgrepo-com.svg"
+    alt="Messages"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const photosIcon = (
+  <img
+    src="/assets/macos/apple-photos.svg"
+    alt="Photos"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const profileIcon = (
+  <img
+    src="/assets/macos/contacts.svg"
+    alt="About Me"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const projectsIcon = (
+  <img
+    src="/assets/macos/Xcode.svg"
+    alt="Projects"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const achievementsIcon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
+    alt="Achievements"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const educationIcon = (
+  <img
+    src="/assets/macos/notion-svgrepo-com.svg"
+    alt="Education"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const experienceIcon = (
+  <img
+    src="/assets/macos/mail.svg"
+    alt="Experience"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const terminalIcon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+    alt="Terminal"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const flappyBirdIcon = (
+  <img
+    src="/assets/macos/Video-Game-Flappy-Bird--Streamline-Ultimate.svg"
+    alt="Flappy Bird"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const game2048Icon = (
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/1/18/2048_logo.svg"
+    alt="2048"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
+const ticTacToeIcon = (
+  <img
+    src="/assets/macos/tic-tac-toe.svg"
+    alt="Tic Tac Toe"
+    className="h-9 w-9 object-contain"
+    draggable={false}
+  />
+)
+
 const CELL_WIDTH = 104
 const CELL_HEIGHT = 112
 const RIGHT_MARGIN = 16
@@ -102,18 +210,18 @@ export function MacOSDesktop() {
 
   const desktopApps: DesktopAppDefinition[] = React.useMemo(() => [
     { id: "finder", name: "Finder", icon: finderIcon },
-    { id: "safari", name: "Safari", icon: <FaSafari className="text-blue-600" /> },
-    { id: "messages", name: "Messages", icon: <FaCommentDots className="text-green-500" /> },
-    { id: "photos", name: "Photos", icon: <FaImages className="text-yellow-500" /> },
-    { id: "about", name: "About Me", icon: <FaUser className="text-purple-500" /> },
-    { id: "projects", name: "Projects", icon: <FaCode className="text-green-600" /> },
-    { id: "achievements", name: "Achievements", icon: <AchievementsAppIcon /> },
-    { id: "education", name: "Education", icon: <FaGraduationCap className="text-blue-700" /> },
-    { id: "experience", name: "Experience", icon: <FaBriefcase className="text-gray-700" /> },
-    { id: "tictactoe", name: "Tic Tac Toe", icon: <GiTicTacToe className="text-pink-500" /> },
-    { id: "2048", name: "2048", icon: <FaGamepad className="text-amber-500" /> },
-    { id: "flappybird", name: "Flappy Bird", icon: <PiBirdFill className="text-yellow-400" /> },
-    { id: "terminal", name: "Terminal", icon: <FaTerminal className="text-gray-300" /> },
+    { id: "safari", name: "Safari", icon: safariIcon },
+    { id: "messages", name: "Messages", icon: messagesIcon },
+    { id: "photos", name: "Photos", icon: photosIcon },
+    { id: "about", name: "About Me", icon: profileIcon },
+    { id: "projects", name: "Projects", icon: projectsIcon },
+    { id: "achievements", name: "Achievements", icon: achievementsIcon },
+    { id: "education", name: "Education", icon: educationIcon },
+    { id: "experience", name: "Experience", icon: experienceIcon },
+    { id: "tictactoe", name: "Tic Tac Toe", icon: ticTacToeIcon },
+    { id: "2048", name: "2048", icon: game2048Icon },
+    { id: "flappybird", name: "Flappy Bird", icon: flappyBirdIcon },
+    { id: "terminal", name: "Terminal", icon: terminalIcon },
   ], [])
 
   // Helper to generate default macOS right-to-left vertical column layout
@@ -922,12 +1030,12 @@ export function MacOSDesktop() {
           <Dock
             apps={[
               { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
-              { id: "about", icon: <FaUser className="text-purple-500" />, isOpen: openWindows.includes("about") },
-              { id: "experience", icon: <FaBriefcase className="text-gray-700" />, isOpen: openWindows.includes("experience") },
-              { id: "projects", icon: <FaCode className="text-green-600" />, isOpen: openWindows.includes("projects") },
-              { id: "education", icon: <FaGraduationCap className="text-blue-700" />, isOpen: openWindows.includes("education") },
-              { id: "safari", icon: <FaSafari className="text-blue-600" />, isOpen: openWindows.includes("safari") },
-              { id: "terminal", icon: <FaTerminal className="text-gray-300" />, isOpen: openWindows.includes("terminal") },
+              { id: "about", icon: profileIcon, isOpen: openWindows.includes("about") },
+              { id: "experience", icon: experienceIcon, isOpen: openWindows.includes("experience") },
+              { id: "projects", icon: projectsIcon, isOpen: openWindows.includes("projects") },
+              { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
+              { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
+              { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
               { id: "gmail", icon: <SiGmail className="text-red-500" />, isOpen: false },
               { id: "github", icon: <SiGithub className={theme === "dark" ? "text-white" : "text-gray-800"} />, isOpen: false },
               { id: "linkedin", icon: <SiLinkedin className="text-blue-500" />, isOpen: false },

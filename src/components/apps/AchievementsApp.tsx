@@ -73,18 +73,12 @@ function CheckCircleIcon({ className = "" }: { className?: string }) {
 
 export function AchievementsAppIcon() {
   return (
-    <div className="relative h-8 w-8 rounded-xl border border-neutral-200 bg-neutral-100 p-1.5 dark:border-neutral-700 dark:bg-neutral-800">
-      <div className="space-y-1.5">
-        <div className="h-0.5 w-5 rounded bg-neutral-300 dark:bg-neutral-500" />
-        <div className="h-0.5 w-4 rounded bg-neutral-300 dark:bg-neutral-500" />
-        <div className="h-0.5 w-5 rounded bg-neutral-300 dark:bg-neutral-500" />
-      </div>
-      <div className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-400/30">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-3 w-3 text-emerald-500">
-          <path d="M6.5 12.5L10 16L17.5 8.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </div>
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
+      alt="Achievements"
+      className="h-9 w-9 object-contain"
+      draggable={false}
+    />
   )
 }
 

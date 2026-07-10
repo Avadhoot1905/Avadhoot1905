@@ -26,14 +26,14 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
 
   useEffect(() => {
     setMounted(true)
-    
+
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
     // Display welcome message and skills on mount
     setCommandHistory([
       {
@@ -43,11 +43,12 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           "==============================",
           "",
           "💻 Technical Skills:",
-          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL",
+          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL, Go",
           "• Frontend: React, Next.js, Tailwind CSS",
           "• Backend: Node.js, Express, Django, SpringBoot",
-          "• Databases: PostgreSQL, MySQL, AWS RDS",
-          "• Infrastructure: Git, Docker, AWS",
+          "• Databases: PostgreSQL, CockroachDB, MySQL, Redis",
+          "• Infrastructure: Git, Docker, AWS, Kafka, CI/CD(GitHub Actions), Terraform",
+          "• Cloud (AWS): EC2, Fargate, RDS, Cognito, Bedrock, S3, CloudWatch, ElastiCache, Lambda, CloudFront, API Gateway, SQS",
           "• Tools: Linux, Postman, Prometheus, Grafana",
           "• AI/ML: TensorFlow, PyTorch, CNN, BiLSTM, CoreML",
           ""
@@ -61,7 +62,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
   // Execute initial command if provided
   useEffect(() => {
     console.log('TerminalApp initialCommand effect:', { initialCommand, mounted })
-    
+
     if (initialCommand && mounted) {
       console.log('Executing initial command:', initialCommand)
       // Simulate command execution
@@ -106,11 +107,11 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
 
     const type = () => {
       const currentText = texts[currentTextIndex]
-      
+
       if (isDeleting) {
         setTypingText(currentText.substring(0, currentCharIndex - 1))
         currentCharIndex--
-        
+
         if (currentCharIndex === 0) {
           isDeleting = false
           currentTextIndex = (currentTextIndex + 1) % texts.length
@@ -121,7 +122,7 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
       } else {
         setTypingText(currentText.substring(0, currentCharIndex + 1))
         currentCharIndex++
-        
+
         if (currentCharIndex === currentText.length) {
           isDeleting = true
           timeoutId = setTimeout(type, 2000) // Pause before deleting
@@ -152,18 +153,18 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
       'nest.js', 'nuxt.js', 'gatsby.js', 'svelte.js', 'ember.js', 'backbone.js',
       'fastapi', 'flask.py', 'django.py'
     ]
-    
+
     // Regular expressions for matching URLs and emails
     const emailPattern = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/g
     const urlPattern = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g
-    
+
     const parts: React.ReactNode[] = []
     let lastIndex = 0
     let key = 0
 
     // Find all matches (emails first to prioritize them over URLs)
     const matches: Array<{ index: number; length: number; text: string; isEmail: boolean }> = []
-    
+
     // First, find all emails
     let match
     while ((match = emailPattern.exec(text)) !== null) {
@@ -174,23 +175,23 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
         isEmail: true
       })
     }
-    
+
     // Then find URLs, but skip if they overlap with emails or are excluded terms
     while ((match = urlPattern.exec(text)) !== null) {
       const matchStart = match.index
       const matchEnd = match.index + match[0].length
       const matchText = match[0].toLowerCase()
-      
+
       // Check if this is an excluded technology term
       const isExcludedTerm = excludedTerms.some(term => matchText === term)
-      
+
       // Check if this URL overlaps with any email
       const overlapsWithEmail = matches.some(m => {
         const emailStart = m.index
         const emailEnd = m.index + m.length
         return (matchStart < emailEnd && matchEnd > emailStart)
       })
-      
+
       if (!overlapsWithEmail && !isExcludedTerm) {
         matches.push({
           index: match.index,
@@ -200,10 +201,10 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
         })
       }
     }
-    
+
     // Sort matches by index
     matches.sort((a, b) => a.index - b.index)
-    
+
     // Remove any remaining overlaps (keep the first match)
     const filteredMatches: typeof matches = []
     let lastEnd = 0
@@ -213,21 +214,21 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
         lastEnd = match.index + match.length
       }
     })
-    
+
     // Build the result with links
     filteredMatches.forEach((match) => {
       // Add text before the match
       if (match.index > lastIndex) {
         parts.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>)
       }
-      
+
       // Add the link
-      const href = match.isEmail 
-        ? `mailto:${match.text}` 
-        : match.text.startsWith('http') 
-          ? match.text 
+      const href = match.isEmail
+        ? `mailto:${match.text}`
+        : match.text.startsWith('http')
+          ? match.text
           : `https://${match.text}`
-      
+
       parts.push(
         <a
           key={key++}
@@ -240,21 +241,21 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
           {match.text}
         </a>
       )
-      
+
       lastIndex = match.index + match.length
     })
-    
+
     // Add remaining text
     if (lastIndex < text.length) {
       parts.push(<span key={key++}>{text.substring(lastIndex)}</span>)
     }
-    
+
     return parts.length > 0 ? <>{parts}</> : <>{text}</>
   }
 
   const renderOutputLine = (line: string) => {
     const skillCategoryMatch = line.match(
-      /^(•\s*)(Languages|Frontend|Backend|Database|Databases|Infrastructure|Tools|AI\/ML)(:.*)$/
+      /^(•\s*)(Languages|Frontend|Backend|Database|Databases|Infrastructure|Cloud\s*\(AWS\)|Tools|AI\/ML)(:.*)$/
     )
 
     if (!skillCategoryMatch) {
@@ -274,10 +275,10 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Get value from ref instead of state
     const commandText = inputRef.current?.value?.trim() || ''
-    
+
     if (!commandText) return
 
     const cmd = commandText.toLowerCase()
@@ -402,21 +403,22 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
       case "skills":
         output = isMobile ? [
           "Technical Skills:",
-          "• Java, C++, Python, JS, TS",
+          "• Java, C++, Python, JS, TS, Go",
           "• React, Next.js, Tailwind",
           "• Node.js, Express, Django, SpringBoot",
-          "• AWS RDS, AWS S3, PostgreSQL",
-          "• Git, Docker, AWS",
+          "• AWS RDS, AWS S3, PostgreSQL, Redis",
+          "• Git, Docker, AWS, CI/CD(GitHub Actions), Terraform",
           "• TensorFlow, PyTorch",
           ""
         ] : [
           "Technical Skills:",
           "-------------------",
-          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL",
+          "• Languages: Java, C++, Python, JavaScript, TypeScript, SQL, Go",
           "• Frontend: React, Next.js, Tailwind CSS",
           "• Backend: Node.js, Express, Django, SpringBoot",
-          "• Databases: PostgreSQL, MySQL, AWS RDS",
-          "• Infrastructure: Git, Docker, AWS",
+          "• Databases: PostgreSQL, CockroachDB, MySQL, Redis",
+          "• Infrastructure: Git, Docker, AWS, Kafka, CI/CD(GitHub Actions), Terraform",
+          "• Cloud (AWS): EC2, Fargate, RDS, Cognito, Bedrock, S3, CloudWatch, ElastiCache, Lambda, CloudFront, API Gateway, SQS",
           "• Tools: Linux, Postman, Prometheus, Grafana",
           "• AI/ML: TensorFlow, PyTorch, CNN, BiLSTM, CoreML",
           ""
@@ -561,11 +563,11 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     }
 
     setCommandHistory([...commandHistory, { command: commandText, output }])
-    
+
     // Add to command cache for history navigation
     setCommandCache([...commandCache, commandText])
     setHistoryIndex(-1)
-    
+
     // Clear input directly
     if (inputRef.current) {
       inputRef.current.value = ''
@@ -576,11 +578,11 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (commandCache.length === 0) return
-      
-      const newIndex = historyIndex === -1 
-        ? commandCache.length - 1 
+
+      const newIndex = historyIndex === -1
+        ? commandCache.length - 1
         : Math.max(0, historyIndex - 1)
-      
+
       setHistoryIndex(newIndex)
       if (inputRef.current) {
         inputRef.current.value = commandCache[newIndex]
@@ -588,9 +590,9 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
       if (commandCache.length === 0 || historyIndex === -1) return
-      
+
       const newIndex = historyIndex + 1
-      
+
       if (newIndex >= commandCache.length) {
         setHistoryIndex(-1)
         if (inputRef.current) {
@@ -615,16 +617,14 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
 
   return (
     <div
-      className={`h-full w-full bg-black text-green-400 font-mono overflow-hidden flex flex-col cursor-text ${
-        isMobile ? 'text-xs' : 'text-sm'
-      }`}
+      className={`h-full w-full bg-black text-green-400 font-mono overflow-hidden flex flex-col cursor-text ${isMobile ? 'text-xs' : 'text-sm'
+        }`}
       onClick={handleTerminalClick}
       style={{ fontFamily: "'Courier New', Courier, monospace" }}
     >
-      <div 
-        className={`flex-1 overflow-y-auto space-y-1 ${
-          isMobile ? 'p-2 text-[11px]' : 'p-4 space-y-2'
-        }`}
+      <div
+        className={`flex-1 overflow-y-auto space-y-1 ${isMobile ? 'p-2 text-[11px]' : 'p-4 space-y-2'
+          }`}
         onClick={handleTerminalClick}
       >
         {commandHistory.map((entry, index) => (
@@ -643,11 +643,10 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
             {entry.output.length > 0 && (
               <>
                 {entry.output.map((line, lineIndex) => (
-                  <div 
-                    key={lineIndex} 
-                    className={`text-green-400 ${
-                      isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
-                    }`}
+                  <div
+                    key={lineIndex}
+                    className={`text-green-400 ${isMobile ? 'pl-0 leading-tight break-words' : 'pl-0'
+                      }`}
                   >
                     {renderOutputLine(line)}
                   </div>
@@ -659,25 +658,22 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
         <div ref={terminalEndRef} />
       </div>
 
-      <form 
-        onSubmit={handleCommand} 
-        className={`border-t border-green-900 ${
-          isMobile ? 'p-2' : 'p-4'
-        } relative z-10`}
+      <form
+        onSubmit={handleCommand}
+        className={`border-t border-green-900 ${isMobile ? 'p-2' : 'p-4'
+          } relative z-10`}
       >
         <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
-          <span className={`text-cyan-400 flex-shrink-0 ${
-            isMobile ? 'text-[10px]' : ''
-          }`}>
+          <span className={`text-cyan-400 flex-shrink-0 ${isMobile ? 'text-[10px]' : ''
+            }`}>
             {isMobile ? '$' : 'avadhoot@portfolio:~$'}
           </span>
           <div className="flex-1 relative">
             <input
               ref={inputRef}
               type="text"
-              className={`w-full bg-transparent outline-none border-none focus:outline-none focus:ring-0 relative z-10 ${
-                isMobile ? 'text-xs' : ''
-              }`}
+              className={`w-full bg-transparent outline-none border-none focus:outline-none focus:ring-0 relative z-10 ${isMobile ? 'text-xs' : ''
+                }`}
               onKeyDown={handleKeyDown}
               onClick={() => setIsTyping(false)}
               autoFocus
@@ -685,17 +681,16 @@ export function TerminalApp({ onClose, onOpenApp, initialCommand }: TerminalAppP
               autoCapitalize="off"
               autoCorrect="off"
               autoComplete="off"
-              style={{ 
+              style={{
                 WebkitAppearance: 'none',
                 color: isTyping ? 'transparent' : '#86efac',
                 caretColor: isTyping ? 'transparent' : '#4ade80',
               }}
             />
             {isTyping && !inputRef.current?.value && (
-              <div 
-                className={`absolute left-0 top-0 text-green-500 pointer-events-none ${
-                  isMobile ? 'text-xs' : ''
-                }`}
+              <div
+                className={`absolute left-0 top-0 text-green-500 pointer-events-none ${isMobile ? 'text-xs' : ''
+                  }`}
               >
                 {typingText}
               </div>

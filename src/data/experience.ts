@@ -13,6 +13,30 @@ export interface Experience {
 export const experiences: Experience[] = [
   {
     id: 1,
+    title: "Quantum-Safe Entropy-as-a-Service Platform (QOSMOS)",
+    organization: "QNu Labs",
+    role: "Software Engineering Intern",
+    duration: "April 2026 – July 2026",
+    location: "Hybrid",
+    description:
+      "Engineered core backend services and cloud infrastructure for Qosmos, a distributed quantum-safe Entropy-as-a-Service platform, focusing on scalable entropy delivery, production reliability, and cryptographic randomness validation.",
+    bullets: [
+      "Designed and implemented distributed entropy delivery pipelines using Go, Redis-backed entropy pools, asynchronous queue-driven workflows, and PostgreSQL, enabling low-latency, horizontally scalable cryptographic randomness distribution",
+      "Strengthened platform reliability by implementing infrastructure monitoring, deployment automation, NIST SP 800-22 entropy validation, and production observability while contributing to AWS infrastructure, Terraform provisioning, Docker-based deployments, and GitHub Actions CI/CD pipelines",
+    ],
+    techStack: [
+      "Go",
+      "React",
+      "Redis",
+      "PostgreSQL",
+      "AWS",
+      "Docker",
+      "Terraform",
+      "GitHub Actions",
+    ],
+  },
+  {
+    id: 2,
     title: "E-commerce Platform Engineering",
     organization: "Kathuria Gun House",
     role: "Full Stack Developer",
@@ -27,7 +51,7 @@ export const experiences: Experience[] = [
     techStack: ["Next.js", "PostgreSQL", "Prisma", "Docker", "AWS EC2", "Kubernetes"],
   },
   {
-    id: 2,
+    id: 3,
     title: "Financial Event Processing Simulation",
     organization: "JP Morgan Chase & Co (Forage)",
     role: "Software Engineering Virtual Experience",
@@ -42,7 +66,7 @@ export const experiences: Experience[] = [
     techStack: ["Java", "Spring Boot", "Kafka", "REST APIs", "JPA", "H2"],
   },
   {
-    id: 3,
+    id: 4,
     title: "Technical Community Leadership",
     organization: "ACM-VIT CHAPTER",
     role: "Senior Core Member",

@@ -1047,14 +1047,14 @@ export function MacOSDesktop() {
               {openWindows.includes("experience") && (
                 <Window
                   key="experience"
-                  title="Experience"
+                  title="Mail — Experiences"
                   isActive={activeWindow === "experience"}
                   onActivate={() => activateWindow("experience")}
                   onClose={() => toggleWindow("experience")}
                   onMinimize={() => minimizeWindow("experience")}
                   isMinimized={minimizedWindows.includes("experience")}
-                  initialPosition={{ x: 220, y: 160 }}
-                  initialSize={{ width: 1000, height: 550 }}
+                  initialPosition={{ x: 100, y: 70 }}
+                  initialSize={{ width: 1040, height: 680 }}
                 >
                   <ExperienceApp />
                 </Window>

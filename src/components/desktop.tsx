@@ -184,6 +184,84 @@ interface DesktopAppDefinition {
   icon: React.ReactElement
 }
 
+const isOverlappingWidgetsArea = (x: number, y: number): boolean => {
+  return x < 410 && y < 250
+}
+
+const findNearestValidGridPosition = (
+  targetX: number,
+  targetY: number,
+  occupiedCells: Set<string>,
+  containerWidth: number,
+  containerHeight: number
+): { x: number; y: number } => {
+  const availHeight = Math.max(300, containerHeight - 120)
+  const maxRows = Math.max(1, Math.floor(availHeight / CELL_HEIGHT))
+  const maxCols = Math.max(1, Math.floor((containerWidth - RIGHT_MARGIN) / CELL_WIDTH))
+
+  let bestX = targetX
+  let bestY = targetY
+  let minDistance = Number.MAX_VALUE
+
+  for (let col = 0; col < maxCols; col++) {
+    for (let row = 0; row < maxRows; row++) {
+      const x = containerWidth - RIGHT_MARGIN - CELL_WIDTH - col * CELL_WIDTH
+      const y = TOP_MARGIN + row * CELL_HEIGHT
+
+      if (x < 10 || y < TOP_MARGIN || y > containerHeight - CELL_HEIGHT - 60) continue
+      if (isOverlappingWidgetsArea(x, y)) continue
+
+      const key = `${Math.round(x)},${Math.round(y)}`
+      if (occupiedCells.has(key)) continue
+
+      const dist = (x - targetX) ** 2 + (y - targetY) ** 2
+      if (dist < minDistance) {
+        minDistance = dist
+        bestX = x
+        bestY = y
+      }
+    }
+  }
+
+  return { x: bestX, y: bestY }
+}
+
+const sanitizeIconPositions = (
+  positions: Record<string, { x: number; y: number }>,
+  containerWidth: number,
+  containerHeight: number,
+  apps: DesktopAppDefinition[]
+): Record<string, { x: number; y: number }> => {
+  const clean: Record<string, { x: number; y: number }> = {}
+  const occupiedCells = new Set<string>()
+
+  apps.forEach((app) => {
+    const raw = positions[app.id] || { x: containerWidth - 120, y: TOP_MARGIN }
+    const colFromRight = Math.max(0, Math.round((containerWidth - RIGHT_MARGIN - CELL_WIDTH - raw.x) / CELL_WIDTH))
+    const rowFromTop = Math.max(0, Math.round((raw.y - TOP_MARGIN) / CELL_HEIGHT))
+
+    let snappedX = containerWidth - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH
+    let snappedY = TOP_MARGIN + rowFromTop * CELL_HEIGHT
+
+    snappedX = Math.max(10, Math.min(containerWidth - CELL_WIDTH, snappedX))
+    snappedY = Math.max(TOP_MARGIN, Math.min(containerHeight - CELL_HEIGHT - 60, snappedY))
+
+    const cellKey = `${Math.round(snappedX)},${Math.round(snappedY)}`
+
+    if (!isOverlappingWidgetsArea(snappedX, snappedY) && !occupiedCells.has(cellKey)) {
+      clean[app.id] = { x: snappedX, y: snappedY }
+      occupiedCells.add(cellKey)
+    } else {
+      const best = findNearestValidGridPosition(snappedX, snappedY, occupiedCells, containerWidth, containerHeight)
+      const bestKey = `${Math.round(best.x)},${Math.round(best.y)}`
+      clean[app.id] = best
+      occupiedCells.add(bestKey)
+    }
+  })
+
+  return clean
+}
+
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
   const [minimizedWindows, setMinimizedWindows] = useState<string[]>([])
@@ -241,7 +319,7 @@ export function MacOSDesktop() {
       positions[app.id] = { x: Math.max(10, x), y: Math.max(10, y) }
     })
 
-    return positions
+    return sanitizeIconPositions(positions, containerWidth, containerHeight, apps)
   }, [])
 
   // Initialize, load saved icon positions, and adjust dynamically on window resize
@@ -274,7 +352,7 @@ export function MacOSDesktop() {
               merged[app.id] = defaults[app.id]
             }
           })
-          setIconPositions(merged)
+          setIconPositions(sanitizeIconPositions(merged, width, height, desktopApps))
           return
         } catch {
           // ignore error and fallback to defaults
@@ -308,7 +386,7 @@ export function MacOSDesktop() {
             y: Math.max(TOP_MARGIN, Math.min(maxY, pos.y)),
           }
         })
-        return updated
+        return sanitizeIconPositions(updated, newWidth, newHeight, desktopApps)
       })
     }
 
@@ -326,24 +404,36 @@ export function MacOSDesktop() {
     }
   }, [])
 
-  // Snap an icon to grid on drag end
+  // Snap an icon to grid on drag end, avoiding widgets and swapping positions on collision like macOS
   const handleIconDragEnd = useCallback((id: string, rawX: number, rawY: number) => {
     const width = window.innerWidth
     const height = window.innerHeight
     const colFromRight = Math.max(0, Math.round((width - RIGHT_MARGIN - CELL_WIDTH - rawX) / CELL_WIDTH))
     const rowFromTop = Math.max(0, Math.round((rawY - TOP_MARGIN) / CELL_HEIGHT))
 
-    const snappedX = width - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH
-    const snappedY = TOP_MARGIN + rowFromTop * CELL_HEIGHT
+    const snappedX = Math.max(10, Math.min(width - CELL_WIDTH, width - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH))
+    const snappedY = Math.max(TOP_MARGIN, Math.min(height - CELL_HEIGHT - 60, TOP_MARGIN + rowFromTop * CELL_HEIGHT))
 
-    savePositionsToStorage({
-      ...iconPositions,
-      [id]: {
-        x: Math.max(10, Math.min(width - CELL_WIDTH, snappedX)),
-        y: Math.max(TOP_MARGIN, Math.min(height - CELL_HEIGHT - 60, snappedY)),
-      },
-    })
-  }, [iconPositions, savePositionsToStorage])
+    const currentPos = iconPositions[id] || { x: snappedX, y: snappedY }
+    const updated = { ...iconPositions }
+
+    // If target cell is occupied by another icon and not inside widget area, swap positions macOS-style
+    if (!isOverlappingWidgetsArea(snappedX, snappedY)) {
+      const occupantId = Object.keys(iconPositions).find((otherId) => {
+        if (otherId === id) return false
+        const p = iconPositions[otherId]
+        return p && Math.abs(p.x - snappedX) < 40 && Math.abs(p.y - snappedY) < 40
+      })
+
+      if (occupantId) {
+        updated[occupantId] = currentPos
+      }
+    }
+
+    updated[id] = { x: snappedX, y: snappedY }
+
+    savePositionsToStorage(sanitizeIconPositions(updated, width, height, desktopApps))
+  }, [desktopApps, iconPositions, savePositionsToStorage])
 
   // Clean up icons to macOS clean right-aligned grid
   const handleCleanUp = useCallback(() => {

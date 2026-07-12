@@ -39,6 +39,9 @@ interface AppItem {
   url?: string
 }
 
+const RESUME_DRIVE_URL =
+  "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link"
+
 export function FinderApp({ onOpenApp }: FinderAppProps) {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
@@ -349,6 +352,10 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
     }
   }
 
+  const handleResumeClick = () => {
+    window.open(RESUME_DRIVE_URL, "_blank")
+  }
+
   const renderSidebarItem = (
     id: FinderTab,
     label: string,
@@ -589,6 +596,9 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                         onClick={(e) => {
                           e.stopPropagation()
                           setSelectedItemId(app.id)
+                          if (isMobile) {
+                            handleAppClick(app)
+                          }
                         }}
                         onDoubleClick={(e) => {
                           e.stopPropagation()
@@ -638,6 +648,9 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                           onClick={(e) => {
                             e.stopPropagation()
                             setSelectedItemId(app.id)
+                            if (isMobile) {
+                              handleAppClick(app)
+                            }
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation()
@@ -700,13 +713,13 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedItemId("resume-doc")
+                      if (isMobile) {
+                        handleResumeClick()
+                      }
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
-                      window.open(
-                        "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
-                        "_blank"
-                      )
+                      handleResumeClick()
                     }}
                     className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
                       selectedItemId === "resume-doc"
@@ -745,13 +758,13 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedItemId("resume-doc")
+                      if (isMobile) {
+                        handleResumeClick()
+                      }
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
-                      window.open(
-                        "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
-                        "_blank"
-                      )
+                      handleResumeClick()
                     }}
                     className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
                       selectedItemId === "resume-doc"
@@ -854,13 +867,13 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedItemId("resume-dl")
+                      if (isMobile) {
+                        handleResumeClick()
+                      }
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
-                      window.open(
-                        "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
-                        "_blank"
-                      )
+                      handleResumeClick()
                     }}
                     className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
                       selectedItemId === "resume-dl"
@@ -899,13 +912,13 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedItemId("resume-dl")
+                      if (isMobile) {
+                        handleResumeClick()
+                      }
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
-                      window.open(
-                        "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
-                        "_blank"
-                      )
+                      handleResumeClick()
                     }}
                     className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
                       selectedItemId === "resume-dl"

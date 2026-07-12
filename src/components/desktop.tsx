@@ -50,7 +50,7 @@ import { Widgets } from "@/components/widgets"
 
 const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
 const ICON_POSITIONS_STORAGE_KEY = "macos_desktop_icon_positions"
-const MOBILE_WELCOME_TIMEOUT_MS = 9000
+const WELCOME_TIMEOUT_MS = 10000
 
 type WelcomeNotificationExit = "right" | "left" | "up" | "pop-open" | "pop-close"
 
@@ -483,14 +483,14 @@ export function MacOSDesktop() {
   }, [])
 
   useEffect(() => {
-    if (!showWelcomeNotification || !isMobile || isLocked || isLoading || isShuttingDown) {
+    if (!showWelcomeNotification || isLocked || isLoading || isShuttingDown) {
       return
     }
 
     const timer = setTimeout(() => {
-      setWelcomeNotificationExit("up")
+      setWelcomeNotificationExit(isMobile ? "up" : "right")
       setShowWelcomeNotification(false)
-    }, MOBILE_WELCOME_TIMEOUT_MS)
+    }, WELCOME_TIMEOUT_MS)
 
     return () => clearTimeout(timer)
   }, [isLoading, isLocked, isMobile, isShuttingDown, showWelcomeNotification])

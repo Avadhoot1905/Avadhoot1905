@@ -489,6 +489,27 @@ export function MacOSDesktop() {
   }, [])
 
   const openOrActivateWindow = useCallback((appId: string, params?: { filter?: string; command?: string }) => {
+    if (appId === "gmail") {
+      window.open("mailto:arcsmo19@gmail.com", "_blank")
+      return
+    }
+    if (appId === "linkedin") {
+      window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank")
+      return
+    }
+    if (appId === "github") {
+      window.open("https://github.com/Avadhoot1905", "_blank")
+      return
+    }
+    if (appId === "leetcode") {
+      window.open("https://leetcode.com/u/arcsmo19/", "_blank")
+      return
+    }
+    if (appId === "medium") {
+      window.open("https://medium.com/@arcsmo19", "_blank")
+      return
+    }
+
     if (appId === 'projects' && params?.filter) {
       setProjectsFilter(params.filter)
     }
@@ -870,10 +891,10 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("finder")}
                   onMinimize={() => minimizeWindow("finder")}
                   isMinimized={minimizedWindows.includes("finder")}
-                  initialPosition={{ x: 100, y: 100 }}
-                  initialSize={{ width: 600, height: 400 }}
+                  initialPosition={{ x: 80, y: 60 }}
+                  initialSize={{ width: 860, height: 560 }}
                 >
-                  <FinderApp />
+                  <FinderApp onOpenApp={(id) => openOrActivateWindow(id)} />
                 </Window>
               )}
 

@@ -99,16 +99,26 @@ export function Window({
   }, [isFullScreen, position, size, initialPosition, initialSize])
 
   useEffect(() => {
-    if (!isFullScreen) return
     const handleResize = () => {
-      setSize({
-        width: window.innerWidth,
-        height: window.innerHeight - 36,
-      })
+      if (isFullScreen) {
+        setSize({
+          width: window.innerWidth,
+          height: window.innerHeight - 36,
+        })
+      } else {
+        setSize((prev) => ({
+          width: Math.min(prev.width, window.innerWidth - 20),
+          height: Math.min(prev.height, window.innerHeight - 60),
+        }))
+        setPosition((prev) => ({
+          x: Math.max(0, Math.min(prev.x, window.innerWidth - Math.min(size.width, window.innerWidth - 20))),
+          y: Math.max(36, Math.min(prev.y, window.innerHeight - 80)),
+        }))
+      }
     }
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [isFullScreen])
+  }, [isFullScreen, size.width])
 
   // Handle drag to dismiss on mobile
   const handleDragEnd = (_event: unknown, info: { offset: { y: number } }) => {

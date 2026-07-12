@@ -244,13 +244,16 @@ export function MacOSDesktop() {
     return positions
   }, [])
 
-  // Initialize or load saved icon positions
+  // Initialize, load saved icon positions, and adjust dynamically on window resize
+  const prevSizeRef = useRef({ width: 0, height: 0 })
+
   useEffect(() => {
     if (typeof window === "undefined") return
 
     const updateLayout = () => {
       const width = window.innerWidth
       const height = window.innerHeight
+      prevSizeRef.current = { width, height }
       const defaults = computeDefaultPositions(width, height, desktopApps)
 
       const savedJson = localStorage.getItem(ICON_POSITIONS_STORAGE_KEY)
@@ -280,7 +283,38 @@ export function MacOSDesktop() {
       setIconPositions(defaults)
     }
 
+    const handleResize = () => {
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
+      const prevWidth = prevSizeRef.current.width || newWidth
+      const deltaX = newWidth - prevWidth
+
+      prevSizeRef.current = { width: newWidth, height: newHeight }
+
+      setIconPositions((prev) => {
+        const defaults = computeDefaultPositions(newWidth, newHeight, desktopApps)
+        const updated: Record<string, { x: number; y: number }> = {}
+        desktopApps.forEach((app) => {
+          const pos = prev[app.id] || defaults[app.id]
+          let newX = pos.x
+          // Keep right-aligned icons anchored to the right edge of the viewport
+          if (pos.x > prevWidth * 0.45 && deltaX !== 0) {
+            newX = pos.x + deltaX
+          }
+          const maxX = Math.max(10, newWidth - CELL_WIDTH)
+          const maxY = Math.max(TOP_MARGIN, newHeight - CELL_HEIGHT - 60)
+          updated[app.id] = {
+            x: Math.max(10, Math.min(maxX, newX)),
+            y: Math.max(TOP_MARGIN, Math.min(maxY, pos.y)),
+          }
+        })
+        return updated
+      })
+    }
+
     updateLayout()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [computeDefaultPositions, desktopApps])
 
   const savePositionsToStorage = useCallback((newPos: Record<string, { x: number; y: number }>) => {

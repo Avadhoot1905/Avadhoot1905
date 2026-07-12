@@ -6,14 +6,14 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaTimes } from "react-icons/fa"
 
-type PhotoItem = {
+export type PhotoItem = {
   src: string
   alt: string
 }
 
-type AlbumMap = Record<string, PhotoItem[]>
+export type AlbumMap = Record<string, PhotoItem[]>
 
-const albumImages: AlbumMap = {
+export const albumImages: AlbumMap = {
   camera: [
     { src: "/assets/images/camera/acm_merch.jpeg", alt: "Acm Merch" },
     { src: "/assets/images/camera/acm_ocs.jpeg", alt: "Acm Ocs" },

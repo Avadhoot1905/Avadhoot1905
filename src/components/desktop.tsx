@@ -184,6 +184,84 @@ interface DesktopAppDefinition {
   icon: React.ReactElement
 }
 
+const isOverlappingWidgetsArea = (x: number, y: number): boolean => {
+  return x < 410 && y < 250
+}
+
+const findNearestValidGridPosition = (
+  targetX: number,
+  targetY: number,
+  occupiedCells: Set<string>,
+  containerWidth: number,
+  containerHeight: number
+): { x: number; y: number } => {
+  const availHeight = Math.max(300, containerHeight - 120)
+  const maxRows = Math.max(1, Math.floor(availHeight / CELL_HEIGHT))
+  const maxCols = Math.max(1, Math.floor((containerWidth - RIGHT_MARGIN) / CELL_WIDTH))
+
+  let bestX = targetX
+  let bestY = targetY
+  let minDistance = Number.MAX_VALUE
+
+  for (let col = 0; col < maxCols; col++) {
+    for (let row = 0; row < maxRows; row++) {
+      const x = containerWidth - RIGHT_MARGIN - CELL_WIDTH - col * CELL_WIDTH
+      const y = TOP_MARGIN + row * CELL_HEIGHT
+
+      if (x < 10 || y < TOP_MARGIN || y > containerHeight - CELL_HEIGHT - 60) continue
+      if (isOverlappingWidgetsArea(x, y)) continue
+
+      const key = `${Math.round(x)},${Math.round(y)}`
+      if (occupiedCells.has(key)) continue
+
+      const dist = (x - targetX) ** 2 + (y - targetY) ** 2
+      if (dist < minDistance) {
+        minDistance = dist
+        bestX = x
+        bestY = y
+      }
+    }
+  }
+
+  return { x: bestX, y: bestY }
+}
+
+const sanitizeIconPositions = (
+  positions: Record<string, { x: number; y: number }>,
+  containerWidth: number,
+  containerHeight: number,
+  apps: DesktopAppDefinition[]
+): Record<string, { x: number; y: number }> => {
+  const clean: Record<string, { x: number; y: number }> = {}
+  const occupiedCells = new Set<string>()
+
+  apps.forEach((app) => {
+    const raw = positions[app.id] || { x: containerWidth - 120, y: TOP_MARGIN }
+    const colFromRight = Math.max(0, Math.round((containerWidth - RIGHT_MARGIN - CELL_WIDTH - raw.x) / CELL_WIDTH))
+    const rowFromTop = Math.max(0, Math.round((raw.y - TOP_MARGIN) / CELL_HEIGHT))
+
+    let snappedX = containerWidth - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH
+    let snappedY = TOP_MARGIN + rowFromTop * CELL_HEIGHT
+
+    snappedX = Math.max(10, Math.min(containerWidth - CELL_WIDTH, snappedX))
+    snappedY = Math.max(TOP_MARGIN, Math.min(containerHeight - CELL_HEIGHT - 60, snappedY))
+
+    const cellKey = `${Math.round(snappedX)},${Math.round(snappedY)}`
+
+    if (!isOverlappingWidgetsArea(snappedX, snappedY) && !occupiedCells.has(cellKey)) {
+      clean[app.id] = { x: snappedX, y: snappedY }
+      occupiedCells.add(cellKey)
+    } else {
+      const best = findNearestValidGridPosition(snappedX, snappedY, occupiedCells, containerWidth, containerHeight)
+      const bestKey = `${Math.round(best.x)},${Math.round(best.y)}`
+      clean[app.id] = best
+      occupiedCells.add(bestKey)
+    }
+  })
+
+  return clean
+}
+
 export function MacOSDesktop() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
   const [minimizedWindows, setMinimizedWindows] = useState<string[]>([])
@@ -241,16 +319,19 @@ export function MacOSDesktop() {
       positions[app.id] = { x: Math.max(10, x), y: Math.max(10, y) }
     })
 
-    return positions
+    return sanitizeIconPositions(positions, containerWidth, containerHeight, apps)
   }, [])
 
-  // Initialize or load saved icon positions
+  // Initialize, load saved icon positions, and adjust dynamically on window resize
+  const prevSizeRef = useRef({ width: 0, height: 0 })
+
   useEffect(() => {
     if (typeof window === "undefined") return
 
     const updateLayout = () => {
       const width = window.innerWidth
       const height = window.innerHeight
+      prevSizeRef.current = { width, height }
       const defaults = computeDefaultPositions(width, height, desktopApps)
 
       const savedJson = localStorage.getItem(ICON_POSITIONS_STORAGE_KEY)
@@ -271,7 +352,7 @@ export function MacOSDesktop() {
               merged[app.id] = defaults[app.id]
             }
           })
-          setIconPositions(merged)
+          setIconPositions(sanitizeIconPositions(merged, width, height, desktopApps))
           return
         } catch {
           // ignore error and fallback to defaults
@@ -280,7 +361,38 @@ export function MacOSDesktop() {
       setIconPositions(defaults)
     }
 
+    const handleResize = () => {
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
+      const prevWidth = prevSizeRef.current.width || newWidth
+      const deltaX = newWidth - prevWidth
+
+      prevSizeRef.current = { width: newWidth, height: newHeight }
+
+      setIconPositions((prev) => {
+        const defaults = computeDefaultPositions(newWidth, newHeight, desktopApps)
+        const updated: Record<string, { x: number; y: number }> = {}
+        desktopApps.forEach((app) => {
+          const pos = prev[app.id] || defaults[app.id]
+          let newX = pos.x
+          // Keep right-aligned icons anchored to the right edge of the viewport
+          if (pos.x > prevWidth * 0.45 && deltaX !== 0) {
+            newX = pos.x + deltaX
+          }
+          const maxX = Math.max(10, newWidth - CELL_WIDTH)
+          const maxY = Math.max(TOP_MARGIN, newHeight - CELL_HEIGHT - 60)
+          updated[app.id] = {
+            x: Math.max(10, Math.min(maxX, newX)),
+            y: Math.max(TOP_MARGIN, Math.min(maxY, pos.y)),
+          }
+        })
+        return sanitizeIconPositions(updated, newWidth, newHeight, desktopApps)
+      })
+    }
+
     updateLayout()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [computeDefaultPositions, desktopApps])
 
   const savePositionsToStorage = useCallback((newPos: Record<string, { x: number; y: number }>) => {
@@ -292,24 +404,36 @@ export function MacOSDesktop() {
     }
   }, [])
 
-  // Snap an icon to grid on drag end
+  // Snap an icon to grid on drag end, avoiding widgets and swapping positions on collision like macOS
   const handleIconDragEnd = useCallback((id: string, rawX: number, rawY: number) => {
     const width = window.innerWidth
     const height = window.innerHeight
     const colFromRight = Math.max(0, Math.round((width - RIGHT_MARGIN - CELL_WIDTH - rawX) / CELL_WIDTH))
     const rowFromTop = Math.max(0, Math.round((rawY - TOP_MARGIN) / CELL_HEIGHT))
 
-    const snappedX = width - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH
-    const snappedY = TOP_MARGIN + rowFromTop * CELL_HEIGHT
+    const snappedX = Math.max(10, Math.min(width - CELL_WIDTH, width - RIGHT_MARGIN - CELL_WIDTH - colFromRight * CELL_WIDTH))
+    const snappedY = Math.max(TOP_MARGIN, Math.min(height - CELL_HEIGHT - 60, TOP_MARGIN + rowFromTop * CELL_HEIGHT))
 
-    savePositionsToStorage({
-      ...iconPositions,
-      [id]: {
-        x: Math.max(10, Math.min(width - CELL_WIDTH, snappedX)),
-        y: Math.max(TOP_MARGIN, Math.min(height - CELL_HEIGHT - 60, snappedY)),
-      },
-    })
-  }, [iconPositions, savePositionsToStorage])
+    const currentPos = iconPositions[id] || { x: snappedX, y: snappedY }
+    const updated = { ...iconPositions }
+
+    // If target cell is occupied by another icon and not inside widget area, swap positions macOS-style
+    if (!isOverlappingWidgetsArea(snappedX, snappedY)) {
+      const occupantId = Object.keys(iconPositions).find((otherId) => {
+        if (otherId === id) return false
+        const p = iconPositions[otherId]
+        return p && Math.abs(p.x - snappedX) < 40 && Math.abs(p.y - snappedY) < 40
+      })
+
+      if (occupantId) {
+        updated[occupantId] = currentPos
+      }
+    }
+
+    updated[id] = { x: snappedX, y: snappedY }
+
+    savePositionsToStorage(sanitizeIconPositions(updated, width, height, desktopApps))
+  }, [desktopApps, iconPositions, savePositionsToStorage])
 
   // Clean up icons to macOS clean right-aligned grid
   const handleCleanUp = useCallback(() => {
@@ -489,6 +613,27 @@ export function MacOSDesktop() {
   }, [])
 
   const openOrActivateWindow = useCallback((appId: string, params?: { filter?: string; command?: string }) => {
+    if (appId === "gmail") {
+      window.open("mailto:arcsmo19@gmail.com", "_blank")
+      return
+    }
+    if (appId === "linkedin") {
+      window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank")
+      return
+    }
+    if (appId === "github") {
+      window.open("https://github.com/Avadhoot1905", "_blank")
+      return
+    }
+    if (appId === "leetcode") {
+      window.open("https://leetcode.com/u/arcsmo19/", "_blank")
+      return
+    }
+    if (appId === "medium") {
+      window.open("https://medium.com/@arcsmo19", "_blank")
+      return
+    }
+
     if (appId === 'projects' && params?.filter) {
       setProjectsFilter(params.filter)
     }
@@ -870,10 +1015,10 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("finder")}
                   onMinimize={() => minimizeWindow("finder")}
                   isMinimized={minimizedWindows.includes("finder")}
-                  initialPosition={{ x: 100, y: 100 }}
-                  initialSize={{ width: 600, height: 400 }}
+                  initialPosition={{ x: 80, y: 60 }}
+                  initialSize={{ width: 860, height: 560 }}
                 >
-                  <FinderApp />
+                  <FinderApp onOpenApp={(id) => openOrActivateWindow(id)} />
                 </Window>
               )}
 
@@ -886,8 +1031,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("safari")}
                   onMinimize={() => minimizeWindow("safari")}
                   isMinimized={minimizedWindows.includes("safari")}
-                  initialPosition={{ x: 150, y: 150 }}
-                  initialSize={{ width: 800, height: 600 }}
+                  initialPosition={{ x: 120, y: 80 }}
+                  initialSize={{ width: 960, height: 680 }}
                 >
                   <SafariApp />
                 </Window>
@@ -928,14 +1073,14 @@ export function MacOSDesktop() {
               {openWindows.includes("about") && (
                 <Window
                   key="about"
-                  title="About Me"
+                  title="Contacts - About Me"
                   isActive={activeWindow === "about"}
                   onActivate={() => activateWindow("about")}
                   onClose={() => toggleWindow("about")}
                   onMinimize={() => minimizeWindow("about")}
                   isMinimized={minimizedWindows.includes("about")}
-                  initialPosition={{ x: 50, y: 80 }}
-                  initialSize={{ width: 650, height: 680 }}
+                  initialPosition={{ x: 70, y: 60 }}
+                  initialSize={{ width: 840, height: 630 }}
                 >
                   <AboutApp onOpenApp={openOrActivateWindow} />
                 </Window>
@@ -950,8 +1095,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("projects")}
                   onMinimize={() => minimizeWindow("projects")}
                   isMinimized={minimizedWindows.includes("projects")}
-                  initialPosition={{ x: 200, y: 120 }}
-                  initialSize={{ width: 700, height: 550 }}
+                  initialPosition={{ x: 80, y: 50 }}
+                  initialSize={{ width: 940, height: 640 }}
                 >
                   <ProjectsApp initialFilter={projectsFilter} />
                 </Window>
@@ -982,8 +1127,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("education")}
                   onMinimize={() => minimizeWindow("education")}
                   isMinimized={minimizedWindows.includes("education")}
-                  initialPosition={{ x: 180, y: 140 }}
-                  initialSize={{ width: 750, height: 600 }}
+                  initialPosition={{ x: 70, y: 110 }}
+                  initialSize={{ width: 960, height: 680 }}
                 >
                   <EducationApp />
                 </Window>
@@ -992,14 +1137,14 @@ export function MacOSDesktop() {
               {openWindows.includes("experience") && (
                 <Window
                   key="experience"
-                  title="Experience"
+                  title="Mail — Experiences"
                   isActive={activeWindow === "experience"}
                   onActivate={() => activateWindow("experience")}
                   onClose={() => toggleWindow("experience")}
                   onMinimize={() => minimizeWindow("experience")}
                   isMinimized={minimizedWindows.includes("experience")}
-                  initialPosition={{ x: 220, y: 160 }}
-                  initialSize={{ width: 1000, height: 550 }}
+                  initialPosition={{ x: 100, y: 70 }}
+                  initialSize={{ width: 1150, height: 680 }}
                 >
                   <ExperienceApp />
                 </Window>
@@ -1066,7 +1211,7 @@ export function MacOSDesktop() {
                   onMinimize={() => minimizeWindow("terminal")}
                   isMinimized={minimizedWindows.includes("terminal")}
                   initialPosition={{ x: 720, y: 80 }}
-                  initialSize={{ width: 650, height: 600 }}
+                  initialSize={{ width: 700, height: 550 }}
                 >
                   <TerminalApp
                     onClose={() => {

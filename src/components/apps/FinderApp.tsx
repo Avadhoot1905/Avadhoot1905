@@ -48,6 +48,7 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
   const [history, setHistory] = useState<FinderTab[]>(["applications"])
   const [historyIndex, setHistoryIndex] = useState(0)
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoItem | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -66,6 +67,7 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
     setHistoryIndex(nextHistory.length - 1)
     setActiveTab(tab)
     setSearchQuery("")
+    setSelectedItemId(null)
   }
 
   const goBack = () => {
@@ -73,6 +75,7 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
       setHistoryIndex(historyIndex - 1)
       setActiveTab(history[historyIndex - 1])
       setSearchQuery("")
+      setSelectedItemId(null)
     }
   }
 
@@ -81,6 +84,7 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
       setHistoryIndex(historyIndex + 1)
       setActiveTab(history[historyIndex + 1])
       setSearchQuery("")
+      setSelectedItemId(null)
     }
   }
 
@@ -562,7 +566,10 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
         )}
 
         {/* Content View Area */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div
+          className="flex-1 overflow-y-auto p-4"
+          onClick={() => setSelectedItemId(null)}
+        >
           {/* Applications Tab Content */}
           {activeTab === "applications" && (
             <>
@@ -574,24 +581,42 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                       : "grid-cols-4 sm:grid-cols-5 md:grid-cols-6"
                   }`}
                 >
-                  {filteredApplications.map((app) => (
-                    <div
-                      key={app.id}
-                      onClick={() => handleAppClick(app)}
-                      className={`group flex flex-col items-center justify-start rounded-xl p-2.5 cursor-pointer transition-all duration-150 ${
-                        theme === "dark"
-                          ? "hover:bg-white/10"
-                          : "hover:bg-black/5"
-                      }`}
-                    >
-                      <div className="flex h-14 w-14 items-center justify-center transition-transform duration-200 group-hover:scale-105">
-                        {app.icon}
+                  {filteredApplications.map((app) => {
+                    const isSelected = selectedItemId === app.id
+                    return (
+                      <div
+                        key={app.id}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedItemId(app.id)
+                        }}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation()
+                          handleAppClick(app)
+                        }}
+                        className={`group flex flex-col items-center justify-start rounded-xl p-2.5 cursor-pointer transition-all duration-150 ${
+                          isSelected
+                            ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
+                            : theme === "dark"
+                              ? "border border-transparent hover:bg-white/10"
+                              : "border border-transparent hover:bg-black/5"
+                        }`}
+                      >
+                        <div className="flex h-14 w-14 items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                          {app.icon}
+                        </div>
+                        <div
+                          className={`mt-2 text-center text-xs font-medium leading-tight line-clamp-1 rounded px-1.5 py-0.5 ${
+                            isSelected
+                              ? "bg-blue-500 text-white"
+                              : ""
+                          }`}
+                        >
+                          {app.name}
+                        </div>
                       </div>
-                      <div className="mt-2 text-center text-xs font-medium leading-tight line-clamp-1">
-                        {app.name}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="w-full">
@@ -605,32 +630,57 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     <div className="col-span-2 text-right">Action</div>
                   </div>
                   <div className="divide-y divide-gray-200/20">
-                    {filteredApplications.map((app) => (
-                      <div
-                        key={app.id}
-                        onClick={() => handleAppClick(app)}
-                        className={`grid grid-cols-12 items-center py-2 px-1 rounded-md cursor-pointer text-xs transition-colors ${
-                          theme === "dark"
-                            ? "hover:bg-white/10"
-                            : "hover:bg-black/5"
-                        }`}
-                      >
-                        <div className="col-span-6 flex items-center space-x-3">
-                          <div className="h-6 w-6 flex items-center justify-center shrink-0">
-                            {app.icon}
+                    {filteredApplications.map((app) => {
+                      const isSelected = selectedItemId === app.id
+                      return (
+                        <div
+                          key={app.id}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedItemId(app.id)
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation()
+                            handleAppClick(app)
+                          }}
+                          className={`grid grid-cols-12 items-center py-2 px-1.5 rounded-md cursor-pointer text-xs transition-colors ${
+                            isSelected
+                              ? "bg-blue-500 text-white"
+                              : theme === "dark"
+                                ? "hover:bg-white/10"
+                                : "hover:bg-black/5"
+                          }`}
+                        >
+                          <div className="col-span-6 flex items-center space-x-3">
+                            <div className="h-6 w-6 flex items-center justify-center shrink-0">
+                              {app.icon}
+                            </div>
+                            <span className="font-medium">{app.name}</span>
                           </div>
-                          <span className="font-medium">{app.name}</span>
+                          <div
+                            className={`col-span-4 ${
+                              isSelected ? "text-blue-100" : "text-gray-400"
+                            }`}
+                          >
+                            {app.kind}
+                          </div>
+                          <div className="col-span-2 text-right">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAppClick(app)
+                              }}
+                              className={`text-[11px] hover:underline font-medium ${
+                                isSelected ? "text-white" : "text-blue-500"
+                              }`}
+                            >
+                              Open
+                            </button>
+                          </div>
                         </div>
-                        <div className="col-span-4 text-gray-400">
-                          {app.kind}
-                        </div>
-                        <div className="col-span-2 text-right">
-                          <span className="text-[11px] text-blue-500 hover:underline">
-                            Open
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -647,22 +697,37 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                   }`}
                 >
                   <div
-                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
-                      theme === "dark"
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/5"
-                    }`}
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedItemId("resume-doc")
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
                       window.open(
                         "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
                         "_blank"
                       )
-                    }
+                    }}
+                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
+                      selectedItemId === "resume-doc"
+                        ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
+                        : theme === "dark"
+                          ? "border border-transparent hover:bg-white/10"
+                          : "border border-transparent hover:bg-black/5"
+                    }`}
                   >
                     <div className="h-16 w-16 rounded-xl flex items-center justify-center bg-red-500/10 transition-transform duration-200 group-hover:scale-105">
                       <FaFilePdf className="text-4xl text-red-500" />
                     </div>
-                    <div className="mt-2 text-xs font-medium">Resume.pdf</div>
+                    <div
+                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${
+                        selectedItemId === "resume-doc"
+                          ? "bg-blue-500 text-white"
+                          : ""
+                      }`}
+                    >
+                      Resume.pdf
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -677,24 +742,45 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     <div className="col-span-2 text-right">Size</div>
                   </div>
                   <div
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedItemId("resume-doc")
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
                       window.open(
                         "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
                         "_blank"
                       )
-                    }
+                    }}
                     className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
-                      theme === "dark"
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/5"
+                      selectedItemId === "resume-doc"
+                        ? "bg-blue-500 text-white"
+                        : theme === "dark"
+                          ? "hover:bg-white/10"
+                          : "hover:bg-black/5"
                     }`}
                   >
                     <div className="col-span-6 flex items-center space-x-3">
                       <FaFilePdf className="text-lg text-red-500 shrink-0" />
                       <span className="font-medium">Resume.pdf</span>
                     </div>
-                    <div className="col-span-4 text-gray-400">PDF Document</div>
-                    <div className="col-span-2 text-right text-gray-400">
+                    <div
+                      className={`col-span-4 ${
+                        selectedItemId === "resume-doc"
+                          ? "text-blue-100"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      PDF Document
+                    </div>
+                    <div
+                      className={`col-span-2 text-right ${
+                        selectedItemId === "resume-doc"
+                          ? "text-blue-100"
+                          : "text-gray-400"
+                      }`}
+                    >
                       2.4 MB
                     </div>
                   </div>
@@ -713,28 +799,44 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"
                 }`}
               >
-                {filteredPhotos.map((photo, index) => (
-                  <div
-                    key={index}
-                    onClick={() => setSelectedPhoto(photo)}
-                    className={`group flex flex-col rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 ${
-                      theme === "dark"
-                        ? "border-gray-700/70 bg-[#252526] hover:border-blue-500/50"
-                        : "border-gray-200 bg-white hover:border-blue-500/50"
-                    }`}
-                  >
-                    <div className="relative aspect-square w-full overflow-hidden bg-gray-900/10">
-                      <img
-                        src={photo.src}
-                        alt={photo.alt}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
+                {filteredPhotos.map((photo, index) => {
+                  const isSelected = selectedItemId === photo.src
+                  return (
+                    <div
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedItemId(photo.src)
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedPhoto(photo)
+                      }}
+                      className={`group flex flex-col rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? "border-blue-500 ring-2 ring-blue-500 shadow-md bg-blue-500/10"
+                          : theme === "dark"
+                            ? "border-gray-700/70 bg-[#252526] hover:border-blue-500/50"
+                            : "border-gray-200 bg-white hover:border-blue-500/50"
+                      }`}
+                    >
+                      <div className="relative aspect-square w-full overflow-hidden bg-gray-900/10">
+                        <img
+                          src={photo.src}
+                          alt={photo.alt}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div
+                        className={`p-2 text-center text-xs font-medium truncate ${
+                          isSelected ? "bg-blue-500 text-white" : ""
+                        }`}
+                      >
+                        {photo.alt}
+                      </div>
                     </div>
-                    <div className="p-2 text-center text-xs font-medium truncate">
-                      {photo.alt}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
@@ -749,22 +851,37 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                   }`}
                 >
                   <div
-                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
-                      theme === "dark"
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/5"
-                    }`}
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedItemId("resume-dl")
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
                       window.open(
                         "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
                         "_blank"
                       )
-                    }
+                    }}
+                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
+                      selectedItemId === "resume-dl"
+                        ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
+                        : theme === "dark"
+                          ? "border border-transparent hover:bg-white/10"
+                          : "border border-transparent hover:bg-black/5"
+                    }`}
                   >
                     <div className="h-16 w-16 rounded-xl flex items-center justify-center bg-red-500/10 transition-transform duration-200 group-hover:scale-105">
                       <FaFilePdf className="text-4xl text-red-500" />
                     </div>
-                    <div className="mt-2 text-xs font-medium">Resume.pdf</div>
+                    <div
+                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${
+                        selectedItemId === "resume-dl"
+                          ? "bg-blue-500 text-white"
+                          : ""
+                      }`}
+                    >
+                      Resume.pdf
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -779,24 +896,45 @@ export function FinderApp({ onOpenApp }: FinderAppProps) {
                     <div className="col-span-2 text-right">Size</div>
                   </div>
                   <div
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedItemId("resume-dl")
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
                       window.open(
                         "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link",
                         "_blank"
                       )
-                    }
+                    }}
                     className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
-                      theme === "dark"
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/5"
+                      selectedItemId === "resume-dl"
+                        ? "bg-blue-500 text-white"
+                        : theme === "dark"
+                          ? "hover:bg-white/10"
+                          : "hover:bg-black/5"
                     }`}
                   >
                     <div className="col-span-6 flex items-center space-x-3">
                       <FaFilePdf className="text-lg text-red-500 shrink-0" />
                       <span className="font-medium">Resume.pdf</span>
                     </div>
-                    <div className="col-span-4 text-gray-400">PDF Document</div>
-                    <div className="col-span-2 text-right text-gray-400">
+                    <div
+                      className={`col-span-4 ${
+                        selectedItemId === "resume-dl"
+                          ? "text-blue-100"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      PDF Document
+                    </div>
+                    <div
+                      className={`col-span-2 text-right ${
+                        selectedItemId === "resume-dl"
+                          ? "text-blue-100"
+                          : "text-gray-400"
+                      }`}
+                    >
                       2.4 MB
                     </div>
                   </div>

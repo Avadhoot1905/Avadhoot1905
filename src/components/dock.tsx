@@ -229,10 +229,10 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
       // Proximity boundary check around dock
       const inDockZone =
-        mx >= dockRect.left - 40 &&
-        mx <= dockRect.right + 40 &&
-        my >= dockRect.top - 90 &&
-        my <= window.innerHeight + 20
+        mx >= dockRect.left &&
+        mx <= dockRect.right &&
+        my >= dockRect.top &&
+        my <= window.innerHeight
 
       if (inDockZone) {
         wasInDockRef.current = true

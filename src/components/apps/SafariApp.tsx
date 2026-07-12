@@ -358,10 +358,10 @@ export function SafariApp() {
           <div className="flex items-center space-x-2 min-w-0 flex-1 truncate">
             <FaLock className="h-3 w-3 text-emerald-500 shrink-0" />
             <div className="truncate text-xs sm:text-sm">
-              <span className="font-semibold text-foreground">
+              <span className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
                 {currentTabInfo.domain}
               </span>
-              <span className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+              <span className={`truncate ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                 {currentTabInfo.path}
               </span>
             </div>
@@ -443,7 +443,7 @@ export function SafariApp() {
           const tabConfig = {
             github: { label: "GitHub Profile", icon: SiGithub, color: isDark ? "text-white" : "text-gray-800" },
             linkedin: { label: "LinkedIn", icon: SiLinkedin, color: "text-[#0A84FF]" },
-            leetcode: { label: "LeetCode", icon: SiLeetcode, color: "text-[#FF9F0A]" },
+            leetcode: { label: "LeetCode", icon: SiLeetcode, color: isDark ? "text-[#FF9F0A]" : "text-amber-600" },
             medium: { label: "Medium Articles", icon: SiMedium, color: isDark ? "text-white" : "text-gray-800" },
           }[tabId]
           const TabIcon = tabConfig.icon
@@ -516,7 +516,7 @@ export function SafariApp() {
                     className="w-32 h-32 rounded-full border-4 border-gray-200 dark:border-gray-700"
                   />
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold mb-2">{githubUser.name}</h1>
+                    <h1 className={`text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>{githubUser.name}</h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400 mb-3">@{githubUser.login}</p>
                     <p className="text-gray-700 dark:text-gray-300 mb-4">{githubUser.bio}</p>
                     <div className="flex items-center space-x-6 text-sm">
@@ -544,7 +544,7 @@ export function SafariApp() {
 
                 {/* Repositories */}
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">Popular Repositories</h2>
+                  <h2 className={`text-2xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Popular Repositories</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {githubRepos.map(repo => (
                       <a
@@ -642,7 +642,7 @@ export function SafariApp() {
                   <div className="w-24 h-24 mx-auto rounded-full bg-orange-500 flex items-center justify-center mb-4">
                     <SiLeetcode className="text-5xl text-white" />
                   </div>
-                  <h1 className="text-3xl font-bold mb-2">LeetCode Stats</h1>
+                  <h1 className={`text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>LeetCode Stats</h1>
                   <p className="text-gray-600 dark:text-gray-400">@arcsmo19</p>
                 </div>
 
@@ -676,7 +676,7 @@ export function SafariApp() {
 
                 {/* Recent Submissions */}
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">Recently Solved Problems</h2>
+                  <h2 className={`text-2xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Recently Solved Problems</h2>
                   {leetcodeSubmissions.length > 0 ? (
                     <div className="space-y-3">
                       {leetcodeSubmissions.map((submission, index) => (
@@ -757,7 +757,7 @@ export function SafariApp() {
                   <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 ${theme === "dark" ? "bg-white" : "bg-black"}`}>
                     <SiMedium className={`text-5xl ${theme === "dark" ? "text-black" : "text-white"}`} />
                   </div>
-                  <h1 className="text-3xl font-bold mb-2">Latest Articles</h1>
+                  <h1 className={`text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>Latest Articles</h1>
                   <p className="text-gray-600 dark:text-gray-400">@arcsmo19</p>
                 </div>
 
@@ -774,7 +774,7 @@ export function SafariApp() {
                         : "bg-white border-gray-200 hover:border-gray-300"
                         }`}
                     >
-                      <h3 className="text-xl font-semibold mb-2 hover:text-blue-600 dark:hover:text-blue-400">
+                      <h3 className={`text-xl font-semibold mb-2 hover:text-blue-600 dark:hover:text-blue-400 ${isDark ? "text-white" : "text-gray-900"}`}>
                         {article.title}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-500 mb-3">

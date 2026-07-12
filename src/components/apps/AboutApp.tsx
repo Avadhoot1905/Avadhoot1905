@@ -175,7 +175,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
       </div>
 
       {/* Right Pane: Authentic macOS Contact Card Details (Fully Responsive for Phone UI) */}
-      <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 md:p-8">
+      <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 md:p-8 bg-white dark:bg-[#1E1E1E]">
         {/* Mobile Phone Top Header Bar (visible only on phone < md) */}
         <div className="md:hidden mb-4 pb-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -211,7 +211,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                 Avadhoot Ganesh Mahadik
               </h1>
               <p
@@ -233,7 +233,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#30D158] text-white shadow-md group-hover:bg-green-600 transition">
                     <FaCommentDots className="text-sm" />
                   </div>
-                  <span className="text-[11px] font-medium text-foreground">
+                  <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     message
                   </span>
                 </button>
@@ -248,7 +248,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A84FF] text-white shadow-md group-hover:bg-blue-600 transition">
                     <FaTerminal className="text-sm" />
                   </div>
-                  <span className="text-[11px] font-medium text-foreground">
+                  <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     terminal
                   </span>
                 </button>
@@ -272,7 +272,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                       <FaEnvelope className="text-sm" />
                     )}
                   </div>
-                  <span className="text-[11px] font-medium text-foreground">
+                  <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     {copiedEmail ? "copied" : "email"}
                   </span>
                 </button>
@@ -322,10 +322,10 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                 work
               </div>
               <div className="flex-1 text-xs sm:text-sm">
-                <div className="font-semibold text-foreground">
+                <div className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
                   Systems Architect & Backend Engineering
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Computer Science Student • Scalable Systems & APIs
                 </div>
               </div>
@@ -337,10 +337,10 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                 education
               </div>
               <div className="flex-1 text-xs sm:text-sm">
-                <div className="font-semibold text-foreground">
+                <div className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
                   Vellore Institute of Technology (VIT)
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Computer Science & Engineering
                 </div>
               </div>

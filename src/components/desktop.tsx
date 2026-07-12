@@ -1054,7 +1054,7 @@ export function MacOSDesktop() {
                   onMinimize={() => minimizeWindow("experience")}
                   isMinimized={minimizedWindows.includes("experience")}
                   initialPosition={{ x: 100, y: 70 }}
-                  initialSize={{ width: 1040, height: 680 }}
+                  initialSize={{ width: 1150, height: 680 }}
                 >
                   <ExperienceApp />
                 </Window>

@@ -52,7 +52,7 @@ export function EducationApp() {
             <span className="text-xs">Avadhoot&apos;s Workspace</span>
           </div>
           <span className="text-gray-400">/</span>
-          <div className="flex items-center space-x-2 rounded px-2 py-1 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors text-foreground font-medium">
+          <div className={`flex items-center space-x-2 rounded px-2 py-1 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
             <FaGraduationCap className="h-3.5 w-3.5 text-blue-500 shrink-0" />
             <span className="truncate text-xs">Education &amp; Academic Journey</span>
           </div>
@@ -144,7 +144,7 @@ export function EducationApp() {
                 <User className="h-3.5 w-3.5" />
                 <span>Created by</span>
               </div>
-              <div className="col-span-8 sm:col-span-9 flex items-center space-x-2 font-medium text-foreground">
+              <div className={`col-span-8 sm:col-span-9 flex items-center space-x-2 font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
                 <div className="h-5 w-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-500 font-bold">
                   AM
                 </div>
@@ -197,9 +197,11 @@ export function EducationApp() {
               className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeTab === "page"
                   ? isDark
-                    ? "bg-[#2A2A2A] text-white"
-                    : "bg-gray-100 text-gray-900"
-                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    ? "bg-[#2A2A2A] text-white shadow-sm"
+                    : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
+                  : isDark
+                  ? "text-gray-400 hover:text-gray-200 hover:bg-white/5"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               <List className="h-3.5 w-3.5" />
@@ -211,9 +213,11 @@ export function EducationApp() {
               className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeTab === "table"
                   ? isDark
-                    ? "bg-[#2A2A2A] text-white"
-                    : "bg-gray-100 text-gray-900"
-                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    ? "bg-[#2A2A2A] text-white shadow-sm"
+                    : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
+                  : isDark
+                  ? "text-gray-400 hover:text-gray-200 hover:bg-white/5"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               <TableIcon className="h-3.5 w-3.5" />
@@ -331,11 +335,11 @@ export function EducationApp() {
                             </span>
                             <span>
                               Active member of{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 ACM-VIT
                               </strong>{" "}
                               and{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 SEDS-VIT
                               </strong>
                               , contributing to impactful technical products &amp;
@@ -353,11 +357,11 @@ export function EducationApp() {
                             <span>
                               Actively engaged in cultural and fitness activities
                               through{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 Yuva Marathi
                               </strong>{" "}
                               and the{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 Cycling Club
                               </strong>
                               .
@@ -378,15 +382,15 @@ export function EducationApp() {
                             <span>
                               Passionate hackathon participant, having competed
                               and delivered innovative solutions in{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 Yantra&apos;25
                               </strong>
                               ,{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 DevJams
                               </strong>
                               , and the{" "}
-                              <strong className="text-foreground">
+                              <strong className={isDark ? "text-white" : "text-gray-900"}>
                                 Caterpillar Hackathon
                               </strong>
                               .
@@ -546,10 +550,10 @@ export function EducationApp() {
                       <FaUniversity className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                       <span>Vellore Institute of Technology</span>
                     </td>
-                    <td className="py-3 px-3 text-gray-400">
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">
                       B.Tech CSE with Business Systems
                     </td>
-                    <td className="py-3 px-3 text-gray-400">2023 - 2027</td>
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">2023 - 2027</td>
                     <td className="py-3 px-3 font-semibold text-emerald-500">
                       8.38 / 10
                     </td>
@@ -568,10 +572,10 @@ export function EducationApp() {
                       <FaSchool className="h-3.5 w-3.5 text-green-500 shrink-0" />
                       <span>The Deens Academy</span>
                     </td>
-                    <td className="py-3 px-3 text-gray-400">
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">
                       AISSCE Grade 12 (CBSE)
                     </td>
-                    <td className="py-3 px-3 text-gray-400">2021 - 2023</td>
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">2021 - 2023</td>
                     <td className="py-3 px-3 font-semibold text-emerald-500">
                       90.8%
                     </td>
@@ -590,10 +594,10 @@ export function EducationApp() {
                       <FaSchool className="h-3.5 w-3.5 text-green-500 shrink-0" />
                       <span>The Deens Academy</span>
                     </td>
-                    <td className="py-3 px-3 text-gray-400">
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">
                       AISSE Grade 10 (CBSE)
                     </td>
-                    <td className="py-3 px-3 text-gray-400">2019 - 2021</td>
+                    <td className="py-3 px-3 text-gray-600 dark:text-gray-400">2019 - 2021</td>
                     <td className="py-3 px-3 font-semibold text-emerald-500">
                       92.2%
                     </td>

@@ -143,28 +143,25 @@ export function ExperienceApp() {
 
   return (
     <div
-      className={`flex h-full flex-col select-none font-sans overflow-hidden ${
-        isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
-      }`}
+      className={`flex h-full flex-col select-none font-sans overflow-hidden ${isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
+        }`}
     >
       {/* Top macOS Mail Window Toolbar */}
       <div
-        className={`flex h-12 shrink-0 items-center justify-between border-b px-3 sm:px-4 ${
-          isDark
-            ? "border-[#2D2D2D] bg-[#252526]"
-            : "border-[#E5E5E5] bg-[#E8E8ED]"
-        }`}
+        className={`flex h-12 shrink-0 items-center justify-between border-b px-3 sm:px-4 ${isDark
+          ? "border-[#2D2D2D] bg-[#252526]"
+          : "border-[#E5E5E5] bg-[#E8E8ED]"
+          }`}
       >
         {/* Left Toolbar Controls */}
         <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={handleRefresh}
-            className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
-              isDark
-                ? "bg-[#333333] text-gray-200 hover:bg-[#3E3E3E]"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-            }`}
+            className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${isDark
+              ? "bg-[#333333] text-gray-200 hover:bg-[#3E3E3E]"
+              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              }`}
             title="Check for New Experiences"
           >
             <FaRedoAlt
@@ -174,12 +171,11 @@ export function ExperienceApp() {
           </button>
 
           <div
-            className={`hidden sm:flex items-center space-x-1 rounded-md px-2 py-1 text-xs font-medium ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
+            className={`hidden sm:flex items-center space-x-1 rounded-md px-2 py-1 text-xs font-medium ${isDark ? "text-gray-400" : "text-gray-600"
+              }`}
           >
             <FaInbox className="h-3.5 w-3.5 text-[#0A84FF]" />
-            <span>macOS Mailbox • Avadhoot Mahadik</span>
+            <span>Mailbox • Avadhoot Mahadik</span>
           </div>
         </div>
 
@@ -191,11 +187,10 @@ export function ExperienceApp() {
             placeholder="Search experiences, roles, tech..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full rounded-md pl-8 pr-3 py-1 text-xs transition focus:outline-none focus:ring-1 focus:ring-[#0A84FF] border ${
-              isDark
-                ? "bg-[#1A1A1A] border-[#383838] text-white placeholder-gray-500"
-                : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-            }`}
+            className={`w-full rounded-md pl-8 pr-3 py-1 text-xs transition focus:outline-none focus:ring-1 focus:ring-[#0A84FF] border ${isDark
+              ? "bg-[#1A1A1A] border-[#383838] text-white placeholder-gray-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              }`}
           />
         </div>
 
@@ -204,11 +199,10 @@ export function ExperienceApp() {
           <button
             type="button"
             onClick={handleReplyContact}
-            className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
-              copiedReply
-                ? "bg-emerald-600 text-white"
-                : "bg-[#0A84FF] text-white hover:bg-blue-600 shadow-sm"
-            }`}
+            className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${copiedReply
+              ? "bg-emerald-600 text-white"
+              : "bg-[#0A84FF] text-white hover:bg-blue-600 shadow-sm"
+              }`}
             title="Copy Email Address to Reply"
           >
             {copiedReply ? <FaCheck className="h-3 w-3" /> : <FaReply className="h-3 w-3" />}
@@ -221,11 +215,10 @@ export function ExperienceApp() {
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Pane: macOS Mailboxes Sidebar (Visible on Desktop lg+) */}
         <div
-          className={`hidden lg:flex w-52 shrink-0 border-r flex-col justify-between ${
-            isDark
-              ? "border-[#2D2D2D] bg-[#1A1A1A]"
-              : "border-[#E5E5E5] bg-[#EBEBED]"
-          }`}
+          className={`hidden lg:flex w-52 shrink-0 border-r flex-col justify-between ${isDark
+            ? "border-[#2D2D2D] bg-[#1A1A1A]"
+            : "border-[#E5E5E5] bg-[#EBEBED]"
+            }`}
         >
           <div>
             {/* Sidebar Title */}
@@ -254,30 +247,27 @@ export function ExperienceApp() {
                       setSelectedFolder(folder.id)
                       setFilterMode("all")
                     }}
-                    className={`group w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${
-                      isSelected
-                        ? "bg-[#0A84FF] text-white font-medium shadow-sm"
-                        : isDark
+                    className={`group w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${isSelected
+                      ? "bg-[#0A84FF] text-white font-medium shadow-sm"
+                      : isDark
                         ? "text-gray-300 hover:bg-white/5"
                         : "text-gray-700 hover:bg-black/5"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center space-x-2.5 min-w-0">
                       <Icon
-                        className={`h-3.5 w-3.5 shrink-0 ${
-                          isSelected ? "text-white" : folder.color
-                        }`}
+                        className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-white" : folder.color
+                          }`}
                       />
                       <span className="text-xs truncate">{folder.label}</span>
                     </div>
                     <span
-                      className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                        isSelected
-                          ? "bg-white/25 text-white"
-                          : isDark
+                      className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${isSelected
+                        ? "bg-white/25 text-white"
+                        : isDark
                           ? "bg-[#2A2A2A] text-gray-400"
                           : "bg-gray-200 text-gray-600"
-                      }`}
+                        }`}
                     >
                       {count}
                     </span>
@@ -290,26 +280,24 @@ export function ExperienceApp() {
                 <button
                   type="button"
                   onClick={() => setFilterMode(filterMode === "flagged" ? "all" : "flagged")}
-                  className={`w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${
-                    filterMode === "flagged"
-                      ? "bg-[#0A84FF] text-white font-medium shadow-sm"
-                      : isDark
+                  className={`w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${filterMode === "flagged"
+                    ? "bg-[#0A84FF] text-white font-medium shadow-sm"
+                    : isDark
                       ? "text-gray-300 hover:bg-white/5"
                       : "text-gray-700 hover:bg-black/5"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2.5">
                     <FaStar className={`h-3.5 w-3.5 ${filterMode === "flagged" ? "text-white" : "text-amber-400"}`} />
                     <span className="text-xs">Starred / Highlights</span>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      filterMode === "flagged"
-                        ? "bg-white/25 text-white"
-                        : isDark
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${filterMode === "flagged"
+                      ? "bg-white/25 text-white"
+                      : isDark
                         ? "bg-[#2A2A2A] text-gray-400"
                         : "bg-gray-200 text-gray-600"
-                    }`}
+                      }`}
                   >
                     {enrichedExperiences.filter((e) => e.flagged).length}
                   </span>
@@ -320,11 +308,10 @@ export function ExperienceApp() {
 
           {/* Sidebar Footer */}
           <div
-            className={`border-t p-3 text-[11px] ${
-              isDark
-                ? "border-[#2D2D2D] text-gray-400"
-                : "border-[#E5E5E5] text-gray-500"
-            }`}
+            className={`border-t p-3 text-[11px] ${isDark
+              ? "border-[#2D2D2D] text-gray-400"
+              : "border-[#E5E5E5] text-gray-500"
+              }`}
           >
             <div className="flex items-center justify-between font-medium">
               <span>Updated Today</span>
@@ -335,9 +322,8 @@ export function ExperienceApp() {
 
         {/* Middle Pane: Message List (Inbox Feed) */}
         <div
-          className={`w-full lg:w-80 shrink-0 border-r flex flex-col ${
-            isDark ? "border-[#2D2D2D] bg-[#1E1E1E]" : "border-[#E5E5E5] bg-white"
-          } ${mobileView === "detail" ? "hidden lg:flex" : "flex"}`}
+          className={`w-full lg:w-80 shrink-0 border-r flex flex-col ${isDark ? "border-[#2D2D2D] bg-[#1E1E1E]" : "border-[#E5E5E5] bg-white"
+            } ${mobileView === "detail" ? "hidden lg:flex" : "flex"}`}
         >
           {/* Mobile Folder Category Bar (< lg) */}
           <div className="lg:hidden p-2 border-b border-gray-200 dark:border-gray-800 flex overflow-x-auto gap-1.5 no-scrollbar">
@@ -356,13 +342,12 @@ export function ExperienceApp() {
                     setSelectedFolder(folder.id)
                     setFilterMode("all")
                   }}
-                  className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${
-                    isSelected
-                      ? "bg-[#0A84FF] text-white shadow-sm"
-                      : isDark
+                  className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${isSelected
+                    ? "bg-[#0A84FF] text-white shadow-sm"
+                    : isDark
                       ? "bg-[#252526] text-gray-300 border border-[#383838]"
                       : "bg-gray-100 text-gray-700 border border-gray-300"
-                  }`}
+                    }`}
                 >
                   {folder.label}
                 </button>
@@ -372,11 +357,10 @@ export function ExperienceApp() {
 
           {/* Message List Header & Filter Segments */}
           <div
-            className={`flex items-center justify-between px-3 py-2 border-b ${
-              isDark ? "border-[#2D2D2D] bg-[#252526]/50" : "border-[#E5E5E5] bg-gray-50"
-            }`}
+            className={`flex items-center justify-between px-3 py-2 border-b ${isDark ? "border-[#2D2D2D] bg-[#252526]/50" : "border-[#E5E5E5] bg-gray-50"
+              }`}
           >
-            <span className="text-xs font-bold text-foreground">
+            <span className={`text-xs font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
               Inbox ({filteredExperiences.length})
             </span>
             <div className="flex items-center space-x-1">
@@ -386,7 +370,7 @@ export function ExperienceApp() {
                 className={`px-2 py-0.5 rounded text-[11px] font-medium transition ${
                   filterMode === "all"
                     ? "bg-[#0A84FF] text-white"
-                    : "text-gray-400 hover:text-foreground"
+                    : "text-gray-600 dark:text-gray-400 hover:text-foreground"
                 }`}
               >
                 All
@@ -397,7 +381,7 @@ export function ExperienceApp() {
                 className={`px-2 py-0.5 rounded text-[11px] font-medium transition ${
                   filterMode === "flagged"
                     ? "bg-[#0A84FF] text-white"
-                    : "text-gray-400 hover:text-foreground"
+                    : "text-gray-600 dark:text-gray-400 hover:text-foreground"
                 }`}
               >
                 Flagged
@@ -422,21 +406,20 @@ export function ExperienceApp() {
                   <div
                     key={exp.id}
                     onClick={() => handleSelectExperience(exp.id)}
-                    className={`p-3.5 cursor-pointer transition-colors relative ${
-                      isSelected
-                        ? isDark
-                          ? "bg-[#0A84FF]/20 border-l-4 border-[#0A84FF]"
-                          : "bg-[#0A84FF]/10 border-l-4 border-[#0A84FF]"
-                        : isDark
+                    className={`p-3.5 cursor-pointer transition-colors relative ${isSelected
+                      ? isDark
+                        ? "bg-[#0A84FF]/20 border-l-4 border-[#0A84FF]"
+                        : "bg-[#0A84FF]/10 border-l-4 border-[#0A84FF]"
+                      : isDark
                         ? "hover:bg-white/5"
                         : "hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {/* Top Row: Sender & Timestamp */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-2 min-w-0">
                         <span className="w-2 h-2 rounded-full bg-[#0A84FF] shrink-0" />
-                        <span className="text-xs font-bold truncate text-foreground">
+                        <span className={`text-xs font-bold truncate ${isDark ? "text-white" : "text-gray-900"}`}>
                           {exp.senderName}
                         </span>
                       </div>
@@ -446,7 +429,7 @@ export function ExperienceApp() {
                     </div>
 
                     {/* Subject / Role Title */}
-                    <div className="text-xs font-semibold truncate text-foreground mb-1">
+                    <div className={`text-xs font-semibold truncate mb-1 ${isDark ? "text-white" : "text-gray-900"}`}>
                       {exp.role} — {exp.organization}
                     </div>
 
@@ -474,9 +457,8 @@ export function ExperienceApp() {
 
         {/* Right Pane: Message Reader / Email Viewer */}
         <div
-          className={`flex-1 flex flex-col overflow-hidden ${
-            isDark ? "bg-[#1E1E1E]" : "bg-white"
-          } ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}
+          className={`flex-1 flex flex-col overflow-hidden ${isDark ? "bg-[#1E1E1E]" : "bg-white"
+            } ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}
         >
           {selectedExperience ? (
             <div className="flex flex-col h-full overflow-hidden">
@@ -499,12 +481,11 @@ export function ExperienceApp() {
               <div className="flex-1 overflow-y-auto">
                 {/* Email Header Block (scrolls with content) */}
                 <div
-                  className={`p-4 sm:p-6 border-b ${
-                    isDark ? "border-[#2D2D2D] bg-[#222224]" : "border-gray-200 bg-gray-50/70"
-                  }`}
+                  className={`p-4 sm:p-6 border-b ${isDark ? "border-[#2D2D2D] bg-[#222224]" : "border-gray-200 bg-gray-50/70"
+                    }`}
                 >
                   {/* Subject Line */}
-                  <h2 className="text-base sm:text-xl font-bold text-foreground leading-snug mb-4">
+                  <h2 className={`text-base sm:text-xl font-bold leading-snug mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
                     {selectedExperience.title}
                   </h2>
 
@@ -520,7 +501,7 @@ export function ExperienceApp() {
 
                       <div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-bold text-foreground">
+                          <span className={`text-sm font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                             {selectedExperience.senderName}
                           </span>
                           <span className="text-xs text-gray-400">
@@ -557,11 +538,10 @@ export function ExperienceApp() {
                       — CERTIFIED RECORD OF EXPERIENCE & TECHNICAL SCOPE —
                     </p>
                     <div
-                      className={`p-4 rounded-xl border leading-relaxed text-xs sm:text-sm ${
-                        isDark
-                          ? "bg-[#252526] border-[#383838] text-gray-200"
-                          : "bg-blue-50/40 border-blue-200/60 text-gray-800"
-                      }`}
+                      className={`p-4 rounded-xl border leading-relaxed text-xs sm:text-sm ${isDark
+                        ? "bg-[#252526] border-[#383838] text-gray-200"
+                        : "bg-blue-50/40 border-blue-200/60 text-gray-800"
+                        }`}
                     >
                       <div className="font-semibold text-[#0A84FF] mb-1">
                         Role Overview — {selectedExperience.role}
@@ -579,11 +559,10 @@ export function ExperienceApp() {
                       {selectedExperience.bullets.map((bullet, idx) => (
                         <div
                           key={idx}
-                          className={`flex items-start space-x-3 p-3.5 rounded-lg border text-xs sm:text-sm leading-relaxed transition ${
-                            isDark
-                              ? "bg-[#222224] border-[#303033] text-gray-200"
-                              : "bg-white border-gray-200 text-gray-700 shadow-sm"
-                          }`}
+                          className={`flex items-start space-x-3 p-3.5 rounded-lg border text-xs sm:text-sm leading-relaxed transition ${isDark
+                            ? "bg-[#222224] border-[#303033] text-gray-200"
+                            : "bg-white border-gray-200 text-gray-700 shadow-sm"
+                            }`}
                         >
                           <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#30D158]/15 text-[#30D158]">
                             <FaCheck className="h-2.5 w-2.5" />
@@ -594,7 +573,7 @@ export function ExperienceApp() {
                     </div>
                   </div>
 
-                  {/* Attachments & Tech Stack Box (📎 macOS Mail Attachment Style) */}
+                  {/* Attachments & Tech Stack Box (📎 Mail Attachment Style) */}
                   <div className="pt-2">
                     <div className="flex items-center space-x-2 mb-3">
                       <FaPaperclip className="h-3.5 w-3.5 text-[#0A84FF]" />
@@ -607,11 +586,10 @@ export function ExperienceApp() {
                       {selectedExperience.techStack.map((tech, index) => (
                         <div
                           key={index}
-                          className={`flex items-center space-x-2.5 p-2.5 rounded-lg border transition ${
-                            isDark
-                              ? "bg-[#252526] border-[#383838] text-gray-200 hover:border-gray-500"
-                              : "bg-gray-50 border-gray-200 text-gray-800 hover:border-gray-300"
-                          }`}
+                          className={`flex items-center space-x-2.5 p-2.5 rounded-lg border transition ${isDark
+                            ? "bg-[#252526] border-[#383838] text-gray-200 hover:border-gray-500"
+                            : "bg-white border-gray-200 text-gray-900 hover:border-gray-300 shadow-sm"
+                            }`}
                         >
                           <div className="h-7 w-7 rounded bg-[#0A84FF]/15 flex items-center justify-center text-[#0A84FF] font-bold text-xs shrink-0">
                             📎
@@ -632,7 +610,7 @@ export function ExperienceApp() {
                   {/* Signature Block */}
                   <div className="pt-6 mt-6 border-t border-gray-200 dark:border-[#2D2D2D] text-xs text-gray-500 dark:text-gray-400">
                     <p>Best regards,</p>
-                    <p className="font-bold text-foreground mt-1">
+                    <p className={`font-bold mt-1 ${isDark ? "text-white" : "text-gray-900"}`}>
                       {selectedExperience.senderName}
                     </p>
                     <p className="text-[11px] text-gray-400">

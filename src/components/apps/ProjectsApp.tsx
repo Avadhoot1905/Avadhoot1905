@@ -106,32 +106,32 @@ const domainAppleColors: Record<
   "Website Development": {
     boxDark: "bg-[#0A84FF]/15 border-[#0A84FF]/30 text-[#64D2FF]",
     boxLight: "bg-[#0A84FF]/10 border-[#0A84FF]/30 text-[#0066CC]",
-    badge: "bg-[#0A84FF]/15 text-[#64D2FF] dark:text-[#64D2FF] border border-[#0A84FF]/30",
+    badge: "bg-[#0A84FF]/15 text-[#0066CC] dark:text-[#64D2FF] border border-[#0A84FF]/30",
   },
   "App Development": {
     boxDark: "bg-[#FF9F0A]/15 border-[#FF9F0A]/30 text-[#FF9F0A]",
     boxLight: "bg-[#FF9F0A]/10 border-[#FF9F0A]/30 text-[#D97706]",
-    badge: "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+    badge: "bg-[#FF9F0A]/15 text-[#B45309] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
   },
   "Machine Learning": {
     boxDark: "bg-[#BF5AF2]/15 border-[#BF5AF2]/30 text-[#BF5AF2]",
     boxLight: "bg-[#BF5AF2]/10 border-[#BF5AF2]/30 text-[#9333EA]",
-    badge: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+    badge: "bg-[#BF5AF2]/15 text-[#7E22CE] dark:text-[#BF5AF2] border border-[#BF5AF2]/30",
   },
   Blockchain: {
     boxDark: "bg-[#30D158]/15 border-[#30D158]/30 text-[#30D158]",
     boxLight: "bg-[#30D158]/10 border-[#30D158]/30 text-[#16A34A]",
-    badge: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+    badge: "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
   },
   "Extension Development": {
     boxDark: "bg-[#FF375F]/15 border-[#FF375F]/30 text-[#FF375F]",
     boxLight: "bg-[#FF375F]/10 border-[#FF375F]/30 text-[#E11D48]",
-    badge: "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
+    badge: "bg-[#FF375F]/15 text-[#BE123C] dark:text-[#FF375F] border border-[#FF375F]/30",
   },
   system: {
     boxDark: "bg-[#5E5CE6]/15 border-[#5E5CE6]/30 text-[#5E5CE6]",
     boxLight: "bg-[#5E5CE6]/10 border-[#5E5CE6]/30 text-[#4F46E5]",
-    badge: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+    badge: "bg-[#5E5CE6]/15 text-[#4338CA] dark:text-[#5E5CE6] border border-[#5E5CE6]/30",
   },
 }
 
@@ -142,59 +142,59 @@ const defaultAppleColor = {
 }
 
 const techColors: Record<string, string> = {
-  "Next.js": "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
-  React: "bg-[#0A84FF]/15 text-[#64D2FF] border border-[#0A84FF]/30",
-  "React.js": "bg-[#0A84FF]/15 text-[#64D2FF] border border-[#0A84FF]/30",
+  "Next.js": "bg-[#64D2FF]/15 text-[#0066CC] dark:text-[#64D2FF] border border-[#64D2FF]/30",
+  React: "bg-[#0A84FF]/15 text-[#0066CC] dark:text-[#64D2FF] border border-[#0A84FF]/30",
+  "React.js": "bg-[#0A84FF]/15 text-[#0066CC] dark:text-[#64D2FF] border border-[#0A84FF]/30",
   TypeScript: "bg-[#0A84FF]/15 text-[#0A84FF] dark:text-[#5E9EFF] border border-[#0A84FF]/30",
-  JavaScript: "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
-  "Tailwind CSS": "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
-  TailwindCSS: "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
-  CSS: "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
-  Redis: "bg-[#FF3B30]/15 text-[#FF3B30] border border-[#FF3B30]/30",
-  "AWS S3": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "AWS Lambda": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "AWS CloudFront": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "AWS API Gateway": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "AWS RDS": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "AWS EC2": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "Gemini API": "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
-  "Node.js": "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  Express: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  "Express.js": "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  FastAPI: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  Django: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  Python: "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
-  Swift: "bg-[#FF9500]/15 text-[#FF9500] border border-[#FF9500]/30",
-  PostgreSQL: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
-  CockroachDB: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
-  MySQL: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
-  Prisma: "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
-  "Drizzle ORM": "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
-  MongoDB: "bg-[#34C759]/15 text-[#34C759] border border-[#34C759]/30",
-  Docker: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
-  GCP: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
-  Vercel: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
-  Clerk: "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
-  TensorFlow: "bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30",
-  "Torch-Vision": "bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30",
-  CoreML: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
-  CNN: "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
-  SLM: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
-  Ethereum: "bg-[#00C7BE]/15 text-[#00C7BE] border border-[#00C7BE]/30",
-  "Arch Linux": "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
+  JavaScript: "bg-[#FFD60A]/15 text-[#B45309] dark:text-[#FFD60A] border border-[#FFD60A]/30",
+  "Tailwind CSS": "bg-[#32ADE6]/15 text-[#0284C7] dark:text-[#32ADE6] border border-[#32ADE6]/30",
+  TailwindCSS: "bg-[#32ADE6]/15 text-[#0284C7] dark:text-[#32ADE6] border border-[#32ADE6]/30",
+  CSS: "bg-[#32ADE6]/15 text-[#0284C7] dark:text-[#32ADE6] border border-[#32ADE6]/30",
+  Redis: "bg-[#FF3B30]/15 text-[#DC2626] dark:text-[#FF3B30] border border-[#FF3B30]/30",
+  "AWS S3": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS Lambda": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS CloudFront": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS API Gateway": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS RDS": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS EC2": "bg-[#FF9F0A]/15 text-[#D97706] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "Gemini API": "bg-[#BF5AF2]/15 text-[#7E22CE] dark:text-[#BF5AF2] border border-[#BF5AF2]/30",
+  "Node.js": "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  Express: "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  "Express.js": "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  FastAPI: "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  Django: "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  Python: "bg-[#FFD60A]/15 text-[#B45309] dark:text-[#FFD60A] border border-[#FFD60A]/30",
+  Swift: "bg-[#FF9500]/15 text-[#D97706] dark:text-[#FF9500] border border-[#FF9500]/30",
+  PostgreSQL: "bg-[#5E5CE6]/15 text-[#4338CA] dark:text-[#5E5CE6] border border-[#5E5CE6]/30",
+  CockroachDB: "bg-[#5E5CE6]/15 text-[#4338CA] dark:text-[#5E5CE6] border border-[#5E5CE6]/30",
+  MySQL: "bg-[#5E5CE6]/15 text-[#4338CA] dark:text-[#5E5CE6] border border-[#5E5CE6]/30",
+  Prisma: "bg-[#AF52DE]/15 text-[#7E22CE] dark:text-[#AF52DE] border border-[#AF52DE]/30",
+  "Drizzle ORM": "bg-[#AF52DE]/15 text-[#7E22CE] dark:text-[#AF52DE] border border-[#AF52DE]/30",
+  MongoDB: "bg-[#34C759]/15 text-[#15803D] dark:text-[#34C759] border border-[#34C759]/30",
+  Docker: "bg-[#30B0C7]/15 text-[#0284C7] dark:text-[#30B0C7] border border-[#30B0C7]/30",
+  GCP: "bg-[#30B0C7]/15 text-[#0284C7] dark:text-[#30B0C7] border border-[#30B0C7]/30",
+  Vercel: "bg-[#30B0C7]/15 text-[#0284C7] dark:text-[#30B0C7] border border-[#30B0C7]/30",
+  Clerk: "bg-[#AF52DE]/15 text-[#7E22CE] dark:text-[#AF52DE] border border-[#AF52DE]/30",
+  TensorFlow: "bg-[#FF2D55]/15 text-[#BE123C] dark:text-[#FF2D55] border border-[#FF2D55]/30",
+  "Torch-Vision": "bg-[#FF2D55]/15 text-[#BE123C] dark:text-[#FF2D55] border border-[#FF2D55]/30",
+  CoreML: "bg-[#BF5AF2]/15 text-[#7E22CE] dark:text-[#BF5AF2] border border-[#BF5AF2]/30",
+  CNN: "bg-[#FF375F]/15 text-[#BE123C] dark:text-[#FF375F] border border-[#FF375F]/30",
+  SLM: "bg-[#BF5AF2]/15 text-[#7E22CE] dark:text-[#BF5AF2] border border-[#BF5AF2]/30",
+  Ethereum: "bg-[#00C7BE]/15 text-[#0D9488] dark:text-[#00C7BE] border border-[#00C7BE]/30",
+  "Arch Linux": "bg-[#64D2FF]/15 text-[#0066CC] dark:text-[#64D2FF] border border-[#64D2FF]/30",
   Razorpay: "bg-[#0A84FF]/15 text-[#0A84FF] border border-[#0A84FF]/30",
 }
 
 const appleBadgePalette = [
-  "bg-[#0A84FF]/15 text-[#0A84FF] dark:text-[#5E9EFF] border border-[#0A84FF]/30",
-  "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
-  "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
-  "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
-  "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
-  "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
-  "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
-  "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
-  "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
+  "bg-[#0A84FF]/15 text-[#0066CC] dark:text-[#5E9EFF] border border-[#0A84FF]/30",
+  "bg-[#30D158]/15 text-[#15803D] dark:text-[#30D158] border border-[#30D158]/30",
+  "bg-[#FF9F0A]/15 text-[#B45309] dark:text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "bg-[#BF5AF2]/15 text-[#7E22CE] dark:text-[#BF5AF2] border border-[#BF5AF2]/30",
+  "bg-[#64D2FF]/15 text-[#0284C7] dark:text-[#64D2FF] border border-[#64D2FF]/30",
+  "bg-[#FF375F]/15 text-[#BE123C] dark:text-[#FF375F] border border-[#FF375F]/30",
+  "bg-[#5E5CE6]/15 text-[#4338CA] dark:text-[#5E5CE6] border border-[#5E5CE6]/30",
+  "bg-[#FFD60A]/15 text-[#B45309] dark:text-[#FFD60A] border border-[#FFD60A]/30",
+  "bg-[#30B0C7]/15 text-[#0284C7] dark:text-[#30B0C7] border border-[#30B0C7]/30",
 ]
 
 function getTechBadgeStyle(tech: string) {
@@ -538,7 +538,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
           {/* Section Banner Header */}
           <div className="mb-4 sm:mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-foreground">
+              <h2 className={`text-base font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                 {filterCategories.find((c) => c.id === filter)?.label || "Projects"}
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
@@ -602,7 +602,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                       <div className="flex-1 min-w-0">
                         {/* Title Row */}
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-bold text-foreground truncate">
+                          <h3 className={`text-sm font-bold truncate ${isDark ? "text-white" : "text-gray-900"}`}>
                             {project.name}
                           </h3>
                           <span className="inline-flex items-center rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-semibold text-[#30D158]">
@@ -629,7 +629,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                         {/* Project Description */}
                         <p
                           className={`mt-1.5 text-xs leading-relaxed ${
-                            isDark ? "text-gray-300" : "text-gray-600"
+                            isDark ? "text-gray-300" : "text-gray-700"
                           }`}
                         >
                           {project.description}

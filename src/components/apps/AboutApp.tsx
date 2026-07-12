@@ -9,12 +9,8 @@ import {
   FaEnvelope,
   FaGlobe,
   FaGithub,
-  FaMapMarkerAlt,
-  FaShareAlt,
-  FaSearch,
-  FaBuilding,
-  FaGraduationCap,
   FaCheck,
+  FaSearch,
 } from "react-icons/fa"
 
 type AboutAppProps = {
@@ -50,9 +46,9 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
       className={`flex h-full select-none font-sans overflow-hidden ${isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
         }`}
     >
-      {/* Left Sidebar: macOS Contacts Directory */}
+      {/* Left Sidebar: macOS Contacts Directory (hidden on phone, visible on md+) */}
       <div
-        className={`w-56 shrink-0 border-r flex flex-col justify-between ${isDark
+        className={`hidden md:flex w-56 shrink-0 border-r flex-col justify-between ${isDark
           ? "border-[#2D2D2D] bg-[#1A1A1A]"
           : "border-[#E5E5E5] bg-[#EBEBED]"
           }`}
@@ -174,28 +170,52 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             }`}
         >
           <span>1 Card</span>
-          <span className="text-blue-500 font-medium">macOS Contacts</span>
+          <span className="text-blue-500 font-medium">Contacts</span>
         </div>
       </div>
 
-      {/* Right Pane: Authentic macOS Contact Card Details */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      {/* Right Pane: Authentic macOS Contact Card Details (Fully Responsive for Phone UI) */}
+      <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 md:p-8">
+        {/* Mobile Phone Top Header Bar (visible only on phone < md) */}
+        <div className="md:hidden mb-4 pb-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0A84FF]">
+              Contacts
+            </span>
+            <span className="text-xs text-gray-400">• My Card</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleMessagesClick}
+              className="text-xs bg-[#30D158] text-white px-2.5 py-1 rounded font-medium shadow-sm"
+            >
+              AI Chat
+            </button>
+            <button
+              onClick={handleContactClick}
+              className="text-xs bg-[#0A84FF] text-white px-2.5 py-1 rounded font-medium shadow-sm"
+            >
+              Terminal
+            </button>
+          </div>
+        </div>
+
         <div className="max-w-2xl mx-auto">
           {/* Profile Header Block */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 pb-6 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5 pb-6 border-b border-gray-200 dark:border-gray-800">
             <div className="relative shrink-0">
               <img
                 src="/favicon.ico"
                 alt="Profile"
-                className="w-24 h-24 rounded-full object-cover shadow-lg border-2 border-white dark:border-gray-700"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg border-2 border-white dark:border-gray-700"
               />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                 Avadhoot Ganesh Mahadik
               </h1>
               <p
-                className={`text-sm font-medium mt-0.5 ${isDark ? "text-gray-300" : "text-gray-600"
+                className={`text-xs sm:text-sm font-medium mt-0.5 ${isDark ? "text-gray-300" : "text-gray-600"
                   }`}
               >
                 Systems Architect • Computer Science Student
@@ -261,13 +281,13 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
           </div>
 
           {/* Contact Fields & Bio (macOS Address Book Rows) */}
-          <div className="py-6 space-y-6">
+          <div className="py-5 sm:py-6 space-y-5 sm:space-y-6">
             {/* BIO / ABOUT ME SECTION */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-1">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-1">
                 about
               </div>
-              <div className="flex-1 space-y-3 text-sm leading-relaxed">
+              <div className="flex-1 space-y-3 text-xs sm:text-sm leading-relaxed">
                 <p className={isDark ? "text-gray-200" : "text-gray-800"}>
                   I&apos;m a Computer Science student passionate about backend engineering
                   and system architecture. I&apos;m fascinated by how well-designed
@@ -297,11 +317,11 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             <hr className="border-gray-200 dark:border-gray-800" />
 
             {/* WORK ROW */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 items-start">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
                 work
               </div>
-              <div className="flex-1 text-sm">
+              <div className="flex-1 text-xs sm:text-sm">
                 <div className="font-semibold text-foreground">
                   Systems Architect & Backend Engineering
                 </div>
@@ -312,11 +332,11 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             </div>
 
             {/* EDUCATION / INSTITUTION ROW */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 items-start">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
                 education
               </div>
-              <div className="flex-1 text-sm">
+              <div className="flex-1 text-xs sm:text-sm">
                 <div className="font-semibold text-foreground">
                   Vellore Institute of Technology (VIT)
                 </div>
@@ -327,47 +347,47 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             </div>
 
             {/* HOME PAGE / PORTFOLIO ROW */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-center">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF]">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 sm:items-center">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF]">
                 home page
               </div>
-              <div className="flex-1 text-sm">
+              <div className="flex-1 text-xs sm:text-sm">
                 <a
                   href="https://avadhootgm.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#0A84FF] hover:underline font-medium inline-flex items-center gap-1.5"
+                  className="text-[#0A84FF] hover:underline font-medium inline-flex items-center gap-1.5 break-all sm:break-normal"
                 >
                   <span>https://avadhootgm.in</span>
-                  <FaGlobe className="text-xs" />
+                  <FaGlobe className="text-xs shrink-0" />
                 </a>
               </div>
             </div>
 
             {/* GITHUB ROW */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-center">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF]">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 sm:items-center">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF]">
                 github
               </div>
-              <div className="flex-1 text-sm">
+              <div className="flex-1 text-xs sm:text-sm">
                 <a
                   href="https://github.com/Avadhoot1905"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#0A84FF] hover:underline font-medium inline-flex items-center gap-1.5"
+                  className="text-[#0A84FF] hover:underline font-medium inline-flex items-center gap-1.5 break-all sm:break-normal"
                 >
                   <span>https://github.com/Avadhoot1905</span>
-                  <FaGithub className="text-xs" />
+                  <FaGithub className="text-xs shrink-0" />
                 </a>
               </div>
             </div>
 
             {/* LOCATION ROW */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 items-start">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-0.5">
                 location
               </div>
-              <div className="flex-1 text-sm font-medium text-foreground">
+              <div className="flex-1 text-xs sm:text-sm font-medium text-foreground">
                 India (Bangalore / Vellore)
               </div>
             </div>
@@ -375,8 +395,8 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             <hr className="border-gray-200 dark:border-gray-800" />
 
             {/* macOS NOTES BOX */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
-              <div className="w-24 shrink-0 sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-1">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-6">
+              <div className="w-full sm:w-24 shrink-0 text-left sm:text-right text-xs font-bold uppercase tracking-wider text-[#0A84FF] pt-1">
                 notes
               </div>
               <div
@@ -392,11 +412,11 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
             </div>
           </div>
 
-          {/* Prominent Action Buttons Bar at bottom (preserved exact functionality) */}
-          <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap gap-3">
+          {/* Prominent Action Buttons Bar at bottom */}
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleMessagesClick}
-              className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${isDark
+              className={`w-full sm:flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-xs sm:text-sm transition-all shadow-sm ${isDark
                 ? "bg-[#30D158] hover:bg-green-600 text-white"
                 : "bg-[#30D158] hover:bg-green-600 text-white"
                 }`}
@@ -407,7 +427,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
 
             <button
               onClick={handleContactClick}
-              className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${isDark
+              className={`w-full sm:flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-xs sm:text-sm transition-all shadow-sm ${isDark
                 ? "bg-[#0A84FF] hover:bg-blue-600 text-white"
                 : "bg-[#0A84FF] hover:bg-blue-600 text-white"
                 }`}

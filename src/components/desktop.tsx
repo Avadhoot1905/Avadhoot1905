@@ -1037,8 +1037,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("education")}
                   onMinimize={() => minimizeWindow("education")}
                   isMinimized={minimizedWindows.includes("education")}
-                  initialPosition={{ x: 180, y: 140 }}
-                  initialSize={{ width: 750, height: 600 }}
+                  initialPosition={{ x: 70, y: 110 }}
+                  initialSize={{ width: 960, height: 680 }}
                 >
                   <EducationApp />
                 </Window>

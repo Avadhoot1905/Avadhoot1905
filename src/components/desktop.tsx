@@ -941,8 +941,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("safari")}
                   onMinimize={() => minimizeWindow("safari")}
                   isMinimized={minimizedWindows.includes("safari")}
-                  initialPosition={{ x: 150, y: 150 }}
-                  initialSize={{ width: 800, height: 600 }}
+                  initialPosition={{ x: 120, y: 80 }}
+                  initialSize={{ width: 960, height: 680 }}
                 >
                   <SafariApp />
                 </Window>

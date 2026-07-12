@@ -2,7 +2,21 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { FaChevronLeft, FaChevronRight, FaStar, FaCodeBranch, FaBook } from "react-icons/fa"
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaStar,
+  FaCodeBranch,
+  FaBook,
+  FaLock,
+  FaRedoAlt,
+  FaShareSquare,
+  FaPlus,
+  FaExternalLinkAlt,
+  FaCompass,
+  FaBookmark,
+  FaCheck,
+} from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
 import { DinoGame } from "./DinoGame"
 
@@ -213,133 +227,255 @@ export function SafariApp() {
     }
   }, [activeSafariTab, mediumArticles.length])
 
+  const [copiedUrl, setCopiedUrl] = useState(false)
+  const [isReloading, setIsReloading] = useState(false)
+
+  const currentTabInfo = {
+    github: {
+      domain: "github.com",
+      path: "/Avadhoot1905",
+      url: "https://github.com/Avadhoot1905",
+      label: "GitHub Profile",
+      icon: SiGithub,
+      iconColor: theme === "dark" ? "text-white" : "text-gray-800",
+    },
+    linkedin: {
+      domain: "linkedin.com",
+      path: "/in/avadhoot-mahadik/",
+      url: "https://www.linkedin.com/in/avadhoot-mahadik/",
+      label: "LinkedIn",
+      icon: SiLinkedin,
+      iconColor: "text-[#0A84FF]",
+    },
+    leetcode: {
+      domain: "leetcode.com",
+      path: "/u/arcsmo19/",
+      url: "https://leetcode.com/u/arcsmo19/",
+      label: "LeetCode",
+      icon: SiLeetcode,
+      iconColor: "text-[#FF9F0A]",
+    },
+    medium: {
+      domain: "medium.com",
+      path: "/@arcsmo19",
+      url: "https://medium.com/@arcsmo19",
+      label: "Medium Articles",
+      icon: SiMedium,
+      iconColor: theme === "dark" ? "text-white" : "text-gray-800",
+    },
+  }[activeSafariTab]
+
+  const handleReload = () => {
+    setIsReloading(true)
+    setTimeout(() => setIsReloading(false), 600)
+  }
+
+  const handleShare = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentTabInfo.url)
+      setCopiedUrl(true)
+      setTimeout(() => setCopiedUrl(false), 2000)
+    }
+  }
+
+  const handleOpenExternal = () => {
+    window.open(currentTabInfo.url, "_blank", "noopener,noreferrer")
+  }
+
+  const isDark = theme === "dark"
+
   return (
-    <div className="flex h-full flex-col">
-      {/* Tab Bar - Always visible with scrolling on mobile */}
-      <div className={`flex items-center border-b flex-shrink-0 ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
-        <div className={`flex ${isMobile ? 'overflow-x-auto space-x-0.5 p-1 scrollbar-hide' : 'space-x-1 p-2'} w-full`}>
+    <div
+      className={`flex h-full flex-col select-none font-sans overflow-hidden ${
+        isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
+      }`}
+    >
+      {/* Authentic macOS Safari Window Toolbar & Smart Search Bar */}
+      <div
+        className={`flex h-13 shrink-0 items-center justify-between border-b px-3 py-2 gap-2 ${
+          isDark
+            ? "border-[#2D2D2E] bg-[#323233]"
+            : "border-[#D1D1D6] bg-[#F6F6F6]"
+        }`}
+      >
+        {/* Left Controls: Sidebar & History Chevrons */}
+        <div className="flex items-center space-x-2.5 shrink-0">
           <button
-            onClick={() => setActiveSafariTab("github")}
-            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-              } ${activeSafariTab === "github"
-                ? theme === "dark"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-black"
-                : theme === "dark"
-                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+            type="button"
+            className={`p-1.5 rounded-md transition ${
+              isDark
+                ? "hover:bg-white/10 text-gray-300"
+                : "hover:bg-black/10 text-gray-600"
+            }`}
+            title="Show Sidebar"
           >
-            <SiGithub className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
-            <span>GitHub</span>
+            <FaCompass className="h-4 w-4" />
           </button>
-          <button
-            onClick={() => setActiveSafariTab("linkedin")}
-            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-              } ${activeSafariTab === "linkedin"
-                ? theme === "dark"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-black"
-                : theme === "dark"
-                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+
+          {/* Navigation Back/Forward Group */}
+          <div
+            className={`flex items-center rounded-md border p-0.5 ${
+              isDark
+                ? "border-white/15 bg-[#252526]"
+                : "border-black/15 bg-white/70"
+            }`}
           >
-            <SiLinkedin className={`text-blue-500 ${isMobile ? 'text-sm' : ''}`} />
-            <span>LinkedIn</span>
+            <button
+              type="button"
+              className={`px-2 py-1 text-xs transition rounded-l ${
+                isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-600"
+              }`}
+              title="Back"
+            >
+              <FaChevronLeft className="h-3 w-3" />
+            </button>
+            <div className={`h-3 w-[1px] ${isDark ? "bg-white/10" : "bg-black/10"}`} />
+            <button
+              type="button"
+              className={`px-2 py-1 text-xs transition rounded-r ${
+                isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-600"
+              }`}
+              title="Forward"
+            >
+              <FaChevronRight className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+
+        {/* Center: macOS Safari Smart Search URL Bar */}
+        <div
+          className={`flex items-center justify-between max-w-xl w-full h-8 rounded-lg border px-3 transition-all shadow-inner ${
+            isDark
+              ? "bg-[#1C1C1E] border-white/15 text-gray-200"
+              : "bg-white border-black/15 text-gray-800"
+          }`}
+        >
+          {/* SSL Lock + Domain & Path */}
+          <div className="flex items-center space-x-2 min-w-0 flex-1 truncate">
+            <FaLock className="h-3 w-3 text-emerald-500 shrink-0" />
+            <div className="truncate text-xs sm:text-sm">
+              <span className="font-semibold text-foreground">
+                {currentTabInfo.domain}
+              </span>
+              <span className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                {currentTabInfo.path}
+              </span>
+            </div>
+          </div>
+
+          {/* Reload Button inside URL Bar */}
+          <button
+            type="button"
+            onClick={handleReload}
+            className={`ml-2 p-1 rounded-full transition ${
+              isDark
+                ? "hover:bg-white/10 text-gray-400 hover:text-white"
+                : "hover:bg-black/10 text-gray-500 hover:text-black"
+            }`}
+            title="Reload Page"
+          >
+            <FaRedoAlt
+              className={`h-3 w-3 transition-transform duration-500 ${
+                isReloading ? "animate-spin text-blue-500" : ""
+              }`}
+            />
           </button>
+        </div>
+
+        {/* Right Controls: Share, External Open, New Tab */}
+        <div className="flex items-center space-x-1.5 shrink-0">
           <button
-            onClick={() => setActiveSafariTab("leetcode")}
-            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-              } ${activeSafariTab === "leetcode"
-                ? theme === "dark"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-black"
-                : theme === "dark"
-                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+            type="button"
+            onClick={handleShare}
+            className={`p-1.5 rounded-md transition relative ${
+              copiedUrl
+                ? "text-emerald-500"
+                : isDark
+                ? "hover:bg-white/10 text-gray-300"
+                : "hover:bg-black/10 text-gray-600"
+            }`}
+            title={copiedUrl ? "Copied URL!" : "Share URL"}
           >
-            <SiLeetcode className={`text-orange-500 ${isMobile ? 'text-sm' : ''}`} />
-            <span>LeetCode</span>
+            {copiedUrl ? <FaCheck className="h-4 w-4" /> : <FaShareSquare className="h-4 w-4" />}
           </button>
+
           <button
-            onClick={() => setActiveSafariTab("medium")}
-            className={`flex items-center rounded-t whitespace-nowrap ${isMobile ? 'space-x-1 px-2 py-1.5 text-xs flex-shrink-0' : 'space-x-2 px-3 py-1.5 text-sm'
-              } ${activeSafariTab === "medium"
-                ? theme === "dark"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-black"
-                : theme === "dark"
-                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+            type="button"
+            onClick={handleOpenExternal}
+            className={`p-1.5 rounded-md transition ${
+              isDark
+                ? "hover:bg-white/10 text-blue-400"
+                : "hover:bg-black/10 text-blue-600"
+            }`}
+            title="Open Live URL in Browser"
           >
-            <SiMedium className={`${theme === "dark" ? "text-white" : "text-gray-800"} ${isMobile ? 'text-sm' : ''}`} />
-            <span>Medium</span>
+            <FaExternalLinkAlt className="h-3.5 w-3.5" />
+          </button>
+
+          <button
+            type="button"
+            className={`p-1.5 rounded-md transition ${
+              isDark
+                ? "hover:bg-white/10 text-gray-300"
+                : "hover:bg-black/10 text-gray-600"
+            }`}
+            title="New Safari Tab"
+          >
+            <FaPlus className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Address Bar */}
-      <div className={`flex items-center border-b p-2 flex-shrink-0 ${theme === "dark" ? "border-gray-700 bg-gray-800" : "bg-gray-100"}`}>
-        <div
-          className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
-        >
-          <FaChevronLeft className={theme === "dark" ? "text-gray-300" : "text-gray-500"} />
-        </div>
-        <div
-          className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}
-        >
-          <FaChevronRight className={theme === "dark" ? "text-gray-300" : "text-gray-500"} />
-        </div>
-        <div
-          className={`flex-1 rounded-full px-4 py-1 text-sm ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
-        >
-          {activeSafariTab === "github" && (
-            <a
-              href="https://github.com/Avadhoot1905"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
+      {/* macOS Safari Favorites / Tab Strip */}
+      <div
+        className={`flex items-center h-9 shrink-0 border-b px-2 gap-1.5 overflow-x-auto no-scrollbar ${
+          isDark
+            ? "border-[#2D2D2E] bg-[#252526]"
+            : "border-[#D1D1D6] bg-[#EBEBED]"
+        }`}
+      >
+        {(["github", "linkedin", "leetcode", "medium"] as const).map((tabId) => {
+          const isActive = activeSafariTab === tabId
+          const tabConfig = {
+            github: { label: "GitHub Profile", icon: SiGithub, color: isDark ? "text-white" : "text-gray-800" },
+            linkedin: { label: "LinkedIn", icon: SiLinkedin, color: "text-[#0A84FF]" },
+            leetcode: { label: "LeetCode", icon: SiLeetcode, color: "text-[#FF9F0A]" },
+            medium: { label: "Medium Articles", icon: SiMedium, color: isDark ? "text-white" : "text-gray-800" },
+          }[tabId]
+          const TabIcon = tabConfig.icon
+
+          return (
+            <button
+              key={tabId}
+              type="button"
+              onClick={() => setActiveSafariTab(tabId)}
+              className={`group shrink-0 flex items-center space-x-2 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                isActive
+                  ? isDark
+                    ? "bg-[#3A3A3C] text-white shadow-sm border border-white/10"
+                    : "bg-white text-gray-900 shadow-sm border border-black/10"
+                  : isDark
+                  ? "hover:bg-white/5 text-gray-400 hover:text-gray-200"
+                  : "hover:bg-black/5 text-gray-600 hover:text-gray-900"
+              }`}
             >
-              https://github.com/Avadhoot1905
-            </a>
-          )}
-          {activeSafariTab === "linkedin" && (
-            <a
-              href="https://www.linkedin.com/in/avadhoot-mahadik/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-            >
-              https://www.linkedin.com/in/avadhoot-mahadik/
-            </a>
-          )}
-          {activeSafariTab === "leetcode" && (
-            <a
-              href="https://leetcode.com/u/arcsmo19/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-            >
-              https://leetcode.com/u/arcsmo19/
-            </a>
-          )}
-          {activeSafariTab === "medium" && (
-            <a
-              href="https://medium.com/@arcsmo19"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`hover:underline ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}
-            >
-              https://medium.com/@arcsmo19
-            </a>
-          )}
-        </div>
+              <TabIcon
+                className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:scale-110 ${tabConfig.color}`}
+              />
+              <span>{tabConfig.label}</span>
+              {isActive && (
+                <span className="ml-1 h-1.5 w-1.5 rounded-full bg-[#0A84FF]" />
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Content Area - API-based displays */}
+      {/* Web Page Viewport Content Area */}
       <div className="flex-1 overflow-y-auto">
         {/* Error Display */}
         {error && !loading && (
@@ -662,10 +798,11 @@ export function SafariApp() {
                     href="https://medium.com/@arcsmo19"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors font-medium text-white ${theme === "dark"
-                      ? "bg-black hover:bg-gray-200 text-black"
-                      : "bg-black hover:bg-gray-800"
-                      }`}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors font-medium shadow-sm ${
+                      isDark
+                        ? "bg-white hover:bg-gray-200 text-black"
+                        : "bg-black hover:bg-gray-800 text-white"
+                    }`}
                   >
                     <SiMedium />
                     <span>View All Articles on Medium</span>

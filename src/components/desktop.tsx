@@ -983,14 +983,14 @@ export function MacOSDesktop() {
               {openWindows.includes("about") && (
                 <Window
                   key="about"
-                  title="About Me"
+                  title="Contacts - About Me"
                   isActive={activeWindow === "about"}
                   onActivate={() => activateWindow("about")}
                   onClose={() => toggleWindow("about")}
                   onMinimize={() => minimizeWindow("about")}
                   isMinimized={minimizedWindows.includes("about")}
-                  initialPosition={{ x: 50, y: 80 }}
-                  initialSize={{ width: 650, height: 680 }}
+                  initialPosition={{ x: 70, y: 60 }}
+                  initialSize={{ width: 840, height: 630 }}
                 >
                   <AboutApp onOpenApp={openOrActivateWindow} />
                 </Window>
@@ -1121,7 +1121,7 @@ export function MacOSDesktop() {
                   onMinimize={() => minimizeWindow("terminal")}
                   isMinimized={minimizedWindows.includes("terminal")}
                   initialPosition={{ x: 720, y: 80 }}
-                  initialSize={{ width: 650, height: 600 }}
+                  initialSize={{ width: 700, height: 550 }}
                 >
                   <TerminalApp
                     onClose={() => {

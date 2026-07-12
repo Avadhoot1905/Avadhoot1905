@@ -1005,8 +1005,8 @@ export function MacOSDesktop() {
                   onClose={() => toggleWindow("projects")}
                   onMinimize={() => minimizeWindow("projects")}
                   isMinimized={minimizedWindows.includes("projects")}
-                  initialPosition={{ x: 200, y: 120 }}
-                  initialSize={{ width: 700, height: 550 }}
+                  initialPosition={{ x: 80, y: 50 }}
+                  initialSize={{ width: 940, height: 640 }}
                 >
                   <ProjectsApp initialFilter={projectsFilter} />
                 </Window>

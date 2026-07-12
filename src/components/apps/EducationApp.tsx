@@ -34,17 +34,15 @@ export function EducationApp() {
 
   return (
     <div
-      className={`flex h-full flex-col select-none font-sans ${
-        isDark ? "bg-[#191919] text-[#D4D4D4]" : "bg-white text-[#37352F]"
-      }`}
+      className={`flex h-full flex-col select-none font-sans ${isDark ? "bg-[#191919] text-[#D4D4D4]" : "bg-white text-[#37352F]"
+        }`}
     >
       {/* Notion Top Bar */}
       <div
-        className={`flex h-11 shrink-0 items-center justify-between border-b px-4 text-xs ${
-          isDark
-            ? "border-[#2F2F2F] bg-[#191919] text-[#9B9B9B]"
-            : "border-[#E5E5E5] bg-white text-[#787774]"
-        }`}
+        className={`flex h-11 shrink-0 items-center justify-between border-b px-4 text-xs ${isDark
+          ? "border-[#2F2F2F] bg-[#191919] text-[#9B9B9B]"
+          : "border-[#E5E5E5] bg-white text-[#787774]"
+          }`}
       >
         {/* Breadcrumb */}
         <div className="flex items-center space-x-1.5 overflow-hidden">
@@ -66,9 +64,8 @@ export function EducationApp() {
           <button
             type="button"
             onClick={() => setIsStarred(!isStarred)}
-            className={`p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${
-              isStarred ? "text-amber-400" : ""
-            }`}
+            className={`p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${isStarred ? "text-amber-400" : ""
+              }`}
             title="Favorite"
           >
             <Star className={`h-4 w-4 ${isStarred ? "fill-amber-400" : ""}`} />
@@ -112,11 +109,10 @@ export function EducationApp() {
           {/* Large Page Icon overlapping cover */}
           <div className="relative z-10 -mt-9 mb-5 flex items-center">
             <div
-              className={`flex h-16 w-16 items-center justify-center rounded-xl shadow-lg border ${
-                isDark
-                  ? "bg-[#1E1E1E] border-[#2F2F2F] text-blue-400"
-                  : "bg-white border-gray-200 text-blue-600"
-              }`}
+              className={`flex h-16 w-16 items-center justify-center rounded-xl shadow-lg border ${isDark
+                ? "bg-[#1E1E1E] border-[#2F2F2F] text-blue-400"
+                : "bg-white border-gray-200 text-blue-600"
+                }`}
             >
               <FaGraduationCap className="h-8 w-8" />
             </div>
@@ -124,20 +120,18 @@ export function EducationApp() {
 
           {/* Page Title */}
           <h1
-            className={`mb-5 text-3xl sm:text-4xl font-bold tracking-tight ${
-              isDark ? "text-white" : "text-[#37352F]"
-            }`}
+            className={`mb-5 text-3xl sm:text-4xl font-bold tracking-tight ${isDark ? "text-white" : "text-[#37352F]"
+              }`}
           >
             Education &amp; Academic Journey
           </h1>
 
           {/* Notion Page Properties Table */}
           <div
-            className={`mb-6 space-y-2.5 border-b pb-6 text-xs ${
-              isDark
-                ? "border-[#2F2F2F] text-[#9B9B9B]"
-                : "border-[#E5E5E5] text-[#787774]"
-            }`}
+            className={`mb-6 space-y-2.5 border-b pb-6 text-xs ${isDark
+              ? "border-[#2F2F2F] text-[#9B9B9B]"
+              : "border-[#E5E5E5] text-[#787774]"
+              }`}
           >
             <div className="grid grid-cols-12 items-center gap-2">
               <div className="col-span-4 sm:col-span-3 flex items-center space-x-2">
@@ -180,7 +174,7 @@ export function EducationApp() {
                   VIT Vellore
                 </span>
                 <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                  GPA 8.38
+                  GPA 8.30
                 </span>
                 <span className="rounded bg-sky-500/15 px-2 py-0.5 text-[11px] font-medium text-sky-600 dark:text-sky-400">
                   Deens Academy
@@ -194,15 +188,14 @@ export function EducationApp() {
             <button
               type="button"
               onClick={() => setActiveTab("page")}
-              className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                activeTab === "page"
-                  ? isDark
-                    ? "bg-[#2A2A2A] text-white shadow-sm"
-                    : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
-                  : isDark
+              className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${activeTab === "page"
+                ? isDark
+                  ? "bg-[#2A2A2A] text-white shadow-sm"
+                  : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
+                : isDark
                   ? "text-gray-400 hover:text-gray-200 hover:bg-white/5"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              }`}
+                }`}
             >
               <List className="h-3.5 w-3.5" />
               <span>Page View</span>
@@ -210,15 +203,14 @@ export function EducationApp() {
             <button
               type="button"
               onClick={() => setActiveTab("table")}
-              className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                activeTab === "table"
-                  ? isDark
-                    ? "bg-[#2A2A2A] text-white shadow-sm"
-                    : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
-                  : isDark
+              className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${activeTab === "table"
+                ? isDark
+                  ? "bg-[#2A2A2A] text-white shadow-sm"
+                  : "bg-gray-200 text-gray-900 border border-gray-300 shadow-sm"
+                : isDark
                   ? "text-gray-400 hover:text-gray-200 hover:bg-white/5"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              }`}
+                }`}
             >
               <TableIcon className="h-3.5 w-3.5" />
               <span>Table View</span>
@@ -229,11 +221,10 @@ export function EducationApp() {
             <div className="space-y-6">
               {/* Notion Callout Block */}
               <div
-                className={`flex items-start space-x-3.5 rounded-lg border p-4 ${
-                  isDark
-                    ? "bg-[#232323] border-[#2F2F2F]"
-                    : "bg-[#FBF8F2] border-[#EADFC9]"
-                }`}
+                className={`flex items-start space-x-3.5 rounded-lg border p-4 ${isDark
+                  ? "bg-[#232323] border-[#2F2F2F]"
+                  : "bg-[#FBF8F2] border-[#EADFC9]"
+                  }`}
               >
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
                   <Lightbulb className="h-4 w-4" />
@@ -245,7 +236,7 @@ export function EducationApp() {
                     Academic Overview:
                   </strong>{" "}
                   Currently pursuing Computer Science and Engineering with
-                  Business Systems at VIT Vellore with an 8.38/10 GPA. Balancing
+                  Business Systems at VIT Vellore with an 0/10 GPA. Balancing
                   rigorous academics with leadership in ACM-VIT &amp; SEDS-VIT,
                   hackathon participation, and holistic development.
                 </div>
@@ -260,11 +251,10 @@ export function EducationApp() {
                 </div>
 
                 <div
-                  className={`rounded-xl border transition-all ${
-                    isDark
-                      ? "bg-[#202020] border-[#2F2F2F] hover:border-[#404040]"
-                      : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
-                  }`}
+                  className={`rounded-xl border transition-all ${isDark
+                    ? "bg-[#202020] border-[#2F2F2F] hover:border-[#404040]"
+                    : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
+                    }`}
                 >
                   {/* Card Header Toggle */}
                   <div
@@ -288,9 +278,8 @@ export function EducationApp() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h2
-                            className={`text-base font-semibold ${
-                              isDark ? "text-white" : "text-[#37352F]"
-                            }`}
+                            className={`text-base font-semibold ${isDark ? "text-white" : "text-[#37352F]"
+                              }`}
                           >
                             Vellore Institute of Technology, Vellore
                           </h2>
@@ -308,7 +297,7 @@ export function EducationApp() {
                           </span>
                           <span className="flex items-center font-medium text-emerald-500">
                             <Award className="mr-1.5 h-3.5 w-3.5" />
-                            Grade: 8.38 / 10 (3.37 / 4)
+                            Grade: 8.30 / 10 (3.32 / 4)
                           </span>
                         </div>
                       </div>
@@ -318,11 +307,10 @@ export function EducationApp() {
                   {/* Expandable Notion Block Content */}
                   {expandedBtech && (
                     <div
-                      className={`border-t px-6 py-4 text-xs space-y-4 ${
-                        isDark
-                          ? "border-[#2F2F2F] text-gray-300"
-                          : "border-gray-100 text-gray-600"
-                      }`}
+                      className={`border-t px-6 py-4 text-xs space-y-4 ${isDark
+                        ? "border-[#2F2F2F] text-gray-300"
+                        : "border-gray-100 text-gray-600"
+                        }`}
                     >
                       <div>
                         <div className="mb-2 font-semibold uppercase tracking-wider text-[11px] text-gray-400">
@@ -422,11 +410,10 @@ export function EducationApp() {
                 </div>
 
                 <div
-                  className={`rounded-xl border transition-all ${
-                    isDark
-                      ? "bg-[#202020] border-[#2F2F2F] hover:border-[#404040]"
-                      : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
-                  }`}
+                  className={`rounded-xl border transition-all ${isDark
+                    ? "bg-[#202020] border-[#2F2F2F] hover:border-[#404040]"
+                    : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
+                    }`}
                 >
                   <div
                     onClick={() => setExpandedSchool(!expandedSchool)}
@@ -449,9 +436,8 @@ export function EducationApp() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h2
-                            className={`text-base font-semibold ${
-                              isDark ? "text-white" : "text-[#37352F]"
-                            }`}
+                            className={`text-base font-semibold ${isDark ? "text-white" : "text-[#37352F]"
+                              }`}
                           >
                             The Deens Academy
                           </h2>
@@ -478,11 +464,10 @@ export function EducationApp() {
 
                   {expandedSchool && (
                     <div
-                      className={`border-t px-6 py-4 text-xs space-y-3 leading-relaxed ${
-                        isDark
-                          ? "border-[#2F2F2F] text-gray-300"
-                          : "border-gray-100 text-gray-600"
-                      }`}
+                      className={`border-t px-6 py-4 text-xs space-y-3 leading-relaxed ${isDark
+                        ? "border-[#2F2F2F] text-gray-300"
+                        : "border-gray-100 text-gray-600"
+                        }`}
                     >
                       <p>
                         Deens Academy played a pivotal role in shaping my
@@ -522,15 +507,13 @@ export function EducationApp() {
           ) : (
             /* Notion Database Table View */
             <div
-              className={`rounded-lg border overflow-hidden ${
-                isDark ? "border-[#2F2F2F]" : "border-gray-200"
-              }`}
+              className={`rounded-lg border overflow-hidden ${isDark ? "border-[#2F2F2F]" : "border-gray-200"
+                }`}
             >
               <table className="w-full text-left text-xs">
                 <thead
-                  className={`border-b font-medium text-gray-400 ${
-                    isDark ? "bg-[#202020] border-[#2F2F2F]" : "bg-gray-50 border-gray-200"
-                  }`}
+                  className={`border-b font-medium text-gray-400 ${isDark ? "bg-[#202020] border-[#2F2F2F]" : "bg-gray-50 border-gray-200"
+                    }`}
                 >
                   <tr>
                     <th className="py-2.5 px-3">Institution</th>
@@ -542,9 +525,8 @@ export function EducationApp() {
                 </thead>
                 <tbody className="divide-y divide-gray-200/20">
                   <tr
-                    className={`transition-colors ${
-                      isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
-                    }`}
+                    className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                      }`}
                   >
                     <td className="py-3 px-3 font-medium flex items-center space-x-2">
                       <FaUniversity className="h-3.5 w-3.5 text-blue-500 shrink-0" />
@@ -555,7 +537,7 @@ export function EducationApp() {
                     </td>
                     <td className="py-3 px-3 text-gray-600 dark:text-gray-400">2023 - 2027</td>
                     <td className="py-3 px-3 font-semibold text-emerald-500">
-                      8.38 / 10
+                      8.30 / 10
                     </td>
                     <td className="py-3 px-3">
                       <span className="rounded bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-500">
@@ -564,9 +546,8 @@ export function EducationApp() {
                     </td>
                   </tr>
                   <tr
-                    className={`transition-colors ${
-                      isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
-                    }`}
+                    className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                      }`}
                   >
                     <td className="py-3 px-3 font-medium flex items-center space-x-2">
                       <FaSchool className="h-3.5 w-3.5 text-green-500 shrink-0" />
@@ -586,9 +567,8 @@ export function EducationApp() {
                     </td>
                   </tr>
                   <tr
-                    className={`transition-colors ${
-                      isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
-                    }`}
+                    className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                      }`}
                   >
                     <td className="py-3 px-3 font-medium flex items-center space-x-2">
                       <FaSchool className="h-3.5 w-3.5 text-green-500 shrink-0" />

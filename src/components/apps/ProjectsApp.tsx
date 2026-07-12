@@ -5,7 +5,6 @@ import { useTheme } from "next-themes"
 import {
   FaCode,
   FaGithub,
-  FaExternalLinkAlt,
   FaGlobe,
   FaMobile,
   FaLaptopCode,
@@ -25,7 +24,7 @@ import {
   GitBranch,
   Cpu,
 } from "lucide-react"
-import { projects as projectsData, type Project } from "@/data/projects"
+import { projects as projectsData } from "@/data/projects"
 
 type ProjectsAppProps = {
   initialFilter?: string
@@ -42,33 +41,169 @@ const domainIcons: Record<string, React.ComponentType<{ className?: string }>> =
   "Machine Learning": Cpu,
 }
 
+// Classic Apple System Colors for Xcode categories
 const filterCategories = [
-  { id: "all", label: "All Targets", icon: Layers, subtitle: "Project Workspace" },
-  { id: "Website Development", label: "Web Applications", icon: FaGlobe, subtitle: "Next.js & React" },
-  { id: "App Development", label: "iOS & Mobile Apps", icon: FaMobile, subtitle: "Swift & React Native" },
-  { id: "Machine Learning", label: "Machine Learning & AI", icon: Cpu, subtitle: "PyTorch & TensorFlow" },
-  { id: "Blockchain", label: "Blockchain & Web3", icon: FaCube, subtitle: "Smart Contracts" },
-  { id: "Extension Development", label: "Chrome Extensions", icon: FaCode, subtitle: "Browser Add-ons" },
-  { id: "system", label: "System & Infrastructure", icon: FaLaptopCode, subtitle: "Arch & Systems" },
+  {
+    id: "all",
+    label: "All Targets",
+    icon: Layers,
+    subtitle: "Project Workspace",
+    color: "text-[#0A84FF]", // Apple Blue
+  },
+  {
+    id: "Website Development",
+    label: "Web Applications",
+    icon: FaGlobe,
+    subtitle: "Next.js & React",
+    color: "text-[#64D2FF]", // Apple Sky Blue
+  },
+  {
+    id: "App Development",
+    label: "iOS & Mobile Apps",
+    icon: FaMobile,
+    subtitle: "Swift & React Native",
+    color: "text-[#FF9F0A]", // Apple Orange
+  },
+  {
+    id: "Machine Learning",
+    label: "Machine Learning & AI",
+    icon: Cpu,
+    subtitle: "PyTorch & TensorFlow",
+    color: "text-[#BF5AF2]", // Apple Purple
+  },
+  {
+    id: "Blockchain",
+    label: "Blockchain & Web3",
+    icon: FaCube,
+    subtitle: "Smart Contracts",
+    color: "text-[#30D158]", // Apple Green
+  },
+  {
+    id: "Extension Development",
+    label: "Chrome Extensions",
+    icon: FaCode,
+    subtitle: "Browser Add-ons",
+    color: "text-[#FF375F]", // Apple Pink/Rose
+  },
+  {
+    id: "system",
+    label: "System & Infrastructure",
+    icon: FaLaptopCode,
+    subtitle: "Arch & Systems",
+    color: "text-[#5E5CE6]", // Apple Indigo
+  },
 ]
 
+// Apple color styling per domain
+const domainAppleColors: Record<
+  string,
+  {
+    boxDark: string
+    boxLight: string
+    badge: string
+  }
+> = {
+  "Website Development": {
+    boxDark: "bg-[#0A84FF]/15 border-[#0A84FF]/30 text-[#64D2FF]",
+    boxLight: "bg-[#0A84FF]/10 border-[#0A84FF]/30 text-[#0066CC]",
+    badge: "bg-[#0A84FF]/15 text-[#64D2FF] dark:text-[#64D2FF] border border-[#0A84FF]/30",
+  },
+  "App Development": {
+    boxDark: "bg-[#FF9F0A]/15 border-[#FF9F0A]/30 text-[#FF9F0A]",
+    boxLight: "bg-[#FF9F0A]/10 border-[#FF9F0A]/30 text-[#D97706]",
+    badge: "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  },
+  "Machine Learning": {
+    boxDark: "bg-[#BF5AF2]/15 border-[#BF5AF2]/30 text-[#BF5AF2]",
+    boxLight: "bg-[#BF5AF2]/10 border-[#BF5AF2]/30 text-[#9333EA]",
+    badge: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+  },
+  Blockchain: {
+    boxDark: "bg-[#30D158]/15 border-[#30D158]/30 text-[#30D158]",
+    boxLight: "bg-[#30D158]/10 border-[#30D158]/30 text-[#16A34A]",
+    badge: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  },
+  "Extension Development": {
+    boxDark: "bg-[#FF375F]/15 border-[#FF375F]/30 text-[#FF375F]",
+    boxLight: "bg-[#FF375F]/10 border-[#FF375F]/30 text-[#E11D48]",
+    badge: "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
+  },
+  system: {
+    boxDark: "bg-[#5E5CE6]/15 border-[#5E5CE6]/30 text-[#5E5CE6]",
+    boxLight: "bg-[#5E5CE6]/10 border-[#5E5CE6]/30 text-[#4F46E5]",
+    badge: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+  },
+}
+
+const defaultAppleColor = {
+  boxDark: "bg-[#0A84FF]/15 border-[#0A84FF]/30 text-[#64D2FF]",
+  boxLight: "bg-[#0A84FF]/10 border-[#0A84FF]/30 text-[#0066CC]",
+  badge: "bg-[#0A84FF]/15 text-[#64D2FF] border border-[#0A84FF]/30",
+}
+
 const techColors: Record<string, string> = {
-  "Next.js": "bg-[#252525] text-white border border-gray-700",
-  React: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
-  "React.js": "bg-blue-500/15 text-blue-400 border border-blue-500/30",
-  TypeScript: "bg-blue-600/15 text-blue-400 border border-blue-500/30",
-  "Tailwind CSS": "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30",
-  TailwindCSS: "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30",
-  "Node.js": "bg-green-500/15 text-green-400 border border-green-500/30",
-  Python: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30",
-  Swift: "bg-orange-500/15 text-orange-400 border border-orange-500/30",
-  PostgreSQL: "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30",
-  MongoDB: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
-  Docker: "bg-sky-500/15 text-sky-400 border border-sky-500/30",
-  FastAPI: "bg-teal-500/15 text-teal-400 border border-teal-500/30",
-  TensorFlow: "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-  "Torch-Vision": "bg-red-500/15 text-red-400 border border-red-500/30",
-  CoreML: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
+  "Next.js": "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
+  React: "bg-[#0A84FF]/15 text-[#64D2FF] border border-[#0A84FF]/30",
+  "React.js": "bg-[#0A84FF]/15 text-[#64D2FF] border border-[#0A84FF]/30",
+  TypeScript: "bg-[#0A84FF]/15 text-[#0A84FF] dark:text-[#5E9EFF] border border-[#0A84FF]/30",
+  JavaScript: "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
+  "Tailwind CSS": "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
+  TailwindCSS: "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
+  CSS: "bg-[#32ADE6]/15 text-[#32ADE6] border border-[#32ADE6]/30",
+  Redis: "bg-[#FF3B30]/15 text-[#FF3B30] border border-[#FF3B30]/30",
+  "AWS S3": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS Lambda": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS CloudFront": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS API Gateway": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS RDS": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "AWS EC2": "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "Gemini API": "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+  "Node.js": "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  Express: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  "Express.js": "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  FastAPI: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  Django: "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  Python: "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
+  Swift: "bg-[#FF9500]/15 text-[#FF9500] border border-[#FF9500]/30",
+  PostgreSQL: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+  CockroachDB: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+  MySQL: "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+  Prisma: "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
+  "Drizzle ORM": "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
+  MongoDB: "bg-[#34C759]/15 text-[#34C759] border border-[#34C759]/30",
+  Docker: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
+  GCP: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
+  Vercel: "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
+  Clerk: "bg-[#AF52DE]/15 text-[#AF52DE] border border-[#AF52DE]/30",
+  TensorFlow: "bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30",
+  "Torch-Vision": "bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30",
+  CoreML: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+  CNN: "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
+  SLM: "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+  Ethereum: "bg-[#00C7BE]/15 text-[#00C7BE] border border-[#00C7BE]/30",
+  "Arch Linux": "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
+  Razorpay: "bg-[#0A84FF]/15 text-[#0A84FF] border border-[#0A84FF]/30",
+}
+
+const appleBadgePalette = [
+  "bg-[#0A84FF]/15 text-[#0A84FF] dark:text-[#5E9EFF] border border-[#0A84FF]/30",
+  "bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30",
+  "bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30",
+  "bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30",
+  "bg-[#64D2FF]/15 text-[#64D2FF] border border-[#64D2FF]/30",
+  "bg-[#FF375F]/15 text-[#FF375F] border border-[#FF375F]/30",
+  "bg-[#5E5CE6]/15 text-[#5E5CE6] border border-[#5E5CE6]/30",
+  "bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30",
+  "bg-[#30B0C7]/15 text-[#30B0C7] border border-[#30B0C7]/30",
+]
+
+function getTechBadgeStyle(tech: string) {
+  if (techColors[tech]) return techColors[tech]
+  let hash = 0
+  for (let i = 0; i < tech.length; i++) {
+    hash = tech.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return appleBadgePalette[Math.abs(hash) % appleBadgePalette.length]
 }
 
 export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
@@ -146,7 +281,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
           <div className="flex items-center space-x-1">
             <button
               type="button"
-              className="flex h-6 w-8 items-center justify-center rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-sm"
+              className="flex h-6 w-8 items-center justify-center rounded bg-[#0A84FF] text-white hover:bg-blue-500 transition-colors shadow-sm"
               title="Build Target"
             >
               <Play className="h-3 w-3 fill-current" />
@@ -172,10 +307,10 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                 : "bg-white border-gray-300 text-gray-800"
             }`}
           >
-            <FolderGit2 className="h-3.5 w-3.5 text-blue-500" />
+            <FolderGit2 className="h-3.5 w-3.5 text-[#0A84FF]" />
             <span>AvadhootProjects.xcodeproj</span>
             <span className="text-gray-400">&gt;</span>
-            <span className="text-emerald-500 flex items-center font-semibold">
+            <span className="text-[#30D158] flex items-center font-semibold">
               <CheckCircle2 className="mr-1 h-3 w-3" />
               Build Succeeded
             </span>
@@ -192,7 +327,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
               placeholder="Filter targets or frameworks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full rounded-md pl-8 pr-3 py-1 text-xs transition focus:outline-none focus:ring-1 focus:ring-blue-500 border ${
+              className={`w-full rounded-md pl-8 pr-3 py-1 text-xs transition focus:outline-none focus:ring-1 focus:ring-[#0A84FF] border ${
                 isDark
                   ? "bg-[#1A1A1A] border-[#383838] text-white placeholder-gray-500"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
@@ -211,7 +346,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
               onClick={() => setViewMode("targets")}
               className={`p-1 rounded text-xs ${
                 viewMode === "targets"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#0A84FF] text-white"
                   : "text-gray-400 hover:text-foreground"
               }`}
               title="Target Card View"
@@ -223,7 +358,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
               onClick={() => setViewMode("compact")}
               className={`p-1 rounded text-xs ${
                 viewMode === "compact"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#0A84FF] text-white"
                   : "text-gray-400 hover:text-foreground"
               }`}
               title="Compact Table View"
@@ -263,9 +398,9 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                     key={category.id}
                     type="button"
                     onClick={() => setFilter(category.id)}
-                    className={`w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${
+                    className={`group w-full flex items-center justify-between rounded-md px-2.5 py-2 text-left transition-all ${
                       isSelected
-                        ? "bg-blue-600 text-white font-medium shadow-sm"
+                        ? "bg-[#0A84FF] text-white font-medium shadow-sm"
                         : isDark
                         ? "text-gray-300 hover:bg-white/5"
                         : "text-gray-700 hover:bg-black/5"
@@ -273,15 +408,15 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                   >
                     <div className="flex items-center space-x-2.5 min-w-0">
                       <Icon
-                        className={`h-4 w-4 shrink-0 ${
-                          isSelected ? "text-white" : "text-blue-500"
+                        className={`h-4 w-4 shrink-0 transition-transform duration-150 group-hover:scale-110 ${
+                          isSelected ? "text-white" : category.color
                         }`}
                       />
                       <div className="truncate">
                         <div className="text-xs truncate">{category.label}</div>
                         <div
                           className={`text-[10px] truncate ${
-                            isSelected ? "text-blue-200" : "text-gray-400"
+                            isSelected ? "text-blue-100" : "text-gray-400"
                           }`}
                         >
                           {category.subtitle}
@@ -291,7 +426,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                     <span
                       className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                         isSelected
-                          ? "bg-white/20 text-white"
+                          ? "bg-white/25 text-white"
                           : isDark
                           ? "bg-[#2A2A2A] text-gray-400"
                           : "bg-gray-200 text-gray-600"
@@ -314,7 +449,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
             }`}
           >
             <div className="flex items-center space-x-1.5 font-medium">
-              <GitBranch className="h-3.5 w-3.5 text-blue-500" />
+              <GitBranch className="h-3.5 w-3.5 text-[#0A84FF]" />
               <span>branch: main / dev</span>
             </div>
           </div>
@@ -329,7 +464,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                 {filterCategories.find((c) => c.id === filter)?.label || "Projects"}
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Showing {filteredProjects.length} built target
+                Showing {filteredProjects.length} compiled target
                 {filteredProjects.length !== 1 ? "s" : ""}
               </p>
             </div>
@@ -358,6 +493,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
               const DomainIcon = domainIcons[project.domain] || FaCode
               const displayDomains = project.domains || [project.domain]
               const isSelected = selectedProjectId === project.id
+              const appleTheme = domainAppleColors[project.domain] || defaultAppleColor
 
               return (
                 <div
@@ -366,8 +502,8 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                   className={`group relative rounded-xl border p-4 transition-all cursor-pointer ${
                     isSelected
                       ? isDark
-                        ? "bg-[#252830] border-blue-500 ring-1 ring-blue-500/50"
-                        : "bg-blue-50/50 border-blue-500 ring-1 ring-blue-500/50"
+                        ? "bg-[#252830] border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
+                        : "bg-blue-50/60 border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
                       : isDark
                       ? "bg-[#222224] border-[#303033] hover:border-[#45454A]"
                       : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
@@ -376,12 +512,10 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     {/* Left & Center: Target Icon + Details */}
                     <div className="flex items-start space-x-3.5 flex-1 min-w-0">
-                      {/* Target Icon Box */}
+                      {/* Target Icon Box styled with Apple System Color */}
                       <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg shadow-inner ${
-                          isDark
-                            ? "bg-[#18181A] border-[#333333] text-blue-400"
-                            : "bg-gray-50 border-gray-200 text-blue-600"
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg shadow-inner transition-transform duration-200 group-hover:scale-105 ${
+                          isDark ? appleTheme.boxDark : appleTheme.boxLight
                         }`}
                       >
                         <DomainIcon />
@@ -393,25 +527,24 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                           <h3 className="text-sm font-bold text-foreground truncate">
                             {project.name}
                           </h3>
-                          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
-                            <span className="mr-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-semibold text-[#30D158]">
+                            <span className="mr-1 h-1.5 w-1.5 rounded-full bg-[#30D158]" />
                             Compiled
                           </span>
 
                           {/* Domain Badges */}
                           <div className="flex flex-wrap gap-1">
-                            {displayDomains.map((d, idx) => (
-                              <span
-                                key={idx}
-                                className={`text-[10px] px-2 py-0.5 rounded font-medium ${
-                                  isDark
-                                    ? "bg-[#2D2D30] text-gray-300"
-                                    : "bg-gray-100 text-gray-700"
-                                }`}
-                              >
-                                {d}
-                              </span>
-                            ))}
+                            {displayDomains.map((d, idx) => {
+                              const badgeStyle = (domainAppleColors[d] || defaultAppleColor).badge
+                              return (
+                                <span
+                                  key={idx}
+                                  className={`text-[10px] px-2 py-0.5 rounded font-medium ${badgeStyle}`}
+                                >
+                                  {d}
+                                </span>
+                              )
+                            })}
                           </div>
                         </div>
 
@@ -427,11 +560,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                         {/* Technology Stack Tags */}
                         <div className="mt-3 flex flex-wrap items-center gap-1.5">
                           {project.techStack.map((tech, index) => {
-                            const badgeColor =
-                              techColors[tech] ||
-                              (isDark
-                                ? "bg-[#2A2A2D] text-gray-300 border border-gray-700"
-                                : "bg-gray-100 text-gray-700 border border-gray-200")
+                            const badgeColor = getTechBadgeStyle(tech)
                             return (
                               <span
                                 key={index}
@@ -469,7 +598,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-xs font-medium shadow-sm transition"
+                          className="w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-[#0A84FF] hover:bg-blue-500 text-white px-3 py-1.5 text-xs font-medium shadow-sm transition"
                         >
                           <Play className="h-3 w-3 fill-current" />
                           <span>Run Target</span>

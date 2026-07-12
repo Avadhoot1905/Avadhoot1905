@@ -268,59 +268,93 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
         isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
       }`}
     >
-      {/* Xcode Top Toolbar */}
+      {/* Xcode Top Toolbar (Responsive for Phone & Desktop) */}
       <div
-        className={`flex h-12 shrink-0 items-center justify-between border-b px-4 ${
+        className={`flex flex-col md:flex-row h-auto md:h-12 shrink-0 md:items-center justify-between border-b px-3 py-2 md:py-0 gap-2 ${
           isDark
             ? "border-[#2D2D2D] bg-[#252526]"
             : "border-[#E5E5E5] bg-[#E8E8ED]"
         }`}
       >
-        {/* Left: Xcode Build / Run Controls & Scheme */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1">
-            <button
-              type="button"
-              className="flex h-6 w-8 items-center justify-center rounded bg-[#0A84FF] text-white hover:bg-blue-500 transition-colors shadow-sm"
-              title="Build Target"
-            >
-              <Play className="h-3 w-3 fill-current" />
-            </button>
-            <button
-              type="button"
-              className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+        {/* Top Row on Phone / Left on Desktop: Build Controls & Scheme */}
+        <div className="flex items-center justify-between md:justify-start space-x-3 w-full md:w-auto">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="flex items-center space-x-1 shrink-0">
+              <button
+                type="button"
+                className="flex h-6 w-8 items-center justify-center rounded bg-[#0A84FF] text-white hover:bg-blue-500 transition-colors shadow-sm"
+                title="Build Target"
+              >
+                <Play className="h-3 w-3 fill-current" />
+              </button>
+              <button
+                type="button"
+                className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+                  isDark
+                    ? "bg-[#333333] text-gray-400 hover:text-white"
+                    : "bg-gray-300 text-gray-600 hover:text-black"
+                }`}
+                title="Stop Build"
+              >
+                <Square className="h-2.5 w-2.5 fill-current" />
+              </button>
+            </div>
+
+            {/* Scheme / Target Selector */}
+            <div
+              className={`flex items-center space-x-1.5 rounded px-2 py-1 text-xs font-medium border truncate ${
                 isDark
-                  ? "bg-[#333333] text-gray-400 hover:text-white"
-                  : "bg-gray-300 text-gray-600 hover:text-black"
+                  ? "bg-[#1E1E1E] border-[#383838] text-gray-200"
+                  : "bg-white border-gray-300 text-gray-800"
               }`}
-              title="Stop Build"
             >
-              <Square className="h-2.5 w-2.5 fill-current" />
-            </button>
+              <FolderGit2 className="h-3.5 w-3.5 text-[#0A84FF] shrink-0" />
+              <span className="truncate">AvadhootProjects.xcodeproj</span>
+              <span className="text-gray-400 shrink-0">&gt;</span>
+              <span className="text-[#30D158] flex items-center font-semibold shrink-0">
+                <CheckCircle2 className="mr-1 h-3 w-3" />
+                Succeeded
+              </span>
+            </div>
           </div>
 
-          {/* Scheme / Target Selector */}
+          {/* View Toggles on phone (shown right aligned on phone top row) */}
           <div
-            className={`flex items-center space-x-2 rounded px-2.5 py-1 text-xs font-medium border ${
-              isDark
-                ? "bg-[#1E1E1E] border-[#383838] text-gray-200"
-                : "bg-white border-gray-300 text-gray-800"
+            className={`md:hidden flex items-center rounded border p-0.5 shrink-0 ${
+              isDark ? "border-[#383838] bg-[#1A1A1A]" : "border-gray-300 bg-white"
             }`}
           >
-            <FolderGit2 className="h-3.5 w-3.5 text-[#0A84FF]" />
-            <span>AvadhootProjects.xcodeproj</span>
-            <span className="text-gray-400">&gt;</span>
-            <span className="text-[#30D158] flex items-center font-semibold">
-              <CheckCircle2 className="mr-1 h-3 w-3" />
-              Build Succeeded
-            </span>
+            <button
+              type="button"
+              onClick={() => setViewMode("targets")}
+              className={`p-1 rounded text-xs ${
+                viewMode === "targets"
+                  ? "bg-[#0A84FF] text-white"
+                  : "text-gray-400 hover:text-foreground"
+              }`}
+              title="Target Card View"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("compact")}
+              className={`p-1 rounded text-xs ${
+                viewMode === "compact"
+                  ? "bg-[#0A84FF] text-white"
+                  : "text-gray-400 hover:text-foreground"
+              }`}
+              title="Compact Table View"
+            >
+              <List className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* Center/Right: Search & View Toggle */}
-        <div className="flex items-center space-x-3">
+        {/* Search Input & View Toggles (Desktop right side / Phone 2nd row) */}
+        <div className="flex items-center space-x-2 w-full md:w-auto">
           {/* Search Input */}
-          <div className="relative w-52 sm:w-64">
+          <div className="relative w-full md:w-56">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
             <input
               type="text"
@@ -335,9 +369,9 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
             />
           </div>
 
-          {/* View Toggles */}
+          {/* View Toggles (Desktop only) */}
           <div
-            className={`flex items-center rounded border p-0.5 ${
+            className={`hidden md:flex items-center rounded border p-0.5 ${
               isDark ? "border-[#383838] bg-[#1A1A1A]" : "border-gray-300 bg-white"
             }`}
           >
@@ -371,9 +405,9 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
 
       {/* Main Xcode Workspace Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Xcode Navigator Sidebar */}
+        {/* Left Xcode Navigator Sidebar (Visible on md+, hidden on phone) */}
         <div
-          className={`w-56 shrink-0 border-r flex flex-col justify-between ${
+          className={`hidden md:flex w-56 shrink-0 border-r flex-col justify-between ${
             isDark
               ? "border-[#2D2D2D] bg-[#1A1A1A]"
               : "border-[#E5E5E5] bg-[#EBEBED]"
@@ -456,9 +490,53 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
         </div>
 
         {/* Center Workspace Content Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 w-full overflow-y-auto p-3 sm:p-6">
+          {/* Mobile Category Filter Bar (visible only on phone < md) */}
+          <div className="md:hidden mb-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex overflow-x-auto gap-1.5 pb-1 no-scrollbar">
+              {filterCategories.map((category) => {
+                const Icon = category.icon
+                const isSelected = filter === category.id
+                const count = countsByCategory[category.id] ?? 0
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setFilter(category.id)}
+                    className={`group shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      isSelected
+                        ? "bg-[#0A84FF] text-white shadow-sm"
+                        : isDark
+                        ? "bg-[#252526] text-gray-300 border border-[#383838] hover:border-gray-600"
+                        : "bg-white text-gray-700 border border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:scale-110 ${
+                        isSelected ? "text-white" : category.color
+                      }`}
+                    />
+                    <span>{category.label}</span>
+                    <span
+                      className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-semibold ${
+                        isSelected
+                          ? "bg-white/25 text-white"
+                          : isDark
+                          ? "bg-[#333333] text-gray-400"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Section Banner Header */}
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-4 sm:mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-foreground">
                 {filterCategories.find((c) => c.id === filter)?.label || "Projects"}
@@ -575,14 +653,14 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                     </div>
 
                     {/* Right Column: Oriented Actions (Xcode Build Output / Links) */}
-                    <div className="flex sm:flex-col items-end justify-start gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-800">
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-end w-full sm:w-auto gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-800">
                       {project.github && (
                         <a
                           href={project.github}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className={`w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition border ${
+                          className={`flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md px-3 py-2 sm:py-1.5 text-xs font-medium transition border ${
                             isDark
                               ? "bg-[#2D2D30] border-[#3E3E42] text-gray-200 hover:bg-[#38383C]"
                               : "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200"
@@ -598,7 +676,7 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-[#0A84FF] hover:bg-blue-500 text-white px-3 py-1.5 text-xs font-medium shadow-sm transition"
+                          className="flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-[#0A84FF] hover:bg-blue-500 text-white px-3 py-2 sm:py-1.5 text-xs font-medium shadow-sm transition"
                         >
                           <Play className="h-3 w-3 fill-current" />
                           <span>Run Target</span>

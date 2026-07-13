@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Rnd } from "react-rnd"
-import { X, Minus, Square } from "lucide-react"
+import { X } from "lucide-react"
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
 
@@ -279,27 +279,42 @@ export function Window({
       >
         <div
           onDoubleClick={toggleFullScreen}
-          style={{ transition: 'background-color 0.25s ease, color 0.25s ease' }}
-          className={`flex h-9 items-center px-3 select-none ${
+          style={{ transition: 'background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease' }}
+          className={`flex h-9 items-center px-3.5 select-none border-b ${
             theme === "dark"
               ? isActive
-                ? "bg-gray-800/95 text-gray-100"
-                : "bg-gray-850/60 text-gray-400"
+                ? "bg-[#1f1f21]/95 text-gray-200 border-gray-700/60"
+                : "bg-[#1a1a1c]/70 text-gray-400 border-gray-800/50"
               : isActive
-                ? "bg-gray-200/95 text-gray-900"
-                : "bg-gray-100/70 text-gray-500"
+                ? "bg-[#f1f1f3]/95 text-gray-800 border-gray-300/60"
+                : "bg-[#e8e8ea]/70 text-gray-500 border-gray-200/50"
           }`}
         >
-          <div className="flex space-x-2 z-10 group/buttons">
+          <div className="flex items-center gap-2 z-10 group/traffic">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onClose()
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-red-500 group-hover/buttons:text-white hover:bg-red-600 z-10 transition-all"
+              className={`relative flex h-3 w-3 items-center justify-center rounded-full transition-all duration-150 overflow-hidden ${
+                isActive
+                  ? "bg-[#FF5F56] hover:brightness-105 border border-[#E0443E]/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
+                  : "bg-gray-400/60 dark:bg-gray-600/60 border border-gray-400/40 dark:border-gray-500/40 group-hover/traffic:bg-[#FF5F56] group-hover/traffic:border-[#E0443E]/80"
+              }`}
               title="Close"
             >
-              <X className="h-2 w-2" />
+              <svg
+                className="w-2 h-2 text-[#4c0000] opacity-0 group-hover/traffic:opacity-100 transition-opacity duration-150 stroke-current flex-shrink-0"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 3L9 9M9 3L3 9"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
             <button
               onClick={(e) => {
@@ -310,26 +325,61 @@ export function Window({
                   onClose()
                 }
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-yellow-500 group-hover/buttons:text-black hover:bg-yellow-600 z-10 transition-all"
+              className={`relative flex h-3 w-3 items-center justify-center rounded-full transition-all duration-150 overflow-hidden ${
+                isActive
+                  ? "bg-[#FFBD2E] hover:brightness-105 border border-[#DEA123]/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]"
+                  : "bg-gray-400/60 dark:bg-gray-600/60 border border-gray-400/40 dark:border-gray-500/40 group-hover/traffic:bg-[#FFBD2E] group-hover/traffic:border-[#DEA123]/80"
+              }`}
               title="Minimize"
             >
-              <Minus className="h-2 w-2" />
+              <svg
+                className="w-2 h-2 text-[#5c3b00] opacity-0 group-hover/traffic:opacity-100 transition-opacity duration-150 stroke-current flex-shrink-0"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.5 6H9.5"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 toggleFullScreen()
               }}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 text-green-500 group-hover/buttons:text-black hover:bg-green-600 z-10 transition-all"
+              className={`relative flex h-3 w-3 items-center justify-center rounded-full transition-all duration-150 overflow-hidden ${
+                isActive
+                  ? "bg-[#28C840] hover:brightness-105 border border-[#1AAB29]/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
+                  : "bg-gray-400/60 dark:bg-gray-600/60 border border-gray-400/40 dark:border-gray-500/40 group-hover/traffic:bg-[#28C840] group-hover/traffic:border-[#1AAB29]/80"
+              }`}
               title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
             >
-              <Square className="h-2 w-2" />
+              {isFullScreen ? (
+                <svg
+                  className="w-2 h-2 text-[#003800] opacity-0 group-hover/traffic:opacity-100 transition-opacity duration-150 fill-current flex-shrink-0"
+                  viewBox="0 0 12 12"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M5.8 5.8H1.8L5.8 1.8V5.8ZM6.2 6.2H10.2L6.2 10.2V6.2Z" />
+                </svg>
+              ) : (
+                <svg
+                  className="w-2 h-2 text-[#003800] opacity-0 group-hover/traffic:opacity-100 transition-opacity duration-150 fill-current flex-shrink-0"
+                  viewBox="0 0 12 12"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2.2 2.2H6.2L2.2 6.2V2.2ZM9.8 9.8H5.8L9.8 5.8V9.8Z" />
+                </svg>
+              )}
             </button>
           </div>
-          <div className="window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center">
+          <div className="window-drag-handle flex-1 text-center text-xs font-medium cursor-move h-full flex items-center justify-center tracking-tight">
             {title}
           </div>
-          <div className="w-16"></div>
+          <div className="w-14"></div>
         </div>
         <div 
           className={`h-[calc(100%-2.25rem)] overflow-auto ${

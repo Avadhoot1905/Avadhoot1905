@@ -5,18 +5,44 @@ import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
 import gsap from "gsap"
 
-interface DockProps {
-  apps: {
-    id: string
-    icon: ReactElement
-    isOpen: boolean
-  }[]
+export interface DockApp {
+  id: string
+  name?: string
+  icon: ReactElement
+  isOpen: boolean
+  isPinned?: boolean
+}
+
+export interface DockProps {
+  apps: DockApp[]
   onAppClick: (appId: string) => void
 }
 
 type DockItem =
-  | { type: "app"; app: DockProps["apps"][number]; id: string }
+  | { type: "app"; app: DockApp; id: string }
   | { type: "separator"; id: string }
+
+const appIdToName: Record<string, string> = {
+  finder: "Finder",
+  about: "About Me",
+  experience: "Experience",
+  projects: "Projects",
+  education: "Education",
+  safari: "Safari",
+  terminal: "Terminal",
+  flappybird: "Flappy Bird",
+  tictactoe: "Tic Tac Toe",
+  "2048": "2048",
+  messages: "Messages",
+  photos: "Photos",
+  achievements: "Achievements",
+  gmail: "Gmail",
+  github: "GitHub",
+  linkedin: "LinkedIn",
+  leetcode: "LeetCode",
+  medium: "Medium",
+}
+
 
 export function Dock({ apps, onAppClick }: DockProps) {
   const [isMobile, setIsMobile] = useState(false)
@@ -54,19 +80,48 @@ export function Dock({ apps, onAppClick }: DockProps) {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
+  const isAppUnpinned = useCallback((app: DockApp) => {
+    if (app.isPinned !== undefined) {
+      return !app.isPinned
+    }
+    const unpinnedAppIds = [
+      "flappybird",
+      "tictactoe",
+      "2048",
+      "messages",
+      "photos",
+      "achievements",
+      "dinogame",
+    ]
+    return unpinnedAppIds.includes(app.id.toLowerCase())
+  }, [])
+
+  // Filter apps so unpinned apps only appear when they are open
+  const visibleApps = apps.filter((app) => {
+    if (isAppUnpinned(app) && !app.isOpen) {
+      return false
+    }
+    return true
+  })
+
   // Filter apps for mobile vs desktop
   const displayApps = isMobile
-    ? apps.filter((app) => socialAppIds.includes(app.id))
-    : apps
+    ? visibleApps.filter((app) => socialAppIds.includes(app.id))
+    : visibleApps
 
   const finderApp = displayApps.find((app) => app.id === "finder")
   const socialApps = displayApps.filter((app) => socialAppIds.includes(app.id))
   const regularApps = displayApps.filter(
     (app) => app.id !== "finder" && !socialAppIds.includes(app.id)
   )
-  const showFinderSeparator = Boolean(finderApp && regularApps.length > 0)
+
+  const pinnedRegularApps = regularApps.filter((app) => !isAppUnpinned(app))
+  const unpinnedRegularApps = regularApps.filter((app) => isAppUnpinned(app))
+  const orderedRegularApps = [...pinnedRegularApps, ...unpinnedRegularApps]
+
+  const showFinderSeparator = Boolean(finderApp && orderedRegularApps.length > 0)
   const showSocialSeparator = Boolean(
-    socialApps.length > 0 && (finderApp || regularApps.length > 0)
+    socialApps.length > 0 && (finderApp || orderedRegularApps.length > 0)
   )
 
   const dockItems: DockItem[] = []
@@ -76,7 +131,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
   if (showFinderSeparator) {
     dockItems.push({ type: "separator", id: "finder-separator" })
   }
-  regularApps.forEach((app) => {
+  orderedRegularApps.forEach((app) => {
     dockItems.push({ type: "app", app, id: app.id })
   })
   if (showSocialSeparator) {
@@ -106,6 +161,10 @@ export function Dock({ apps, onAppClick }: DockProps) {
   // Initialize GSAP quickTo setters for inertia
   const initQuickTos = useCallback(() => {
     if (isMobile) return
+
+    xQuickToRef.current = []
+    scaleQuickToRef.current = []
+    shadowQuickToRef.current = []
 
     dockItems.forEach((item, i) => {
       const itemEl = itemRefs.current[i]
@@ -185,13 +244,20 @@ export function Dock({ apps, onAppClick }: DockProps) {
     [dockItems]
   )
 
+  const dockItemIdsKey = dockItems.map((item) => item.id).join(",")
+
   useEffect(() => {
     if (isMobile) return
 
     measureDock()
     initQuickTos()
 
-    const timer = setTimeout(() => {
+    const timer1 = setTimeout(() => {
+      measureDock()
+      initQuickTos()
+    }, 50)
+
+    const timer2 = setTimeout(() => {
       measureDock()
       initQuickTos()
     }, 150)
@@ -404,13 +470,14 @@ export function Dock({ apps, onAppClick }: DockProps) {
     gsap.ticker.add(updateDock)
 
     return () => {
-      clearTimeout(timer)
+      clearTimeout(timer1)
+      clearTimeout(timer2)
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("mouseleave", handleMouseLeave)
       window.removeEventListener("resize", handleResize)
       gsap.ticker.remove(updateDock)
     }
-  }, [dockItems, isMobile, measureDock, initQuickTos, updateLabels])
+  }, [dockItemIdsKey, isMobile, measureDock, initQuickTos, updateLabels])
 
   // Click Animation: Tiny press & rebound
   const handleAppClick = (appId: string, index: number) => {
@@ -506,7 +573,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
             const app = item.app
             const appLabel =
-              app.id.charAt(0).toUpperCase() + app.id.slice(1)
+              app.name ||
+              appIdToName[app.id] ||
+              (app.id.charAt(0).toUpperCase() + app.id.slice(1))
 
             return (
               <div

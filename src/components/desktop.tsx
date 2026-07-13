@@ -1237,6 +1237,12 @@ export function MacOSDesktop() {
               { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
               { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
               { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
+              { id: "flappybird", name: "Flappy Bird", icon: flappyBirdIcon, isOpen: openWindows.includes("flappybird"), isPinned: false },
+              { id: "tictactoe", name: "Tic Tac Toe", icon: ticTacToeIcon, isOpen: openWindows.includes("tictactoe"), isPinned: false },
+              { id: "2048", name: "2048", icon: game2048Icon, isOpen: openWindows.includes("2048"), isPinned: false },
+              { id: "messages", name: "Messages", icon: messagesIcon, isOpen: openWindows.includes("messages"), isPinned: false },
+              { id: "photos", name: "Photos", icon: photosIcon, isOpen: openWindows.includes("photos"), isPinned: false },
+              { id: "achievements", name: "Achievements", icon: achievementsIcon, isOpen: openWindows.includes("achievements"), isPinned: false },
               {
                 id: "gmail", icon: (
                   <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">

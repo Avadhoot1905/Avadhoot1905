@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, ReactElement } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import gsap from "gsap"
 
@@ -150,11 +150,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
       const el = itemRefs.current[i]
       if (!el) return
       const prevX = Number(gsap.getProperty(el, "x")) || 0
-      if (prevX !== 0) gsap.set(el, { x: 0 })
       const rect = el.getBoundingClientRect()
-      baseXRef.current[i] = rect.left + rect.width / 2
+      baseXRef.current[i] = rect.left - prevX + rect.width / 2
       baseWidthRef.current[i] = rect.width
-      if (prevX !== 0) gsap.set(el, { x: prevX })
     })
   }, [dockItems, isMobile])
 
@@ -252,15 +250,16 @@ export function Dock({ apps, onAppClick }: DockProps) {
     measureDock()
     initQuickTos()
 
-    const timer1 = setTimeout(() => {
+    // Continuously measure during spring appearance/disappearance transition
+    let frameId: number
+    const startTime = performance.now()
+    const trackLayout = () => {
       measureDock()
-      initQuickTos()
-    }, 50)
-
-    const timer2 = setTimeout(() => {
-      measureDock()
-      initQuickTos()
-    }, 150)
+      if (performance.now() - startTime < 520) {
+        frameId = requestAnimationFrame(trackLayout)
+      }
+    }
+    trackLayout()
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY }
@@ -470,8 +469,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
     gsap.ticker.add(updateDock)
 
     return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
+      cancelAnimationFrame(frameId)
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("mouseleave", handleMouseLeave)
       window.removeEventListener("resize", handleResize)
@@ -479,21 +477,23 @@ export function Dock({ apps, onAppClick }: DockProps) {
     }
   }, [dockItemIdsKey, isMobile, measureDock, initQuickTos, updateLabels])
 
-  // Click Animation: Tiny press & rebound
+  // Authentic macOS Dock click bounce animation
   const handleAppClick = (appId: string, index: number) => {
     if (!isMobile) {
       const iconEl = iconRefs.current[index]
       if (iconEl) {
         gsap.to(iconEl, {
-          scale: 0.88,
-          duration: 0.07,
-          ease: "power2.in",
+          y: -18,
+          scale: 1.08,
+          duration: 0.2,
+          ease: "power2.out",
           overwrite: "auto",
           onComplete: () => {
             gsap.to(iconEl, {
+              y: 0,
               scale: 1,
-              duration: 0.18,
-              ease: "power2.out",
+              duration: 0.45,
+              ease: "bounce.out",
               overwrite: "auto",
             })
           },
@@ -552,103 +552,148 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
         {/* Dock Items Layer */}
         <div className="relative z-10 flex items-center">
-          {dockItems.map((item, index) => {
-            if (item.type === "separator") {
-              return (
-                <div
-                  key={item.id}
-                  ref={(el) => {
-                    itemRefs.current[index] = el
-                  }}
-                  className="flex items-center justify-center will-change-transform"
-                >
-                  <div
-                    className={`mx-2 w-px ${isMobile ? "h-8" : "h-8"} ${
-                      theme === "dark" ? "bg-white/30" : "bg-black/20"
-                    }`}
-                  />
-                </div>
-              )
-            }
-
-            const app = item.app
-            const appLabel =
-              app.name ||
-              appIdToName[app.id] ||
-              (app.id.charAt(0).toUpperCase() + app.id.slice(1))
-
-            return (
-              <div
-                key={app.id}
-                ref={(el) => {
-                  itemRefs.current[index] = el
-                }}
-                onClick={() => handleAppClick(app.id, index)}
-                className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${
-                  isMobile ? "mx-1" : "mx-1.5"
-                }`}
-              >
-                {/* App Icon Container (Magnifies upwards around bottom center) */}
-                <div
-                  ref={(el) => {
-                    iconRefs.current[index] = el
-                  }}
-                  className="relative flex items-center justify-center will-change-transform"
-                  style={{
-                    width: isMobile ? 50 : 52,
-                    height: isMobile ? 50 : 52,
-                    transformOrigin: "50% 100%",
-                  }}
-                >
-                  {/* Subtle shadow beneath enlarged icon */}
-                  {!isMobile && (
+          <AnimatePresence mode="popLayout" initial={false}>
+            {dockItems.map((item, index) => {
+              if (item.type === "separator") {
+                return (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: "auto", opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 26,
+                    }}
+                    className="flex items-center justify-center overflow-visible"
+                  >
                     <div
                       ref={(el) => {
-                        shadowRefs.current[index] = el
+                        itemRefs.current[index] = el
                       }}
-                      className="absolute -bottom-2 inset-x-1 h-3 rounded-full bg-black/35 blur-md pointer-events-none -z-10"
-                      style={{ opacity: 0 }}
-                    />
-                  )}
+                      className="flex items-center justify-center will-change-transform"
+                    >
+                      <div
+                        className={`mx-2 w-px ${isMobile ? "h-8" : "h-8"} ${
+                          theme === "dark" ? "bg-white/30" : "bg-black/20"
+                        }`}
+                      />
+                    </div>
+                  </motion.div>
+                )
+              }
 
-                  <div className="flex h-full w-full items-center justify-center drop-shadow-md">
-                    {app.icon}
-                  </div>
-                </div>
+              const app = item.app
+              const appLabel =
+                app.name ||
+                appIdToName[app.id] ||
+                (app.id.charAt(0).toUpperCase() + app.id.slice(1))
 
-                {/* Running Indicator Dot (anchored at bottom, never drifts/scales) */}
-                {app.isOpen && (
-                  <div
-                    className={`absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full shadow-sm ${
-                      theme === "dark" ? "bg-white" : "bg-gray-800"
-                    }`}
-                  />
-                )}
-
-                {/* App Label Tooltip (smooth fade in, rise, fade out) */}
-                {!isMobile && (
+              return (
+                <motion.div
+                  key={app.id}
+                  layout
+                  initial={{ width: 0, opacity: 0, scale: 0.25, y: 24 }}
+                  animate={{
+                    width: "auto",
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    transition: {
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 26,
+                    },
+                  }}
+                  exit={{
+                    width: 0,
+                    opacity: 0,
+                    scale: 0.25,
+                    y: 20,
+                    transition: {
+                      duration: 0.22,
+                      ease: "easeInOut",
+                    },
+                  }}
+                  className="flex items-center justify-center overflow-visible"
+                >
                   <div
                     ref={(el) => {
-                      labelRefs.current[index] = el
+                      itemRefs.current[index] = el
                     }}
-                    className={`absolute -top-11 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium shadow-lg backdrop-blur-xl border z-40 ${
-                      theme === "dark"
-                        ? "bg-black/60 text-white border-white/20"
-                        : "bg-white/70 text-black border-black/15"
+                    onClick={() => handleAppClick(app.id, index)}
+                    className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${
+                      isMobile ? "mx-1" : "mx-1.5"
                     }`}
-                    style={{
-                      opacity: 0,
-                      transform: "translate3d(-50%, 4px, 0)",
-                      backdropFilter: "blur(16px) saturate(180%)",
-                      WebkitBackdropFilter: "blur(16px) saturate(180%)",
-                    }}
                   >
-                    {appLabel}
+                    {/* App Icon Container (Magnifies upwards around bottom center) */}
+                    <div
+                      ref={(el) => {
+                        iconRefs.current[index] = el
+                      }}
+                      className="relative flex items-center justify-center will-change-transform"
+                      style={{
+                        width: isMobile ? 50 : 52,
+                        height: isMobile ? 50 : 52,
+                        transformOrigin: "50% 100%",
+                      }}
+                    >
+                      {/* Subtle shadow beneath enlarged icon */}
+                      {!isMobile && (
+                        <div
+                          ref={(el) => {
+                            shadowRefs.current[index] = el
+                          }}
+                          className="absolute -bottom-2 inset-x-1 h-3 rounded-full bg-black/35 blur-md pointer-events-none -z-10"
+                          style={{ opacity: 0 }}
+                        />
+                      )}
+
+                      <div className="flex h-full w-full items-center justify-center drop-shadow-md">
+                        {app.icon}
+                      </div>
+                    </div>
+
+                    {/* Running Indicator Dot (anchored at bottom, never drifts/scales) */}
+                    {app.isOpen && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        className={`absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full shadow-sm ${
+                          theme === "dark" ? "bg-white" : "bg-gray-800"
+                        }`}
+                      />
+                    )}
+
+                    {/* App Label Tooltip (smooth fade in, rise, fade out) */}
+                    {!isMobile && (
+                      <div
+                        ref={(el) => {
+                          labelRefs.current[index] = el
+                        }}
+                        className={`absolute -top-11 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium shadow-lg backdrop-blur-xl border z-40 ${
+                          theme === "dark"
+                            ? "bg-black/60 text-white border-white/20"
+                            : "bg-white/70 text-black border-black/15"
+                        }`}
+                        style={{
+                          opacity: 0,
+                          transform: "translate3d(-50%, 4px, 0)",
+                          backdropFilter: "blur(16px) saturate(180%)",
+                          WebkitBackdropFilter: "blur(16px) saturate(180%)",
+                        }}
+                      >
+                        {appLabel}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )
-          })}
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>

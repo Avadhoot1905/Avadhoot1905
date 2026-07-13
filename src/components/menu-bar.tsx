@@ -724,68 +724,17 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           )}
         </button>
 
-        <div className="relative">
-          <button
-            onClick={() => toggleMenu("theme")}
-            className={iconTriggerClass}
-            title="Theme"
-          >
-            {theme === "dark" ? (
-              <Moon className="h-4 w-4" />
-            ) : theme === "light" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Monitor className="h-4 w-4" />
-            )}
-          </button>
-          <AnimatePresence>
-            {activeMenu === "theme" && (
-              <motion.div
-                className={`right-0 w-36 ${dropdownClass}`}
-                style={{
-                  position: 'absolute',
-                  zIndex: 99999,
-                  backdropFilter: 'blur(24px) saturate(190%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(190%)'
-                }}
-                initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="px-1 py-0.5">
-                  <button
-                    className={`${dropdownItemClass} flex items-center gap-2 ${theme === "light" ? "bg-blue-500 text-white" : ""}`}
-                    onClick={() => {
-                      setTheme("light")
-                      setActiveMenu(null)
-                    }}
-                  >
-                    <Sun className="h-4 w-4" /> Light
-                  </button>
-                  <button
-                    className={`${dropdownItemClass} flex items-center gap-2 ${theme === "dark" ? "bg-blue-500 text-white" : ""}`}
-                    onClick={() => {
-                      setTheme("dark")
-                      setActiveMenu(null)
-                    }}
-                  >
-                    <Moon className="h-4 w-4" /> Dark
-                  </button>
-                  <button
-                    className={`${dropdownItemClass} flex items-center gap-2 ${theme === "system" ? "bg-blue-500 text-white" : ""}`}
-                    onClick={() => {
-                      setTheme("system")
-                      setActiveMenu(null)
-                    }}
-                  >
-                    <Monitor className="h-4 w-4" /> System
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className={iconTriggerClass}
+          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {theme === "dark" ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+        </button>
 
         <div className={iconTriggerClass} title="Wi-Fi">
           <WifiHigh className="h-4 w-4" />

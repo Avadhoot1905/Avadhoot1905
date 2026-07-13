@@ -89,6 +89,7 @@ export function ExperienceApp() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [copiedReply, setCopiedReply] = useState(false)
   const [mobileView, setMobileView] = useState<"list" | "detail">("list")
+  const [readIds, setReadIds] = useState<number[]>([])
 
   // Filter experiences based on folder, search query, and flagged toggle
   const filteredExperiences = useMemo(() => {
@@ -120,6 +121,7 @@ export function ExperienceApp() {
 
   const handleRefresh = () => {
     setIsRefreshing(true)
+    setReadIds([])
     setTimeout(() => setIsRefreshing(false), 500)
   }
 
@@ -134,6 +136,7 @@ export function ExperienceApp() {
   const handleSelectExperience = (id: number) => {
     setSelectedId(id)
     setMobileView("detail")
+    setReadIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
   }
 
   const countByFolder = (folder: string) => {
@@ -402,6 +405,7 @@ export function ExperienceApp() {
             ) : (
               filteredExperiences.map((exp) => {
                 const isSelected = selectedExperience?.id === exp.id
+                const isRead = readIds.includes(exp.id)
                 return (
                   <div
                     key={exp.id}
@@ -418,7 +422,11 @@ export function ExperienceApp() {
                     {/* Top Row: Sender & Timestamp */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-2 min-w-0">
-                        <span className="w-2 h-2 rounded-full bg-[#0A84FF] shrink-0" />
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 transition-opacity duration-300 ${
+                            isRead ? "opacity-0" : "bg-[#0A84FF] opacity-100"
+                          }`}
+                        />
                         <span className={`text-xs font-bold truncate ${isDark ? "text-white" : "text-gray-900"}`}>
                           {exp.senderName}
                         </span>

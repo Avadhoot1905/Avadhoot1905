@@ -129,8 +129,8 @@ export function AchievementsApp() {
 
   return (
     <div className={`h-full overflow-hidden ${isDark ? "bg-black text-neutral-100" : "bg-neutral-100 text-neutral-900"}`}>
-      <div className={`flex h-full flex-col md:flex-row ${isDark ? "bg-black" : "bg-neutral-100"}`}>
-        <aside className={`w-full border-b md:w-[280px] md:border-b-0 md:border-r ${isDark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-100"}`}>
+      <div className={`flex h-full flex-col md:flex-row overflow-y-auto md:overflow-hidden ${isDark ? "bg-black" : "bg-neutral-100"}`}>
+        <aside className={`w-full shrink-0 border-b md:w-[280px] md:border-b-0 md:border-r md:h-full ${isDark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-100"}`}>
           <div className="border-b border-neutral-200 px-4 py-4 dark:border-neutral-800">
             <div className="flex items-center justify-between gap-2">
             <h1 className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">Achievements</h1>
@@ -141,7 +141,7 @@ export function AchievementsApp() {
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Completed milestones</p>
           </div>
 
-          <div className="max-h-64 space-y-1 overflow-y-auto p-3 md:max-h-none md:h-[calc(100%-73px)]">
+          <div className="space-y-1 p-3 md:h-[calc(100%-73px)] md:overflow-y-auto">
             {achievements.map((achievement) => (
               <AchievementListItem
                 key={achievement.id}
@@ -153,7 +153,7 @@ export function AchievementsApp() {
           </div>
         </aside>
 
-        <section className={`flex-1 overflow-y-auto p-6 ${isDark ? "bg-black" : "bg-neutral-100"}`}>
+        <section className={`flex-1 p-6 md:overflow-y-auto ${isDark ? "bg-black" : "bg-neutral-100"}`}>
           {selectedAchievement ? (
             <AchievementNotesView achievement={selectedAchievement} />
           ) : (

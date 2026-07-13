@@ -2,14 +2,29 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useTheme } from "next-themes"
-// ===================================================
-// STATIC EXPORT MODE - Using Lambda API Client
-// ===================================================
-// Chat functionality now calls AWS Lambda API
-// See: lambda/chat/index.ts
-// CloudFront routes same-origin /api/chat to API Gateway
-import { sendMessageWithHistory, clearChatHistory, getUserChatHistory } from "@/lib/chat-api"
-import { FaPaperPlane, FaUndo } from "react-icons/fa"
+import {
+  sendMessageWithHistory,
+  clearChatHistory,
+  getUserChatHistory,
+} from "@/lib/chat-api"
+import {
+  FaUndo,
+  FaSearch,
+  FaEdit,
+  FaVideo,
+  FaPhoneAlt,
+  FaInfoCircle,
+  FaSmile,
+  FaImage,
+  FaPlus,
+  FaArrowUp,
+  FaTimes,
+  FaEnvelope,
+  FaGithub,
+  FaLinkedin,
+  FaFileAlt,
+  FaMagic,
+} from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -23,28 +38,56 @@ type MessagesAppProps = {
   onOpenApp?: (appId: string, params?: { filter?: string }) => void
 }
 
-/**
- * Generate a unique session ID that persists during the page session
- * but is cleared on page refresh
- */
+type Contact = {
+  id: string
+  name: string
+  roleSubtitle: string
+  avatar: string
+  status: string
+  lastMessage: string
+  time: string
+  unread?: boolean
+  suggestions: string[]
+}
+
+const CONTACTS: Contact[] = [
+  {
+    id: "avadhoot",
+    name: "Avadhoot Ganesh Mahadik",
+    roleSubtitle: "Primary AI Assistant • Active now",
+    avatar: "/favicon.ico",
+    status: "Active now",
+    lastMessage: "Hi! I'm Avadhoot Mahadik. Ask me anything!",
+    time: "Now",
+    suggestions: [
+      "Tell me about your experience at QNu Labs 💼",
+      "What are your top projects? 🚀",
+      "What is your technical stack? ⚡",
+      "How can we schedule an interview? 📅",
+    ],
+  },
+]
+
 function getSessionId(): string {
-  // Check if we already have a session ID in sessionStorage (not localStorage)
-  let sessionId = sessionStorage.getItem('chat-session-id')
-  
+  let sessionId = sessionStorage.getItem("chat-session-id")
+
   if (!sessionId) {
-    // Generate new session ID: timestamp + random string
     sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(7)}`
-    sessionStorage.setItem('chat-session-id', sessionId)
+    sessionStorage.setItem("chat-session-id", sessionId)
   }
-  
+
   return sessionId
 }
 
 export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
   const { theme } = useTheme()
+  const isDark = theme === "dark"
   const [isMobile, setIsMobile] = useState(false)
   const [sessionId, setSessionId] = useState<string>("")
   const [showMobileNotice, setShowMobileNotice] = useState(true)
+  const [activeContactId, setActiveContactId] = useState<string>("avadhoot")
+  const [showInspector, setShowInspector] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -60,222 +103,192 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
   const inputRef = useRef<HTMLInputElement>(null)
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  const activeContact =
+    CONTACTS.find((c) => c.id === activeContactId) ?? CONTACTS[0]
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Initialize session ID and load chat history on mount
   useEffect(() => {
     const initSession = async () => {
       const id = getSessionId()
       setSessionId(id)
-      
-      // Set a timeout to ensure loading state clears even if there's an issue
+
       const timeoutId = setTimeout(() => {
         setIsLoadingHistory(false)
-      }, 5000) // 5 second timeout
-      
+      }, 5000)
+
       try {
-        // Try to load existing chat history from cache
         const history = await getUserChatHistory(id)
-        
+
         if (history && history.length > 0) {
-          // Convert cached history to message format
           const loadedMessages: Message[] = history.map((msg) => ({
             role: msg.role as "user" | "assistant",
             content: msg.content,
             timestamp: new Date(),
           }))
-          
+
           setMessages([
             {
               role: "assistant",
               content: "Hi! I'm Avadhoot Mahadik. Feel free to ask me anything!",
               timestamp: new Date(),
             },
-            ...loadedMessages
+            ...loadedMessages,
           ])
         }
       } catch (error) {
         console.error("Error loading chat history:", error)
-        // Continue anyway - just start fresh
       } finally {
         clearTimeout(timeoutId)
         setIsLoadingHistory(false)
       }
     }
-    
+
     initSession()
   }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, typingMessage])
+  }, [messages, isTyping, typingMessage])
 
-  // Cleanup typing interval on unmount
-  useEffect(() => {
-    return () => {
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current)
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Typing animation function - types out a COMPLETE cached message
-  const typeMessage = (fullMessage: string, onComplete: () => void) => {
-    // Ensure we have the complete message cached before starting
-    const cachedMessage = fullMessage // Cache the complete response
-    
-    setIsTyping(true)
-    setTypingMessage("")
-    
-    let currentIndex = 0
-    const typingSpeed = 5 // 1 millisecond per character for super fast typing
-    
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current)
-    }
-    
-    typingIntervalRef.current = setInterval(() => {
-      if (currentIndex < cachedMessage.length) {
-        setTypingMessage((prev) => prev + cachedMessage[currentIndex])
-        currentIndex++
-      } else {
-        if (typingIntervalRef.current) {
-          clearInterval(typingIntervalRef.current)
-          typingIntervalRef.current = null
-        }
-        setIsTyping(false)
-        onComplete()
-      }
-    }, typingSpeed)
-  }
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Get value from ref instead of state
-    const messageText = inputRef.current?.value?.trim() || '';
-    
-    if (!messageText || isLoading || !sessionId) return
+  const sendPromptText = async (promptText: string) => {
+    if (!promptText.trim() || isLoading || isLoadingHistory || isTyping) return
 
     const userMessage: Message = {
       role: "user",
-      content: messageText,
+      content: promptText.trim(),
       timestamp: new Date(),
     }
 
     setMessages((prev) => [...prev, userMessage])
-    
-    // Clear input directly
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-    
     setIsLoading(true)
 
     try {
-      // STEP 1: Wait for the COMPLETE API response and cache it in memory
-      const response = await sendMessageWithHistory(sessionId, messageText)
-      
-      // STEP 2: Cache the complete response before any processing
-      const cachedFullResponse = String(response) // Ensure it's fully loaded as a string
-      
-      // STEP 3: Process the cached response for app markers
+      const response = await sendMessageWithHistory(
+        sessionId,
+        promptText.trim()
+      )
+
+      setIsLoading(false)
+      setIsTyping(true)
+
+      const cachedFullResponse = String(response)
       let cleanResponse = cachedFullResponse
       let appToOpen: string | null = null
       let projectFilter: string | undefined = undefined
-      
-      // STEP 4: Check for app markers in the cached response
-      // Check for filtered project markers first (more specific)
+
       const filteredProjectMarkers = [
-        { pattern: '[OPEN:PROJECTS:Website Development]', app: 'projects', filter: 'Website Development' },
-        { pattern: '[OPEN:PROJECTS:App Development]', app: 'projects', filter: 'App Development' },
-        { pattern: '[OPEN:PROJECTS:Machine Learning]', app: 'projects', filter: 'Machine Learning' },
-        { pattern: '[OPEN:PROJECTS:Data Science]', app: 'projects', filter: 'Data Science' },
-        { pattern: '[OPEN:PROJECTS:Extension Development]', app: 'projects', filter: 'Extension Development' },
-        { pattern: '[OPEN:PROJECTS:system]', app: 'projects', filter: 'system' },
+        { pattern: "[OPEN:PROJECTS:Website Development]", app: "projects", filter: "Website Development" },
+        { pattern: "[OPEN:PROJECTS:App Development]", app: "projects", filter: "App Development" },
+        { pattern: "[OPEN:PROJECTS:Machine Learning]", app: "projects", filter: "Machine Learning" },
+        { pattern: "[OPEN:PROJECTS:Data Science]", app: "projects", filter: "Data Science" },
+        { pattern: "[OPEN:PROJECTS:Extension Development]", app: "projects", filter: "Extension Development" },
+        { pattern: "[OPEN:PROJECTS:system]", app: "projects", filter: "system" },
       ]
-      
+
       for (const { pattern, app, filter } of filteredProjectMarkers) {
         if (cleanResponse.includes(pattern)) {
-          cleanResponse = cleanResponse.replace(pattern, '').trim()
+          cleanResponse = cleanResponse.replace(pattern, "").trim()
           appToOpen = app
           projectFilter = filter
           break
         }
       }
-      
-      // If no filtered marker found, check for general markers
+
       if (!appToOpen) {
-        const generalMarkers = {
-          '[OPEN:EDUCATION]': 'education',
-          '[OPEN:EXPERIENCE]': 'experience',
-          '[OPEN:PROJECTS]': 'projects'
+        const generalMarkers: Record<string, string> = {
+          "[OPEN:EDUCATION]": "education",
+          "[OPEN:EXPERIENCE]": "experience",
+          "[OPEN:PROJECTS]": "projects",
         }
-        
+
         for (const [marker, appId] of Object.entries(generalMarkers)) {
           if (cleanResponse.includes(marker)) {
-            cleanResponse = cleanResponse.replace(marker, '').trim()
+            cleanResponse = cleanResponse.replace(marker, "").trim()
             appToOpen = appId
             break
           }
         }
       }
 
-      // STEP 5: Response is now fully loaded and cached - hide loading indicator
-      setIsLoading(false)
-      
-      // STEP 6: Start typing animation with the COMPLETE cached response
-      typeMessage(cleanResponse, () => {
-        // After typing is complete, add the message to the messages array
-        const aiMessage: Message = {
-          role: "assistant",
-          content: cleanResponse,
-          timestamp: new Date(),
+      const fullMessage = cleanResponse
+      let currentIndex = 0
+      setTypingMessage("")
+
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current)
+      }
+
+      typingIntervalRef.current = setInterval(() => {
+        if (currentIndex < fullMessage.length) {
+          const chunkSize = Math.floor(Math.random() * 3) + 2
+          const nextIndex = Math.min(
+            currentIndex + chunkSize,
+            fullMessage.length
+          )
+          setTypingMessage(fullMessage.substring(0, nextIndex))
+          currentIndex = nextIndex
+        } else {
+          if (typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current)
+          }
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: fullMessage,
+              timestamp: new Date(),
+            },
+          ])
+          setIsTyping(false)
+          setTypingMessage("")
+
+          if (appToOpen && onOpenApp) {
+            setTimeout(() => {
+              if (projectFilter) {
+                onOpenApp(appToOpen, { filter: projectFilter })
+              } else {
+                onOpenApp(appToOpen)
+              }
+            }, 300)
+          }
         }
-        
-        setMessages((prev) => [...prev, aiMessage])
-        setTypingMessage("")
-        
-        // Open the app if a marker was detected
-        if (appToOpen && onOpenApp) {
-          // Small delay to let the message render first
-          setTimeout(() => {
-            if (projectFilter) {
-              onOpenApp(appToOpen, { filter: projectFilter })
-            } else {
-              onOpenApp(appToOpen)
-            }
-          }, 300)
-        }
-      })
+      }, 12)
     } catch (error) {
       console.error("Error sending message:", error)
       setIsLoading(false)
       const errorMessage: Message = {
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again, later.",
+        content: "Sorry, I encountered an error. Please try again later.",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
     }
-    // Note: setIsLoading(false) is now called before typing starts (line ~220)
+  }
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputRef.current) return
+    const text = inputRef.current.value
+    inputRef.current.value = ""
+    sendPromptText(text)
   }
 
   const handleClearChat = async () => {
     if (!sessionId) return
-    
+
     try {
       await clearChatHistory(sessionId)
       setMessages([
@@ -290,269 +303,450 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
     }
   }
 
+  const filteredContacts = CONTACTS.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.roleSubtitle.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
-    <div className="flex h-full">
-      {/* Sidebar - Hidden on mobile */}
+    <div
+      className={`flex h-full select-none font-sans overflow-hidden ${isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
+        }`}
+    >
+      {/* Left Sidebar - Contacts List */}
       {!isMobile && (
-        <div className={`w-1/4 border-r flex flex-col ${theme === "dark" ? "border-gray-700" : ""}`}>
-          <div className={`border-b p-2 ${theme === "dark" ? "border-gray-700" : ""}`}>
-            <input
-              type="text"
-              placeholder="Search"
-              className={`w-full rounded-full px-3 py-1 text-sm ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
-            />
-          </div>
-          <div className="p-2 flex-1 overflow-y-auto">
-            <div className={`mb-2 rounded p-2 ${theme === "dark" ? "bg-gray-700" : "bg-blue-50"}`}>
-              <div className="font-semibold">Avadhoot Ganesh Mahadik</div>
-              <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                Active now
-              </div>
+        <div
+          className={`flex w-72 flex-col border-r shrink-0 ${isDark
+              ? "border-[#2D2D2D] bg-[#252526]/80"
+              : "border-[#E5E5E5] bg-[#E8E8ED]/90"
+            }`}
+        >
+          {/* Top Search & New Message Toolbar */}
+          <div
+            className={`flex items-center justify-between border-b px-3.5 py-2.5 ${isDark ? "border-[#2D2D2D]" : "border-[#D1D1D6]"
+              }`}
+          >
+            <div className="relative flex-1">
+              <FaSearch
+                className={`absolute left-3 top-1/2 -translate-y-1/2 text-xs ${isDark ? "text-gray-400" : "text-gray-500"
+                  }`}
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search"
+                className={`w-full rounded-md pl-8 pr-3 py-1 text-xs outline-none transition ${isDark
+                    ? "bg-[#1E1E1E] text-white placeholder-gray-500 focus:ring-1 focus:ring-[#0A84FF]"
+                    : "bg-white/80 text-gray-900 placeholder-gray-400 focus:ring-1 focus:ring-[#0A84FF] border border-gray-300"
+                  }`}
+              />
             </div>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.focus()}
+              className={`ml-2.5 rounded-md p-1.5 transition ${isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="Compose New Message"
+            >
+              <FaEdit className="h-3.5 w-3.5" />
+            </button>
           </div>
-          
-          {/* AI Advisory Notice - Fixed at bottom */}
-          <div className="p-2 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}">
-            <div className={`rounded-lg p-3 border-l-4 ${
-              theme === "dark" 
-                ? "bg-yellow-900/30 border-yellow-500 text-yellow-200" 
-                : "bg-yellow-50 border-yellow-500 text-yellow-800"
-            }`}>
-              <div className="flex items-start gap-2">
-                <span className="text-lg flex-shrink-0">⚠️</span>
-                <div className="text-xs leading-relaxed">
-                  <strong className="block mb-1">AI Assistant Notice</strong>
-                  You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person&apos;s current views or availability. 
+
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-200/40 dark:divide-gray-800/40">
+            {filteredContacts.map((contact) => {
+              const isActive = contact.id === activeContactId
+              return (
+                <div
+                  key={contact.id}
+                  onClick={() => setActiveContactId(contact.id)}
+                  className={`flex items-center gap-3 px-3.5 py-3 cursor-pointer transition-colors relative ${isActive
+                      ? isDark
+                        ? "bg-[#0A84FF]/25 border-l-4 border-[#0A84FF]"
+                        : "bg-[#0A84FF]/15 border-l-4 border-[#0A84FF]"
+                      : isDark
+                        ? "hover:bg-white/5"
+                        : "hover:bg-gray-200/60"
+                    }`}
+                >
+                  <div className="relative shrink-0">
+                    <img
+                      src={contact.avatar}
+                      alt={contact.name}
+                      className="h-10 w-10 rounded-full object-cover border border-gray-300 dark:border-gray-700"
+                    />
+                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-[#252526]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-xs font-semibold truncate ${isDark ? "text-white" : "text-gray-900"
+                          }`}
+                      >
+                        {contact.name}
+                      </span>
+                      <span className="text-[10px] text-gray-400 shrink-0 ml-1">
+                        {contact.time}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                      {contact.lastMessage}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )
+            })}
+          </div>
+
+          {/* AI Assistant Notice Card in Left Sidebar */}
+          <div
+            className={`p-3.5 border-t text-[11px] leading-relaxed ${
+              isDark
+                ? "border-[#2D2D2D] bg-[#1E1E1E]/80 text-amber-300"
+                : "border-[#D1D1D6] bg-amber-50 text-amber-900 shadow-inner"
+            }`}
+          >
+            <div className="flex items-center gap-1.5 font-semibold mb-1">
+              <span>⚠️</span>
+              <span>AI Assistant Notice</span>
             </div>
+            <p
+              className={`text-[10px] leading-relaxed ${
+                isDark ? "text-amber-200/80" : "text-amber-800/90"
+              }`}
+            >
+              You are chatting with an AI representation of Avadhoot Mahadik. Responses are simulated based on his resume &amp; portfolio.
+            </p>
           </div>
         </div>
       )}
-      
-      {/* Messages Area */}
-      <div className="flex flex-1 flex-col">
-        {/* Mobile AI Notice Popup */}
+
+      {/* Main Messages Canvas */}
+      <div className="flex flex-1 flex-col h-full min-w-0 relative">
+        {/* Mobile AI Disclaimer Popup */}
         {isMobile && showMobileNotice && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className={`rounded-2xl p-4 max-w-sm w-full shadow-2xl border-l-4 ${
-              theme === "dark" 
-                ? "bg-gray-800 border-yellow-500 text-yellow-200" 
-                : "bg-white border-yellow-500 text-yellow-800"
-            }`}>
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/60 backdrop-blur-sm">
+            <div
+              className={`rounded-2xl p-5 max-w-sm w-full shadow-2xl border ${
+                isDark
+                  ? "bg-[#252526] border-[#383838] text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
+            >
               <div className="flex items-start gap-3 mb-3">
-                <span className="text-2xl flex-shrink-0">⚠️</span>
+                <span className="text-2xl shrink-0">⚠️</span>
                 <div>
-                  <strong className="block mb-2 text-base">AI Assistant Notice</strong>
-                  <p className="text-sm leading-relaxed">
-                    You are chatting with an AI representation. Responses are generated based on available information and may not reflect the actual person&apos;s current views or availability.
+                  <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">
+                    AI Assistant Notice
+                  </h4>
+                  <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+                    You are chatting with an AI representation of Avadhoot Mahadik. Responses are simulated based on his resume &amp; portfolio.
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowMobileNotice(false)}
-                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                  theme === "dark"
-                    ? "bg-yellow-600 hover:bg-yellow-700 text-white"
-                    : "bg-yellow-500 hover:bg-yellow-600 text-white"
-                }`}
+                className="w-full mt-2 py-2.5 px-4 rounded-xl font-medium text-xs bg-[#0A84FF] hover:bg-blue-600 text-white transition active:scale-95 shadow-md"
               >
                 I Understand
               </button>
             </div>
           </div>
         )}
-        
-        <div className={`border-b p-3 flex items-center justify-between ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
-          <div className="flex-1 text-center">
-            <div className="font-semibold">Avadhoot Mahadik</div>
-            <div className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Online</div>
-          </div>
-          <button
-            onClick={handleClearChat}
-            disabled={messages.length <= 1}
-            className={`p-2 rounded-full transition-colors ${
-              messages.length <= 1 
-                ? "opacity-30 cursor-not-allowed" 
-                : theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+
+        {/* Top Header Toolbar */}
+        <div
+          className={`flex h-14 shrink-0 items-center justify-between border-b px-4 ${isDark
+              ? "border-[#2D2D2D] bg-[#252526]/80"
+              : "border-[#E5E5E5] bg-[#E8E8ED]/90"
             }`}
-            title="Clear chat history"
-          >
-            <FaUndo className="text-sm" />
-          </button>
+        >
+          {/* Active Contact Header Info */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative shrink-0">
+              <img
+                src={activeContact.avatar}
+                alt={activeContact.name}
+                className="h-8 w-8 rounded-full object-cover border border-gray-300 dark:border-gray-600"
+              />
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 ring-1 ring-white dark:ring-gray-800" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`text-xs font-bold truncate ${isDark ? "text-white" : "text-gray-900"
+                    }`}
+                >
+                  {activeContact.name}
+                </span>
+                <span className="rounded bg-[#0A84FF]/20 px-1.5 py-0.2 text-[9px] font-semibold text-[#0A84FF]">
+                  iMessage
+                </span>
+              </div>
+              <div className="text-[10px] text-gray-400 truncate">
+                {activeContact.roleSubtitle}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Toolbar Action Icons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => alert("FaceTime Video: Connect with Avadhoot at arcsmo19@gmail.com")}
+              className={`p-2 rounded-md transition ${isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="FaceTime Video"
+            >
+              <FaVideo className="h-3.5 w-3.5 text-[#0A84FF]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => alert("FaceTime Audio: Connect with Avadhoot at arcsmo19@gmail.com")}
+              className={`p-2 rounded-md transition ${isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="FaceTime Audio"
+            >
+              <FaPhoneAlt className="h-3 w-3 text-[#0A84FF]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowInspector((prev) => !prev)}
+              className={`p-2 rounded-md transition ${showInspector
+                  ? "bg-[#0A84FF] text-white"
+                  : isDark
+                    ? "hover:bg-white/10 text-gray-300"
+                    : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="Toggle Contact Inspector"
+            >
+              <FaInfoCircle className="h-3.5 w-3.5" />
+            </button>
+            <div className="h-4 w-px bg-gray-300 dark:bg-gray-700 mx-1" />
+            <button
+              type="button"
+              onClick={handleClearChat}
+              disabled={messages.length <= 1}
+              className={`p-2 rounded-md transition ${messages.length <= 1
+                  ? "opacity-30 cursor-not-allowed"
+                  : isDark
+                    ? "hover:bg-white/10 text-gray-300"
+                    : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="Reset Chat Session"
+            >
+              <FaUndo className="h-3 w-3" />
+            </button>
+          </div>
         </div>
-        <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>
+
+        {/* Chat Feed Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {isLoadingHistory ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <div className="flex space-x-2 justify-center mb-2">
-                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500"></div>
-                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-100"></div>
-                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-200"></div>
+                  <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#0A84FF]" />
+                  <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#0A84FF] delay-100" />
+                  <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#0A84FF] delay-200" />
                 </div>
-                <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                  Loading chat...
-                </p>
+                <p className="text-xs text-gray-400">Loading conversation...</p>
               </div>
             </div>
           ) : (
             <>
-              {messages.map((message, index) => (
-            <div
-              key={`message-${index}`}
-              className={`mb-3 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`${isMobile ? 'max-w-[80%]' : 'max-w-[70%]'} rounded-lg p-3 text-sm ${
-                  message.role === "user"
-                    ? isMobile
-                      ? "bg-blue-500 text-white rounded-br-md"
-                      : "bg-blue-500 text-white"
-                    : theme === "dark"
-                    ? isMobile
-                      ? "bg-gray-700 text-gray-200 rounded-bl-md"
-                      : "bg-gray-700 text-gray-200"
-                    : isMobile
-                    ? "bg-gray-200 text-gray-900 rounded-bl-md"
-                    : "bg-gray-100 text-gray-900"
-                }`}
-              >
-                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
-                  {message.role === "user" ? (
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                  ) : (
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        // Custom styles for code blocks
-                        code: ({className, children, ...props}: { className?: string; children?: React.ReactNode }) => {
-                          const isInline = !className?.includes('language-')
-                          return isInline ? (
-                            <code
-                              className={`${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} px-1 py-0.5 rounded text-xs`}
-                              {...props}
-                            >
-                              {children}
-                            </code>
-                          ) : (
-                            <code
-                              className={`block ${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} p-2 rounded text-xs overflow-x-auto`}
-                              {...props}
-                            >
-                              {children}
-                            </code>
-                          )
-                        },
-                        // Custom styles for links
-                        a: ({children, ...props}) => (
-                          <a
-                            className="text-blue-400 hover:underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            {...props}
-                          >
-                            {children}
-                          </a>
-                        ),
-                        // Override paragraph styling for user role
-                        p: ({children, ...props}) => (
-                          <p className={message.role === "user" ? "text-white" : ""} {...props}>
-                            {children}
-                          </p>
-                        ),
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  )}
-                </div>
-                <div
-                  className={`mt-1 text-xs ${
-                    message.role === "user"
-                      ? "text-blue-100"
-                      : theme === "dark"
-                      ? "text-gray-400"
-                      : "text-gray-500"
-                  }`}
+              {/* Apple Messages Profile Header at top of thread */}
+              <div className="mb-6 flex flex-col items-center justify-center text-center">
+                <img
+                  src={activeContact.avatar}
+                  alt={activeContact.name}
+                  className="h-16 w-16 rounded-full object-cover shadow-md border-2 border-white dark:border-gray-700 mb-2"
+                />
+                <h3
+                  className={`text-sm font-bold ${isDark ? "text-white" : "text-gray-900"
+                    }`}
                 >
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {activeContact.name}
+                </h3>
+                <p className="text-[11px] text-gray-400">
+                  iMessage • End-to-End Encrypted
+                </p>
+
+                {/* Quick Interactive Suggestion Chips */}
+                <div className="mt-4 flex flex-wrap justify-center gap-1.5 max-w-lg">
+                  {activeContact.suggestions.map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => sendPromptText(suggestion)}
+                      disabled={isLoading || isTyping}
+                      className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition active:scale-95 border ${isDark
+                          ? "bg-[#252526] border-[#383838] text-gray-200 hover:bg-[#333333] hover:border-[#0A84FF]"
+                          : "bg-white border-gray-300 text-gray-800 hover:bg-gray-100 hover:border-[#0A84FF] shadow-sm"
+                        }`}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
-              
-              {/* Typing message animation */}
-              {isTyping && typingMessage && (
-                <div className="mb-3 flex justify-start">
+
+              {/* Message Bubbles */}
+              {messages.map((message, index) => {
+                const isUser = message.role === "user"
+                return (
                   <div
-                    className={`${isMobile ? 'max-w-[80%]' : 'max-w-[70%]'} rounded-lg p-3 text-sm ${
-                      theme === "dark"
-                        ? isMobile
-                          ? "bg-gray-700 text-gray-200 rounded-bl-md"
-                          : "bg-gray-700 text-gray-200"
-                        : isMobile
-                        ? "bg-gray-200 text-gray-900 rounded-bl-md"
-                        : "bg-gray-100 text-gray-900"
-                    }`}
+                    key={`message-${index}`}
+                    className={`mb-3.5 flex ${isUser ? "justify-end" : "justify-start"
+                      }`}
                   >
-                    <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          code: ({className, children, ...props}: { className?: string; children?: React.ReactNode }) => {
-                            const isInline = !className?.includes('language-')
-                            return isInline ? (
-                              <code
-                                className={`${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} px-1 py-0.5 rounded text-xs`}
-                                {...props}
-                              >
-                                {children}
-                              </code>
-                            ) : (
-                              <code
-                                className={`block ${theme === "dark" ? "bg-gray-600" : "bg-gray-300"} p-2 rounded text-xs overflow-x-auto`}
-                                {...props}
-                              >
-                                {children}
-                              </code>
-                            )
-                          },
-                          a: ({children, ...props}) => (
-                            <a
-                              className="text-blue-400 hover:underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              {...props}
-                            >
-                              {children}
-                            </a>
-                          ),
-                        }}
+                    {!isUser && (
+                      <img
+                        src={activeContact.avatar}
+                        alt="AI"
+                        className="h-6 w-6 rounded-full object-cover mr-2 shrink-0 self-end mb-4 border border-gray-300 dark:border-gray-700"
+                      />
+                    )}
+                    <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
+                      <div
+                        className={`rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed shadow-sm ${isUser
+                            ? "bg-gradient-to-r from-[#0A84FF] to-[#0062DF] text-white rounded-br-xs"
+                            : isDark
+                              ? "bg-[#2C2C2E] text-[#F5F5F7] rounded-bl-xs border border-white/5"
+                              : "bg-[#E9E9EB] text-[#1D1D1F] rounded-bl-xs"
+                          }`}
                       >
-                        {typingMessage}
-                      </ReactMarkdown>
-                      <span className="inline-block w-1 h-4 bg-current animate-pulse ml-0.5" />
+                        <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+                          {isUser ? (
+                            <div className="whitespace-pre-wrap">
+                              {message.content}
+                            </div>
+                          ) : (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                code: ({
+                                  className,
+                                  children,
+                                  ...props
+                                }: {
+                                  className?: string
+                                  children?: React.ReactNode
+                                }) => {
+                                  const isInline =
+                                    !className?.includes("language-")
+                                  return isInline ? (
+                                    <code
+                                      className={`${isDark
+                                          ? "bg-black/40 text-gray-200"
+                                          : "bg-black/10 text-gray-800"
+                                        } px-1.5 py-0.5 rounded text-[11px]`}
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  ) : (
+                                    <code
+                                      className={`block ${isDark
+                                          ? "bg-black/60"
+                                          : "bg-white border border-gray-200"
+                                        } p-2.5 rounded-lg text-xs overflow-x-auto`}
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  )
+                                },
+                                a: ({ children, ...props }) => (
+                                  <a
+                                    className="text-[#0A84FF] underline font-medium hover:opacity-80"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    {...props}
+                                  >
+                                    {children}
+                                  </a>
+                                ),
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={`mt-1 text-[10px] px-1 ${isUser
+                            ? "text-right text-gray-400"
+                            : "text-left text-gray-400"
+                          }`}
+                      >
+                        {isUser
+                          ? "Delivered • " +
+                          message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                          : message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Streaming Typing Indicator */}
+              {isTyping && typingMessage && (
+                <div className="mb-3.5 flex justify-start">
+                  <img
+                    src={activeContact.avatar}
+                    alt="AI"
+                    className="h-6 w-6 rounded-full object-cover mr-2 shrink-0 self-end mb-4 border border-gray-300 dark:border-gray-700"
+                  />
+                  <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed ${isDark
+                          ? "bg-[#2C2C2E] text-[#F5F5F7] rounded-bl-xs border border-white/5"
+                          : "bg-[#E9E9EB] text-[#1D1D1F] rounded-bl-xs"
+                        }`}
+                    >
+                      <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {typingMessage}
+                        </ReactMarkdown>
+                        <span className="inline-block w-1 h-3.5 bg-[#0A84FF] animate-pulse ml-0.5" />
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
+              {/* Waiting Loading Dots */}
               {isLoading && !isTyping && (
-                <div className="mb-4 flex justify-start">
+                <div className="mb-3.5 flex justify-start">
+                  <img
+                    src={activeContact.avatar}
+                    alt="AI"
+                    className="h-6 w-6 rounded-full object-cover mr-2 shrink-0 self-end mb-2 border border-gray-300 dark:border-gray-700"
+                  />
                   <div
-                    className={`max-w-[70%] rounded-lg p-3 text-sm ${
-                      theme === "dark" ? "bg-gray-700" : "bg-gray-100"
-                    }`}
+                    className={`rounded-2xl px-4 py-3 ${isDark ? "bg-[#2C2C2E]" : "bg-[#E9E9EB]"
+                      }`}
                   >
-                    <div className="flex space-x-2">
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-100"></div>
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-200"></div>
+                    <div className="flex space-x-1.5 items-center">
+                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
+                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-100" />
+                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-200" />
                     </div>
                   </div>
                 </div>
@@ -561,44 +755,225 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
             </>
           )}
         </div>
-        
-        {/* Input Area - iOS style on mobile */}
-        <div className={`border-t ${isMobile ? 'p-3' : 'p-2'} ${
-          theme === "dark" ? "border-gray-700" : "border-gray-200"
-        } ${isMobile ? 'bg-gray-50 dark:bg-gray-800/50' : ''}`}>
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder={isLoadingHistory ? "Loading..." : (isMobile ? "Text Message" : "iMessage")}
-              disabled={isLoading || isLoadingHistory || isTyping}
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck="false"
-              className={`flex-1 rounded-full px-4 py-2 text-sm transition-colors ${
-                theme === "dark" 
-                  ? "bg-gray-700 text-white placeholder:text-gray-400" 
-                  : "bg-gray-100 text-gray-900 placeholder:text-gray-500"
-              } ${(isLoading || isLoadingHistory || isTyping) ? "opacity-50 cursor-not-allowed" : ""} ${
-                isMobile ? 'border-2 border-gray-300 dark:border-gray-600' : ''
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            />
+
+        {/* Authentic iMessage Bottom Bar */}
+        <div
+          className={`border-t px-3 py-2.5 ${isDark
+              ? "border-[#2D2D2D] bg-[#252526]/90"
+              : "border-[#E5E5E5] bg-[#E8E8ED]/90"
+            }`}
+        >
+          <form
+            onSubmit={handleSendMessage}
+            className="flex items-center gap-2"
+          >
+            <button
+              type="button"
+              onClick={() => alert("Attachments & Media share")}
+              className={`rounded-full p-2 transition ${isDark
+                  ? "bg-[#3A3A3C] hover:bg-[#48484A] text-gray-300"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
+              title="Add Media / App Drawer"
+            >
+              <FaPlus className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => alert("Photos Picker")}
+              className={`rounded-full p-2 transition ${isDark
+                  ? "hover:bg-white/10 text-gray-300"
+                  : "hover:bg-black/5 text-gray-700"
+                }`}
+              title="Photos"
+            >
+              <FaImage className="h-4 w-4 text-[#0A84FF]" />
+            </button>
+
+            {/* Pill Input */}
+            <div
+              className={`flex flex-1 items-center rounded-full px-3.5 py-1.5 border transition ${isDark
+                  ? "bg-[#1E1E1E] border-[#383838] focus-within:border-[#0A84FF]"
+                  : "bg-white border-gray-300 focus-within:border-[#0A84FF]"
+                }`}
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="iMessage"
+                disabled={isLoading || isLoadingHistory || isTyping}
+                autoComplete="off"
+                className="w-full bg-transparent text-xs sm:text-sm outline-none placeholder-gray-400"
+              />
+              <button
+                type="button"
+                onClick={() => alert("Emoji Keyboard")}
+                className="ml-2 text-gray-400 hover:text-gray-200 transition"
+                title="Emoji"
+              >
+                <FaSmile className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Send Button */}
             <button
               type="submit"
               disabled={isLoading || isLoadingHistory || isTyping}
-              className={`rounded-full transition-all ${
-                isMobile ? 'p-2.5' : 'p-2'
-              } ${
-                isLoading || isLoadingHistory || isTyping
-                  ? "cursor-not-allowed opacity-50 bg-blue-400"
-                  : "hover:bg-blue-600 active:scale-95"
-              } bg-blue-500 text-white shadow-lg`}
+              className={`h-8 w-8 rounded-full flex items-center justify-center transition-all ${isLoading || isLoadingHistory || isTyping
+                  ? "cursor-not-allowed opacity-40 bg-[#0A84FF]/50 text-white"
+                  : "bg-[#0A84FF] text-white hover:bg-blue-600 active:scale-95 shadow-md"
+                }`}
             >
-              <FaPaperPlane className={isMobile ? 'text-base' : 'text-sm'} />
+              <FaArrowUp className="h-3.5 w-3.5" />
             </button>
           </form>
         </div>
       </div>
+
+      {/* Right Side Inspector Panel (Authentic macOS Messages Inspector) */}
+      {showInspector && (
+        <div
+          className={`w-72 border-l flex flex-col shrink-0 overflow-y-auto ${isDark
+              ? "border-[#2D2D2D] bg-[#252526]"
+              : "border-[#E5E5E5] bg-[#E8E8ED]"
+            }`}
+        >
+          {/* Inspector Header */}
+          <div className="flex items-center justify-between border-b px-4 py-3 border-gray-200/50 dark:border-gray-800/50">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Details
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowInspector(false)}
+              className="text-gray-400 hover:text-foreground transition"
+            >
+              <FaTimes className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Contact Card Details */}
+          <div className="p-5 flex flex-col items-center text-center border-b border-gray-200/50 dark:border-gray-800/50">
+            <img
+              src={activeContact.avatar}
+              alt={activeContact.name}
+              className="h-20 w-20 rounded-full object-cover shadow-lg border-2 border-white dark:border-gray-700 mb-3"
+            />
+            <h4
+              className={`text-sm font-bold ${isDark ? "text-white" : "text-gray-900"
+                }`}
+            >
+              {activeContact.name}
+            </h4>
+            <p className="text-xs text-[#0A84FF] font-medium mt-0.5">
+              {activeContact.roleSubtitle}
+            </p>
+
+            {/* Quick Actions Grid */}
+            <div className="grid grid-cols-4 gap-2 w-full mt-4">
+              <a
+                href="mailto:arcsmo19@gmail.com"
+                className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-[#333333]"
+                    : "bg-white hover:bg-gray-100 shadow-sm"
+                  }`}
+              >
+                <FaEnvelope className="h-3.5 w-3.5 text-[#0A84FF] mb-1" />
+                <span className="text-[10px]">Mail</span>
+              </a>
+              <a
+                href="https://github.com/Avadhoot1905"
+                target="_blank"
+                rel="noreferrer"
+                className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-[#333333]"
+                    : "bg-white hover:bg-gray-100 shadow-sm"
+                  }`}
+              >
+                <FaGithub className="h-3.5 w-3.5 text-[#0A84FF] mb-1" />
+                <span className="text-[10px]">GitHub</span>
+              </a>
+              <a
+                href="https://www.linkedin.com/in/avadhoot-mahadik"
+                target="_blank"
+                rel="noreferrer"
+                className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-[#333333]"
+                    : "bg-white hover:bg-gray-100 shadow-sm"
+                  }`}
+              >
+                <FaLinkedin className="h-3.5 w-3.5 text-[#0A84FF] mb-1" />
+                <span className="text-[10px]">LinkedIn</span>
+              </a>
+              <button
+                type="button"
+                onClick={() =>
+                  onOpenApp && onOpenApp("finder", { filter: "documents" })
+                }
+                className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-[#333333]"
+                    : "bg-white hover:bg-gray-100 shadow-sm"
+                  }`}
+              >
+                <FaFileAlt className="h-3.5 w-3.5 text-[#0A84FF] mb-1" />
+                <span className="text-[10px]">Resume</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Shared Links / Attachments */}
+          <div className="p-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2.5">
+              Shared Links & Files
+            </span>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => onOpenApp && onOpenApp("projects")}
+                className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg text-left transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-white/5"
+                    : "bg-white hover:bg-gray-50 shadow-sm"
+                  }`}
+              >
+                <div className="h-7 w-7 rounded bg-[#0A84FF]/20 flex items-center justify-center shrink-0">
+                  <FaMagic className="h-3.5 w-3.5 text-[#0A84FF]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold truncate">
+                    Projects Showcase
+                  </div>
+                  <div className="text-[10px] text-gray-400 truncate">
+                    Qosmos, JanSaathi & more
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onOpenApp && onOpenApp("finder", { filter: "documents" })
+                }
+                className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg text-left transition ${isDark
+                    ? "bg-[#1E1E1E] hover:bg-white/5"
+                    : "bg-white hover:bg-gray-50 shadow-sm"
+                  }`}
+              >
+                <div className="h-7 w-7 rounded bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <FaFileAlt className="h-3.5 w-3.5 text-emerald-500" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold truncate">
+                    Avadhoot_Resume.pdf
+                  </div>
+                  <div className="text-[10px] text-gray-400 truncate">
+                    Official Resume Document
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

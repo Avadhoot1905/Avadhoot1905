@@ -26,6 +26,7 @@ import { albumImages, type PhotoItem } from "@/components/apps/PhotosApp"
 
 interface FinderAppProps {
   onOpenApp?: (appId: string) => void
+  initialTab?: FinderTab
 }
 
 type FinderTab = "applications" | "documents" | "photos" | "downloads"
@@ -42,13 +43,13 @@ interface AppItem {
 const RESUME_DRIVE_URL =
   "https://drive.google.com/file/d/167McD9-TBCpfFsy8p4Iv-8T1dOKvGkO_/view?usp=drive_link"
 
-export function FinderApp({ onOpenApp }: FinderAppProps) {
+export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProps) {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
-  const [activeTab, setActiveTab] = useState<FinderTab>("applications")
+  const [activeTab, setActiveTab] = useState<FinderTab>(initialTab)
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [searchQuery, setSearchQuery] = useState("")
-  const [history, setHistory] = useState<FinderTab[]>(["applications"])
+  const [history, setHistory] = useState<FinderTab[]>([initialTab])
   const [historyIndex, setHistoryIndex] = useState(0)
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoItem | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)

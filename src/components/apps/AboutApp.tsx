@@ -6,12 +6,12 @@ import {
   FaUser,
   FaCommentDots,
   FaTerminal,
-  FaEnvelope,
   FaGlobe,
   FaGithub,
   FaCheck,
   FaSearch,
 } from "react-icons/fa"
+import { SiGmail } from "react-icons/si"
 
 type AboutAppProps = {
   onOpenApp?: (appId: string, params?: { filter?: string; command?: string }) => void
@@ -124,9 +124,11 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                     : "hover:bg-black/5 text-gray-800"
                     }`}
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-xs">
-                    <FaCommentDots />
-                  </div>
+                  <img
+                    src="/assets/macos/messages-svgrepo-com.svg"
+                    alt="Messages"
+                    className="h-6 w-6 shrink-0 object-contain drop-shadow-sm"
+                  />
                   <div className="truncate">
                     <div className="text-xs font-medium truncate">
                       AI Assistant Chat
@@ -145,9 +147,11 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                     : "hover:bg-black/5 text-gray-800"
                     }`}
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-700 text-white text-xs">
-                    <FaTerminal />
-                  </div>
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+                    alt="Terminal"
+                    className="h-6 w-6 shrink-0 object-contain drop-shadow-sm"
+                  />
                   <div className="truncate">
                     <div className="text-xs font-medium truncate">
                       Terminal Contact
@@ -227,12 +231,15 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                 <button
                   type="button"
                   onClick={handleMessagesClick}
-                  className="group flex flex-col items-center space-y-1 transition transform hover:scale-105"
+                  className="group flex flex-col items-center space-y-1.5 transition transform hover:scale-105"
                   title="Talk to me (AI Assistant)"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#30D158] text-white shadow-md group-hover:bg-green-600 transition">
-                    <FaCommentDots className="text-sm" />
-                  </div>
+                  <img
+                    src="/assets/macos/messages-svgrepo-com.svg"
+                    alt="Messages"
+                    className="h-10 w-10 object-contain drop-shadow-md transition-transform group-hover:scale-105"
+                    draggable={false}
+                  />
                   <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     message
                   </span>
@@ -242,12 +249,15 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                 <button
                   type="button"
                   onClick={handleContactClick}
-                  className="group flex flex-col items-center space-y-1 transition transform hover:scale-105"
+                  className="group flex flex-col items-center space-y-1.5 transition transform hover:scale-105"
                   title="Open Terminal Contact"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A84FF] text-white shadow-md group-hover:bg-blue-600 transition">
-                    <FaTerminal className="text-sm" />
-                  </div>
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+                    alt="Terminal"
+                    className="h-10 w-10 object-contain drop-shadow-md transition-transform group-hover:scale-105"
+                    draggable={false}
+                  />
                   <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     terminal
                   </span>
@@ -257,21 +267,18 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                 <button
                   type="button"
                   onClick={handleCopyEmail}
-                  className="group flex flex-col items-center space-y-1 transition transform hover:scale-105"
+                  className="group flex flex-col items-center space-y-1.5 transition transform hover:scale-105"
                   title="Copy Email"
                 >
-                  <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md transition ${copiedEmail
-                      ? "bg-emerald-600 text-white"
-                      : "bg-[#BF5AF2] text-white group-hover:bg-purple-600"
-                      }`}
-                  >
-                    {copiedEmail ? (
-                      <FaCheck className="text-sm" />
-                    ) : (
-                      <FaEnvelope className="text-sm" />
-                    )}
-                  </div>
+                  {copiedEmail ? (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[22%] bg-emerald-500 text-white shadow-md transition-transform group-hover:scale-105">
+                      <FaCheck className="text-base" />
+                    </div>
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[22%] bg-white shadow-md border border-gray-100 dark:border-white/10 transition-transform group-hover:scale-105">
+                      <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
+                    </div>
+                  )}
                   <span className={`text-[11px] font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     {copiedEmail ? "copied" : "email"}
                   </span>

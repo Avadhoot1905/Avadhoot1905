@@ -1018,7 +1018,7 @@ export function MacOSDesktop() {
                   initialPosition={{ x: 80, y: 60 }}
                   initialSize={{ width: 860, height: 560 }}
                 >
-                  <FinderApp onOpenApp={(id) => openOrActivateWindow(id)} />
+                  <FinderApp onOpenApp={(id) => openOrActivateWindow(id)} initialTab="documents" />
                 </Window>
               )}
 

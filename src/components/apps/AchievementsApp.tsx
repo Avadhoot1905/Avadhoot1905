@@ -17,7 +17,8 @@ type AchievementNotesViewProps = {
 const highlightedPhrases = [
   "Track Winner for Best CS/IT Project out of 250 teams",
   "Track Winner in Tech for Good among 180 teams",
-  "Best Idea among 60 participating teams"
+  "Best Idea among 60 participating teams",
+  "Top Coder badge"
 ]
 
 function renderHighlightedText(text: string) {
@@ -87,16 +88,14 @@ function AchievementListItem({ achievement, isActive, onSelect }: AchievementLis
     <button
       type="button"
       onClick={() => onSelect(achievement.id)}
-      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
-        isActive
+      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${isActive
           ? "bg-neutral-200 dark:bg-neutral-800"
           : "hover:bg-neutral-100 dark:hover:bg-neutral-800/70"
-      }`}
+        }`}
     >
       <CheckCircleIcon
-        className={`h-5 w-5 shrink-0 transition-colors ${
-          isActive ? "text-emerald-500" : "text-emerald-500 group-hover:text-emerald-600"
-        }`}
+        className={`h-5 w-5 shrink-0 transition-colors ${isActive ? "text-emerald-500" : "text-emerald-500 group-hover:text-emerald-600"
+          }`}
       />
       <span className="truncate text-sm text-neutral-700 dark:text-neutral-300">{achievement.summary}</span>
     </button>
@@ -133,7 +132,7 @@ export function AchievementsApp() {
         <aside className={`w-full shrink-0 border-b md:w-[280px] md:border-b-0 md:border-r md:h-full ${isDark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-100"}`}>
           <div className="border-b border-neutral-200 px-4 py-4 dark:border-neutral-800">
             <div className="flex items-center justify-between gap-2">
-            <h1 className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">Achievements</h1>
+              <h1 className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">Achievements</h1>
               <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
                 Completed
               </span>

@@ -861,7 +861,7 @@ export function MacOSDesktop() {
     <div
       className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative select-none"
       style={{
-        backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light.jpg' : 'v-dark.jpg'})`,
+        backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light-c.jpg' : 'v-dark-c.jpg'})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

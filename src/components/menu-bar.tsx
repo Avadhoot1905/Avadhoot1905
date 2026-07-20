@@ -5,49 +5,13 @@ import { Moon, Sun, Monitor, WifiHigh, BatteryHigh, SpeakerHigh, Lightbulb, Cell
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
+import Script from "next/script"
 
 interface MenuBarProps {
   onLockScreen?: () => void
   onShutdown?: () => void
   onRestart?: () => void
   activeApp?: string | null
-}
-
-const ControlCenterIcon = ({ className = "" }: { className?: string }) => {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`text-black dark:text-white ${className}`}
-    >
-      <rect
-        x="2"
-        y="5"
-        width="20"
-        height="6"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <circle cx="5" cy="8" r="1.5" fill="currentColor" />
-
-      <rect
-        x="2"
-        y="13"
-        width="20"
-        height="6"
-        rx="3"
-        fill="currentColor"
-      />
-      <circle
-        cx="19"
-        cy="16"
-        r="1.5"
-        className="fill-white dark:fill-neutral-950"
-      />
-    </svg>
-  )
 }
 
 export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
@@ -79,7 +43,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
-    
+
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
@@ -87,7 +51,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
@@ -95,7 +59,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
     }
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange)
 
     return () => {
@@ -104,6 +68,12 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).AarushIcons) {
+      (window as any).AarushIcons.render()
+    }
+  }, [mounted, theme])
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -134,361 +104,373 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
     return (
       <IconContext.Provider value={{ weight: "fill" }}>
-      <>
-        {/* iOS Status Bar - Fixed position, non-draggable */}
-        <motion.div
-          className={`flex h-12 w-full items-center px-4 backdrop-blur-xl fixed top-0 left-0 z-[10000] ${
-            theme === "dark" 
-              ? "bg-black/30 text-white" 
+        <>
+          {/* iOS Status Bar - Fixed position, non-draggable */}
+          <motion.div
+            className={`flex h-12 w-full items-center px-4 backdrop-blur-xl fixed top-0 left-0 z-[10000] ${theme === "dark"
+              ? "bg-black/30 text-white"
               : "bg-white/30 text-black"
-          }`}
-          style={{
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          }}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Time */}
-          <div className="text-sm font-semibold">
-            {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </div>
-          
-          <div className="flex-1"></div>
-          
-          {/* Status Icons */}
-          <div className="flex items-center space-x-2">
-            <WifiHigh className="h-4 w-4" />
-            <BatteryHigh className="h-4 w-4" />
-          </div>
-        </motion.div>
+              }`}
+            style={{
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Time */}
+            <div className="text-sm font-semibold">
+              {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </div>
 
-        {/* Invisible draggable overlay for pull-down gesture */}
-        <motion.div
-          className="fixed top-0 left-0 w-full h-12 z-[10001]"
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0, bottom: 1 }}
-          onDragEnd={(_event, info) => {
-            // If dragged down more than 50px, open the panel
-            if (info.offset.y > 50) {
-              setShowNotificationPanel(true)
-            }
-          }}
-          style={{ cursor: 'grab' }}
-        />
+            <div className="flex-1"></div>
 
-        {/* Notification Panel Shade - Draggable to slide up/down */}
-        <AnimatePresence>
-          {showNotificationPanel && (
-            <>
-              {/* Backdrop - click to close */}
-              <motion.div
-                className="fixed inset-0 z-[9998] bg-black/20"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowNotificationPanel(false)}
+            {/* Status Icons */}
+            <div className="flex items-center space-x-3.5">
+              <img
+                src={theme === "dark" ? "/assets/macos/icons8-bluetooth-100.svg" : "/assets/macos/bluetooth-svgrepo-com.svg"}
+                alt="Bluetooth"
+                className={theme === "dark" ? "h-[18px] w-[18px]" : "h-[14px] w-[14px]"}
               />
-              
-              {/* Draggable Panel */}
-              <motion.div
-                className={`fixed top-0 left-0 right-0 z-[9999] backdrop-blur-2xl shadow-2xl ${
-                  theme === "dark" 
-                    ? "bg-black/40 text-white" 
+              <img
+                src={theme === "dark" ? "/assets/macos/icons8-wi-fi-100-white.svg" : "/assets/macos/icons8-wi-fi-100.svg"}
+                alt="Wi-Fi"
+                className="h-[20px] w-[20px]"
+              />
+              <img
+                src={theme === "dark" ? "/assets/macos/icons8-personal-hotspot-100-white.svg" : "/assets/macos/icons8-personal-hotspot-100.svg"}
+                alt="Personal Hotspot"
+                className="h-[20px] w-[20px]"
+              />
+              <img
+                src={theme === "dark" ? "/assets/macos/icons8-full-battery-100-white.svg" : "/assets/macos/icons8-full-battery-100.svg"}
+                alt="Battery"
+                className="h-[28px] w-[28px]"
+              />
+            </div>
+          </motion.div>
+
+          {/* Invisible draggable overlay for pull-down gesture */}
+          <motion.div
+            className="fixed top-0 left-0 w-full h-12 z-[10001]"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 1 }}
+            onDragEnd={(_event, info) => {
+              // If dragged down more than 50px, open the panel
+              if (info.offset.y > 50) {
+                setShowNotificationPanel(true)
+              }
+            }}
+            style={{ cursor: 'grab' }}
+          />
+
+          {/* Notification Panel Shade - Draggable to slide up/down */}
+          <AnimatePresence>
+            {showNotificationPanel && (
+              <>
+                {/* Backdrop - click to close */}
+                <motion.div
+                  className="fixed inset-0 z-[9998] bg-black/20"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowNotificationPanel(false)}
+                />
+
+                {/* Draggable Panel */}
+                <motion.div
+                  className={`fixed top-0 left-0 right-0 z-[9999] backdrop-blur-2xl shadow-2xl ${theme === "dark"
+                    ? "bg-black/40 text-white"
                     : "bg-white/40 text-black"
-                }`}
-                style={{
-                  backdropFilter: 'blur(40px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                  borderBottomLeftRadius: '24px',
-                  borderBottomRightRadius: '24px',
-                }}
-                initial={{ y: '-100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '-100%' }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={{ top: 0.5, bottom: 0 }}
-                dragMomentum={false}
-                onDragEnd={handleDragEnd}
-                onClick={(e) => e.stopPropagation()}
-              >
-              <div className="p-6 pt-16 pb-6">
-                {/* Date */}
-                <div className="text-center mb-6">
-                  <div className="text-2xl font-semibold mb-1">
-                    {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
-                  </div>
-                  <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                    {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-                  </div>
-                </div>
-
-                {/* Main Control Section */}
-                <div className="flex flex-col gap-3 mb-4">
-                  {/* Icon Grid - 1x4 Top, 1x4 Bottom */}
-                  <div className="flex flex-col gap-3">
-                    {/* Top 4 icons - Single Horizontal Row */}
-                    <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
-                      {/* Airplane Mode */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-white/10 hover:bg-white/15" 
-                            : "bg-black/10 hover:bg-black/15"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Airplane className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Airplane</span>
-                      </button>
-
-                      {/* Mobile Data */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
-                            : "bg-blue-500/30 hover:bg-blue-500/40"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <CellSignalHigh className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Cellular</span>
-                      </button>
-
-                      {/* WiFi */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
-                            : "bg-blue-500/30 hover:bg-blue-500/40"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <WifiHigh className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Wi-Fi</span>
-                      </button>
-
-                      {/* Bluetooth */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
-                            : "bg-blue-500/30 hover:bg-blue-500/40"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Bluetooth className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Bluetooth</span>
-                      </button>
-                    </div>
-
-                    {/* Bottom 4 icons - Single Row */}
-                    <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
-                      {/* Lock Orientation - Active (Blue) */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-blue-500/30 hover:bg-blue-500/40" 
-                            : "bg-blue-500/30 hover:bg-blue-500/40"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowsCounterClockwise className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Rotation</span>
-                      </button>
-
-                      {/* Flashlight */}
-                      <button
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-white/10 hover:bg-white/15" 
-                            : "bg-black/10 hover:bg-black/15"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Flashlight className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Torch</span>
-                      </button>
-
-                      {/* Theme Toggle */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setTheme(theme === 'dark' ? 'light' : 'dark')
-                        }}
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-white/10 hover:bg-white/15" 
-                            : "bg-black/10 hover:bg-black/15"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                      >
-                        {theme === "dark" ? <Moon className="h-5 w-5 mb-1" /> : <Sun className="h-5 w-5 mb-1" />}
-                        <span className="text-[9px] font-medium">
-                          {theme === "dark" ? "Dark" : theme === "light" ? "Light" : "Auto"}
-                        </span>
-                      </button>
-
-                      {/* Screen Lock */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onLockScreen?.()
-                          setShowNotificationPanel(false)
-                        }}
-                        className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${
-                          theme === "dark" 
-                            ? "bg-white/10 hover:bg-white/15" 
-                            : "bg-black/10 hover:bg-black/15"
-                        }`}
-                        style={{
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        }}
-                      >
-                        <Lock className="h-5 w-5 mb-1" />
-                        <span className="text-[9px] font-medium">Lock</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Horizontal Sliders */}
-                  <div className="flex flex-col gap-3 max-w-[300px] mx-auto w-full">
-                    {/* Brightness Slider - Horizontal */}
-                    <div 
-                      className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${
-                        theme === "dark" 
-                          ? "bg-white/10" 
-                          : "bg-black/10"
-                      }`}
-                      style={{
-                        backdropFilter: 'blur(20px) saturate(180%)',
-                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        const iconWidth = 20 + 12 // icon + margin
-                        const padding = 16
-                        const x = e.clientX - rect.left - padding - iconWidth
-                        const width = rect.width - (2 * padding) - (2 * iconWidth)
-                        const percentage = Math.max(0, Math.min(100, (x / width) * 100))
-                        setBrightness(Math.round(percentage))
-                      }}
-                    >
-                      <Lightbulb className="h-5 w-5 flex-shrink-0 mr-3" />
-                      <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${
-                        theme === "dark" ? "bg-white/10" : "bg-black/10"
-                      }`}>
-                        <div 
-                          className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all" 
-                          style={{ width: `${brightness}%` }} 
-                        />
+                    }`}
+                  style={{
+                    backdropFilter: 'blur(40px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                    borderBottomLeftRadius: '24px',
+                    borderBottomRightRadius: '24px',
+                  }}
+                  initial={{ y: '-100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '-100%' }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={{ top: 0.5, bottom: 0 }}
+                  dragMomentum={false}
+                  onDragEnd={handleDragEnd}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6 pt-16 pb-6">
+                    {/* Date */}
+                    <div className="text-center mb-6">
+                      <div className="text-2xl font-semibold mb-1">
+                        {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
                       </div>
-                      <Lightbulb className="h-5 w-5 flex-shrink-0 ml-3" />
+                      <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                        {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                      </div>
                     </div>
 
-                    {/* Volume Slider - Horizontal */}
-                    <div 
-                      className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${
-                        theme === "dark" 
-                          ? "bg-white/10" 
-                          : "bg-black/10"
-                      }`}
-                      style={{
-                        backdropFilter: 'blur(20px) saturate(180%)',
-                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        const iconWidth = 20 + 12 // icon + margin
-                        const padding = 16
-                        const x = e.clientX - rect.left - padding - iconWidth
-                        const width = rect.width - (2 * padding) - (2 * iconWidth)
-                        const percentage = Math.max(0, Math.min(100, (x / width) * 100))
-                        setVolume(Math.round(percentage))
-                      }}
-                    >
-                      <SpeakerHigh className="h-5 w-5 flex-shrink-0 mr-3" />
-                      <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${
-                        theme === "dark" ? "bg-white/10" : "bg-black/10"
-                      }`}>
-                        <div 
-                          className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all" 
-                          style={{ width: `${volume}%` }} 
-                        />
+                    {/* Main Control Section */}
+                    <div className="flex flex-col gap-3 mb-4">
+                      {/* Icon Grid - 1x4 Top, 1x4 Bottom */}
+                      <div className="flex flex-col gap-3">
+                        {/* Top 4 icons - Single Horizontal Row */}
+                        <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
+                          {/* Airplane Mode */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-white/10 hover:bg-white/15"
+                              : "bg-black/10 hover:bg-black/15"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Airplane className="h-5 w-5 mb-1" />
+                            <span className="text-[9px] font-medium">Airplane</span>
+                          </button>
+
+                          {/* Mobile Data */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-blue-500/30 hover:bg-blue-500/40"
+                              : "bg-blue-500/30 hover:bg-blue-500/40"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <CellSignalHigh className="h-5 w-5 mb-1" />
+                            <span className="text-[9px] font-medium">Cellular</span>
+                          </button>
+
+                          {/* WiFi */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-blue-500/30 hover:bg-blue-500/40"
+                              : "bg-blue-500/30 hover:bg-blue-500/40"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <img
+                              src={theme === "dark" ? "/assets/macos/icons8-wi-fi-100-white.svg" : "/assets/macos/icons8-wi-fi-100.svg"}
+                              alt="Wi-Fi"
+                              className="h-5 w-5 mb-1"
+                            />
+                            <span className="text-[9px] font-medium">Wi-Fi</span>
+                          </button>
+
+                          {/* Bluetooth */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-blue-500/30 hover:bg-blue-500/40"
+                              : "bg-blue-500/30 hover:bg-blue-500/40"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <img
+                              src={theme === "dark" ? "/assets/macos/icons8-bluetooth-100.svg" : "/assets/macos/bluetooth-svgrepo-com.svg"}
+                              alt="Bluetooth"
+                              className={theme === "dark" ? "h-[26px] w-[26px] mb-1" : "h-5 w-5 mb-1"}
+                            />
+                            <span className="text-[9px] font-medium">Bluetooth</span>
+                          </button>
+                        </div>
+
+                        {/* Bottom 4 icons - Single Row */}
+                        <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
+                          {/* Lock Orientation - Active (Blue) */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-blue-500/30 hover:bg-blue-500/40"
+                              : "bg-blue-500/30 hover:bg-blue-500/40"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ArrowsCounterClockwise className="h-5 w-5 mb-1" />
+                            <span className="text-[9px] font-medium">Rotation</span>
+                          </button>
+
+                          {/* Flashlight */}
+                          <button
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-white/10 hover:bg-white/15"
+                              : "bg-black/10 hover:bg-black/15"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Flashlight className="h-5 w-5 mb-1" />
+                            <span className="text-[9px] font-medium">Torch</span>
+                          </button>
+
+                          {/* Theme Toggle */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setTheme(theme === 'dark' ? 'light' : 'dark')
+                            }}
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-white/10 hover:bg-white/15"
+                              : "bg-black/10 hover:bg-black/15"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                          >
+                            <img
+                              src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
+                              alt="Theme"
+                              className="h-5 w-5 mb-1"
+                            />
+                            <span className="text-[9px] font-medium">
+                              {theme === "dark" ? "Dark" : theme === "light" ? "Light" : "Auto"}
+                            </span>
+                          </button>
+
+                          {/* Screen Lock */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onLockScreen?.()
+                              setShowNotificationPanel(false)
+                            }}
+                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
+                              ? "bg-white/10 hover:bg-white/15"
+                              : "bg-black/10 hover:bg-black/15"
+                              }`}
+                            style={{
+                              backdropFilter: 'blur(20px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            }}
+                          >
+                            <Lock className="h-5 w-5 mb-1" />
+                            <span className="text-[9px] font-medium">Lock</span>
+                          </button>
+                        </div>
                       </div>
-                      <SpeakerHigh className="h-5 w-5 flex-shrink-0 ml-3" />
+
+                      {/* Horizontal Sliders */}
+                      <div className="flex flex-col gap-3 max-w-[300px] mx-auto w-full">
+                        {/* Brightness Slider - Horizontal */}
+                        <div
+                          className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${theme === "dark"
+                            ? "bg-white/10"
+                            : "bg-black/10"
+                            }`}
+                          style={{
+                            backdropFilter: 'blur(20px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const iconWidth = 20 + 12 // icon + margin
+                            const padding = 16
+                            const x = e.clientX - rect.left - padding - iconWidth
+                            const width = rect.width - (2 * padding) - (2 * iconWidth)
+                            const percentage = Math.max(0, Math.min(100, (x / width) * 100))
+                            setBrightness(Math.round(percentage))
+                          }}
+                        >
+                          <Lightbulb className="h-5 w-5 flex-shrink-0 mr-3" />
+                          <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${theme === "dark" ? "bg-white/10" : "bg-black/10"
+                            }`}>
+                            <div
+                              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
+                              style={{ width: `${brightness}%` }}
+                            />
+                          </div>
+                          <Lightbulb className="h-5 w-5 flex-shrink-0 ml-3" />
+                        </div>
+
+                        {/* Volume Slider - Horizontal */}
+                        <div
+                          className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${theme === "dark"
+                            ? "bg-white/10"
+                            : "bg-black/10"
+                            }`}
+                          style={{
+                            backdropFilter: 'blur(20px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const iconWidth = 20 + 12 // icon + margin
+                            const padding = 16
+                            const x = e.clientX - rect.left - padding - iconWidth
+                            const width = rect.width - (2 * padding) - (2 * iconWidth)
+                            const percentage = Math.max(0, Math.min(100, (x / width) * 100))
+                            setVolume(Math.round(percentage))
+                          }}
+                        >
+                          <SpeakerHigh className="h-5 w-5 flex-shrink-0 mr-3" />
+                          <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${theme === "dark" ? "bg-white/10" : "bg-black/10"
+                            }`}>
+                            <div
+                              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
+                              style={{ width: `${volume}%` }}
+                            />
+                          </div>
+                          <SpeakerHigh className="h-5 w-5 flex-shrink-0 ml-3" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Drag Handle at Bottom */}
+                    <div className="flex justify-center pt-4 pb-2">
+                      <div className={`w-10 h-1 rounded-full ${theme === "dark" ? "bg-white/30" : "bg-black/30"
+                        }`} />
                     </div>
                   </div>
-                </div>
-
-                {/* Drag Handle at Bottom */}
-                <div className="flex justify-center pt-4 pb-2">
-                  <div className={`w-10 h-1 rounded-full ${
-                    theme === "dark" ? "bg-white/30" : "bg-black/30"
-                  }`} />
-                </div>
-              </div>
-            </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </>
       </IconContext.Provider>
     )
   }
 
   // Desktop Menu Bar
-  const menuTriggerClass = `flex items-center rounded-md px-2.5 py-1 text-sm font-medium leading-none transition-all duration-200 ease-out ${
-    theme === "dark"
-      ? "hover:bg-white/10"
-      : "hover:bg-white/20"
-  }`
+  const menuTriggerClass = `flex items-center rounded-md px-2.5 py-1 text-sm font-medium leading-none transition-all duration-200 ease-out ${theme === "dark"
+    ? "hover:bg-white/10"
+    : "hover:bg-white/20"
+    }`
 
-  const iconTriggerClass = `flex h-6 w-6 items-center justify-center rounded-md p-1 opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${
-    theme === "dark"
-      ? "hover:bg-white/15"
-      : "hover:bg-black/10"
-  }`
+  const iconTriggerClass = `flex h-6 w-6 items-center justify-center rounded-md p-1 opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark"
+    ? "hover:bg-white/15"
+    : "hover:bg-black/10"
+    }`
 
-  const dropdownClass = `absolute top-full z-[99999] mt-1 w-56 rounded-xl border py-1 text-sm shadow-[0_8px_30px_rgba(0,0,0,0.15)] backdrop-blur-2xl ${
-    theme === "dark"
-      ? "border-white/10 bg-black/50 text-white"
-      : "border-black/10 bg-white/70 text-black"
-  }`
+  const dropdownClass = `absolute top-full z-[99999] mt-1 w-56 rounded-xl border py-1 text-sm shadow-[0_8px_30px_rgba(0,0,0,0.15)] backdrop-blur-2xl ${theme === "dark"
+    ? "border-white/10 bg-black/50 text-white"
+    : "border-black/10 bg-white/70 text-black"
+    }`
 
   const dropdownItemClass = "w-full rounded-md px-3 py-1.5 text-left leading-none tracking-tight transition-all duration-200 ease-out hover:bg-blue-500 hover:text-white"
   const dropdownDividerClass = `my-1 border-t ${theme === "dark" ? "border-white/10" : "border-black/5"}`
@@ -505,270 +487,310 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
   return (
     <IconContext.Provider value={{ weight: "fill" }}>
-    <motion.div
-      className={`fixed left-0 top-0 z-[10000] flex h-9 w-full items-center px-3.5 text-sm backdrop-blur-2xl ${
-        theme === "dark" 
+      <Script
+        src="https://icons.aarushpal.in/cdn/aarush-icons.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (typeof window !== "undefined" && (window as any).AarushIcons) {
+            (window as any).AarushIcons.render()
+          }
+        }}
+      />
+      <motion.div
+        className={`fixed left-0 top-0 z-[10000] flex h-9 w-full items-center px-3.5 text-sm backdrop-blur-2xl ${theme === "dark"
           ? "bg-black/40 text-white"
           : "bg-white/60 text-black"
-      }`}
-      style={{
-        backdropFilter: 'blur(20px) saturate(190%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(190%)',
-        boxShadow: theme === "dark"
-          ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 10px rgba(0,0,0,0.18)'
-          : 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 10px rgba(0,0,0,0.08)',
-        transition: 'background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out'
-      }}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-    >
-      <div
-        className={`pointer-events-none absolute inset-0 ${
-          theme === "dark"
+          }`}
+        style={{
+          backdropFilter: 'blur(20px) saturate(190%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(190%)',
+          boxShadow: theme === "dark"
+            ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 10px rgba(0,0,0,0.18)'
+            : 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 10px rgba(0,0,0,0.08)',
+          transition: 'background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out'
+        }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <div
+          className={`pointer-events-none absolute inset-0 ${theme === "dark"
             ? "bg-gradient-to-b from-white/10 to-transparent"
             : "bg-gradient-to-b from-white/20 to-transparent"
-        }`}
-      />
+            }`}
+        />
 
-      <div className="relative z-10 flex min-w-0 items-center gap-3.5 leading-none">
-        <div className="relative">
+        <div className="relative z-10 flex min-w-0 items-center gap-3.5 leading-none">
+          <div className="relative">
+            <button
+              onClick={() => toggleMenu("apple")}
+              className="flex h-6 w-6 items-center justify-center p-1 text-base opacity-90 transition-all duration-200 ease-out hover:opacity-100"
+            >
+              <SiApple className="h-4 w-4" />
+            </button>
+            <AnimatePresence>
+              {activeMenu === "apple" && (
+                <motion.div
+                  className={`left-0 ${dropdownClass}`}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 99999,
+                    backdropFilter: 'blur(24px) saturate(190%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(190%)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="px-1 py-0.5">
+                    <div className={dropdownItemClass}>About This Mac</div>
+                    <div className={dropdownItemClass}>System Preferences...</div>
+                    <div className={dropdownItemClass}>App Store...</div>
+                    <div className={dropdownDividerClass}></div>
+                    <button
+                      onClick={() => {
+                        setActiveMenu(null)
+                        onLockScreen?.()
+                      }}
+                      className={dropdownItemClass}
+                    >
+                      Sleep
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveMenu(null)
+                        onRestart?.()
+                      }}
+                      className={dropdownItemClass}
+                    >
+                      Restart...
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveMenu(null)
+                        onShutdown?.()
+                      }}
+                      className={dropdownItemClass}
+                    >
+                      Shut Down...
+                    </button>
+                    <div className={dropdownDividerClass}></div>
+                    <button
+                      onClick={() => {
+                        setActiveMenu(null)
+                        onLockScreen?.()
+                      }}
+                      className={dropdownItemClass}
+                    >
+                      Lock Screen
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveMenu(null)
+                        onLockScreen?.()
+                      }}
+                      className={dropdownItemClass}
+                    >
+                      Log Out...
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="text-sm font-semibold leading-none tracking-tight">
+            {activeApp && appNames[activeApp] ? appNames[activeApp] : "Finder"}
+          </div>
+
+          <div className="relative">
+            <button onClick={() => toggleMenu("file")} className={menuTriggerClass}>
+              File
+            </button>
+            <AnimatePresence>
+              {activeMenu === "file" && (
+                <motion.div
+                  className={`left-0 ${dropdownClass}`}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 99999,
+                    backdropFilter: 'blur(24px) saturate(190%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(190%)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="px-1 py-0.5">
+                    <div className={dropdownItemClass}>New Window</div>
+                    <div className={dropdownItemClass}>New Tab</div>
+                    <div className={dropdownItemClass}>Open...</div>
+                    <div className={dropdownItemClass}>Close</div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="relative">
+            <button onClick={() => toggleMenu("edit")} className={menuTriggerClass}>
+              Edit
+            </button>
+            <AnimatePresence>
+              {activeMenu === "edit" && (
+                <motion.div
+                  className={`left-0 ${dropdownClass}`}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 99999,
+                    backdropFilter: 'blur(24px) saturate(190%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(190%)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="px-1 py-0.5">
+                    <div className={dropdownItemClass}>Undo</div>
+                    <div className={dropdownItemClass}>Redo</div>
+                    <div className={dropdownDividerClass}></div>
+                    <div className={dropdownItemClass}>Cut</div>
+                    <div className={dropdownItemClass}>Copy</div>
+                    <div className={dropdownItemClass}>Paste</div>
+                    <div className={dropdownItemClass}>Select All</div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="relative">
+            <button onClick={() => toggleMenu("view")} className={menuTriggerClass}>
+              View
+            </button>
+            <AnimatePresence>
+              {activeMenu === "view" && (
+                <motion.div
+                  className={`left-0 ${dropdownClass}`}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 99999,
+                    backdropFilter: 'blur(24px) saturate(190%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(190%)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="px-1 py-0.5">
+                    <div className={dropdownItemClass}>as Icons</div>
+                    <div className={dropdownItemClass}>as List</div>
+                    <div className={dropdownItemClass}>as Columns</div>
+                    <div className={dropdownItemClass}>as Gallery</div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="flex-1"></div>
+
+        <div className="relative z-10 flex items-center gap-[18px] leading-none">
           <button
-            onClick={() => toggleMenu("apple")}
-            className="flex h-6 w-6 items-center justify-center p-1 text-base opacity-90 transition-all duration-200 ease-out hover:opacity-100"
+            onClick={toggleFullscreen}
+            className={iconTriggerClass}
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
-            <SiApple className="h-4 w-4" />
-          </button>
-          <AnimatePresence>
-            {activeMenu === "apple" && (
-              <motion.div
-                className={`left-0 ${dropdownClass}`}
-                style={{
-                  position: 'absolute',
-                  zIndex: 99999,
-                  backdropFilter: 'blur(24px) saturate(190%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(190%)'
-                }}
-                initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="px-1 py-0.5">
-                  <div className={dropdownItemClass}>About This Mac</div>
-                  <div className={dropdownItemClass}>System Preferences...</div>
-                  <div className={dropdownItemClass}>App Store...</div>
-                  <div className={dropdownDividerClass}></div>
-                  <button
-                    onClick={() => {
-                      setActiveMenu(null)
-                      onLockScreen?.()
-                    }}
-                    className={dropdownItemClass}
-                  >
-                    Sleep
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveMenu(null)
-                      onRestart?.()
-                    }}
-                    className={dropdownItemClass}
-                  >
-                    Restart...
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveMenu(null)
-                      onShutdown?.()
-                    }}
-                    className={dropdownItemClass}
-                  >
-                    Shut Down...
-                  </button>
-                  <div className={dropdownDividerClass}></div>
-                  <button
-                    onClick={() => {
-                      setActiveMenu(null)
-                      onLockScreen?.()
-                    }}
-                    className={dropdownItemClass}
-                  >
-                    Lock Screen
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveMenu(null)
-                      onLockScreen?.()
-                    }}
-                    className={dropdownItemClass}
-                  >
-                    Log Out...
-                  </button>
-                </div>
-              </motion.div>
+            {isFullscreen ? (
+              <ArrowsInSimple className="h-4 w-4" />
+            ) : (
+              <ArrowsOutSimple className="h-4 w-4" />
             )}
-          </AnimatePresence>
-        </div>
-
-        <div className="text-sm font-semibold leading-none tracking-tight">
-          {activeApp && appNames[activeApp] ? appNames[activeApp] : "Finder"}
-        </div>
-
-        <div className="relative">
-          <button onClick={() => toggleMenu("file")} className={menuTriggerClass}>
-            File
           </button>
-          <AnimatePresence>
-            {activeMenu === "file" && (
-              <motion.div
-                className={`left-0 ${dropdownClass}`}
-                style={{
-                  position: 'absolute',
-                  zIndex: 99999,
-                  backdropFilter: 'blur(24px) saturate(190%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(190%)'
-                }}
-                initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="px-1 py-0.5">
-                  <div className={dropdownItemClass}>New Window</div>
-                  <div className={dropdownItemClass}>New Tab</div>
-                  <div className={dropdownItemClass}>Open...</div>
-                  <div className={dropdownItemClass}>Close</div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
 
-        <div className="relative">
-          <button onClick={() => toggleMenu("edit")} className={menuTriggerClass}>
-            Edit
-          </button>
-          <AnimatePresence>
-            {activeMenu === "edit" && (
-              <motion.div
-                className={`left-0 ${dropdownClass}`}
-                style={{
-                  position: 'absolute',
-                  zIndex: 99999,
-                  backdropFilter: 'blur(24px) saturate(190%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(190%)'
-                }}
-                initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="px-1 py-0.5">
-                  <div className={dropdownItemClass}>Undo</div>
-                  <div className={dropdownItemClass}>Redo</div>
-                  <div className={dropdownDividerClass}></div>
-                  <div className={dropdownItemClass}>Cut</div>
-                  <div className={dropdownItemClass}>Copy</div>
-                  <div className={dropdownItemClass}>Paste</div>
-                  <div className={dropdownItemClass}>Select All</div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <div className="relative">
-          <button onClick={() => toggleMenu("view")} className={menuTriggerClass}>
-            View
-          </button>
-          <AnimatePresence>
-            {activeMenu === "view" && (
-              <motion.div
-                className={`left-0 ${dropdownClass}`}
-                style={{
-                  position: 'absolute',
-                  zIndex: 99999,
-                  backdropFilter: 'blur(24px) saturate(190%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(190%)'
-                }}
-                initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="px-1 py-0.5">
-                  <div className={dropdownItemClass}>as Icons</div>
-                  <div className={dropdownItemClass}>as List</div>
-                  <div className={dropdownItemClass}>as Columns</div>
-                  <div className={dropdownItemClass}>as Gallery</div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      <div className="flex-1"></div>
-
-      <div className="relative z-10 flex items-center gap-3 leading-none">
-        <button
-          onClick={toggleFullscreen}
-          className={iconTriggerClass}
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-        >
-          {isFullscreen ? (
-            <ArrowsInSimple className="h-4 w-4" />
-          ) : (
-            <ArrowsOutSimple className="h-4 w-4" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={iconTriggerClass}
-          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-        >
-          {theme === "dark" ? (
-            <Moon className="h-4 w-4" />
-          ) : (
-            <Sun className="h-4 w-4" />
-          )}
-        </button>
-
-        <div className={iconTriggerClass} title="Wi-Fi">
-          <WifiHigh className="h-4 w-4" />
-        </div>
-
-        <div className={iconTriggerClass} title="Battery">
-          <BatteryHigh className="h-4 w-4" />
-        </div>
-
-        <div className={iconTriggerClass} title="Volume">
-          <SpeakerHigh className="h-4 w-4" />
-        </div>
-
-        <div className={iconTriggerClass} title="Control Center">
-          {theme === "dark" ? (
-            <ControlCenterIcon className="h-4 w-4" />
-          ) : (
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className={`flex h-6 w-6 items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
+              }`}
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
             <img
-              src="/assets/macos/control-center.svg"
-              alt="Control Center"
-              className="h-4 w-4"
+              src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
+              alt={theme === "dark" ? "Dark Mode" : "Light Mode"}
+              className="h-[20px] w-[20px]"
             />
-          )}
-        </div>
+          </button>
 
-        <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>
-          {desktopDate}
-        </div>
+          <div
+            className={`flex h-6 w-6 items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
+              }`}
+            title="Bluetooth"
+          >
+            <img
+              src={theme === "dark" ? "/assets/macos/icons8-bluetooth-100.svg" : "/assets/macos/bluetooth-svgrepo-com.svg"}
+              alt="Bluetooth"
+              className={theme === "dark" ? "h-[18px] w-[18px]" : "h-[14px] w-[14px]"}
+            />
+          </div>
 
-        <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/90" : "text-black/85"}`}>
-          {desktopTime}
+          <div
+            className={`flex h-6 w-6 items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
+              }`}
+            title="Wi-Fi"
+          >
+            <img
+              src={theme === "dark" ? "/assets/macos/icons8-wi-fi-100-white.svg" : "/assets/macos/icons8-wi-fi-100.svg"}
+              alt="Wi-Fi"
+              className="h-[20px] w-[20px]"
+            />
+          </div>
+
+          <div
+            className={`flex h-6 w-6 items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
+              }`}
+            title="Personal Hotspot"
+          >
+            <img
+              src={theme === "dark" ? "/assets/macos/icons8-personal-hotspot-100-white.svg" : "/assets/macos/icons8-personal-hotspot-100.svg"}
+              alt="Personal Hotspot"
+              className="h-[20px] w-[20px]"
+            />
+          </div>
+
+          <div
+            className={`flex h-6 w-[34px] items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
+              }`}
+            title="Battery"
+          >
+            <img
+              src={theme === "dark" ? "/assets/macos/icons8-full-battery-100-white.svg" : "/assets/macos/icons8-full-battery-100.svg"}
+              alt="Battery"
+              className="h-[30px] w-[30px]"
+            />
+          </div>
+
+          <div className={iconTriggerClass} title="Control Center">
+            <i
+              className={`ap-apple-control-center !w-4 !h-4 flex items-center justify-center ${theme === "dark" ? "text-white" : "text-black"
+                } dark:text-white`}
+              style={{ fontSize: "16px" }}
+            />
+          </div>
+
+          <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>
+            {desktopDate}
+          </div>
+
+          <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/90" : "text-black/85"}`}>
+            {desktopTime}
+          </div>
         </div>
-      </div>
-    </motion.div>
-      </IconContext.Provider>
+      </motion.div>
+    </IconContext.Provider>
   )
 }

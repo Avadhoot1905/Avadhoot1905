@@ -24,7 +24,7 @@ import {
   GitBranch,
   Cpu,
 } from "lucide-react"
-import { projects as projectsData } from "@/data/projects"
+import { projects as projectsData, type Project } from "@/data/projects"
 
 type ProjectsAppProps = {
   initialFilter?: string
@@ -206,6 +206,137 @@ function getTechBadgeStyle(tech: string) {
   return appleBadgePalette[Math.abs(hash) % appleBadgePalette.length]
 }
 
+type ProjectCardProps = {
+  project: Project
+  isDark: boolean
+  isSelected: boolean
+  onSelect: (id: number) => void
+}
+
+function ProjectCard({
+  project,
+  isDark,
+  isSelected,
+  onSelect,
+}: ProjectCardProps) {
+  const DomainIcon = domainIcons[project.domain] || FaCode
+  const displayDomains = project.domains || [project.domain]
+  const appleTheme = domainAppleColors[project.domain] || defaultAppleColor
+
+  return (
+    <div
+      onClick={() => onSelect(project.id)}
+      className={`group relative rounded-xl border p-4 transition-all cursor-pointer ${
+        isSelected
+          ? isDark
+            ? "bg-[#252830] border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
+            : "bg-blue-50/60 border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
+          : isDark
+          ? "bg-[#222224] border-[#303033] hover:border-[#45454A]"
+          : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
+      }`}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        {/* Left & Center: Target Icon + Details */}
+        <div className="flex items-start space-x-3.5 flex-1 min-w-0">
+          {/* Target Icon Box styled with Apple System Color */}
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg shadow-inner transition-transform duration-200 group-hover:scale-105 ${
+              isDark ? appleTheme.boxDark : appleTheme.boxLight
+            }`}
+          >
+            <DomainIcon />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            {/* Title Row */}
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className={`text-sm font-bold truncate ${isDark ? "text-white" : "text-gray-900"}`}>
+                {project.name}
+              </h3>
+              <span className="inline-flex items-center rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-semibold text-[#30D158]">
+                <span className="mr-1 h-1.5 w-1.5 rounded-full bg-[#30D158]" />
+                Compiled
+              </span>
+
+              {/* Domain Badges */}
+              <div className="flex flex-wrap gap-1">
+                {displayDomains.map((d, idx) => {
+                  const badgeStyle = (domainAppleColors[d] || defaultAppleColor).badge
+                  return (
+                    <span
+                      key={idx}
+                      className={`text-[10px] px-2 py-0.5 rounded font-medium ${badgeStyle}`}
+                    >
+                      {d}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Project Description */}
+            <p
+              className={`mt-1.5 text-xs leading-relaxed ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              {project.description}
+            </p>
+
+            {/* Technology Stack Tags */}
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {project.techStack.map((tech, index) => {
+                const badgeColor = getTechBadgeStyle(tech)
+                return (
+                  <span
+                    key={index}
+                    className={`px-2 py-0.5 text-[11px] rounded font-mono font-medium ${badgeColor}`}
+                  >
+                    {tech}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Oriented Actions (Xcode Build Output / Links) */}
+        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-end w-full sm:w-auto gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-800">
+          {project.github && (
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={`flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md px-3 py-2 sm:py-1.5 text-xs font-medium transition border ${
+                isDark
+                  ? "bg-[#2D2D30] border-[#3E3E42] text-gray-200 hover:bg-[#38383C]"
+                  : "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200"
+              }`}
+            >
+              <FaGithub className="text-xs" />
+              <span>Source Code</span>
+            </a>
+          )}
+          {project.live && (
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-[#0A84FF] hover:bg-blue-500 text-white px-3 py-2 sm:py-1.5 text-xs font-medium shadow-sm transition"
+            >
+              <Play className="h-3 w-3 fill-current" />
+              <span>Run Target</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
   const { theme } = useTheme()
   const isDark = theme === "dark"
@@ -245,6 +376,18 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
       return matchesFilter && matchesSearch
     })
   }, [projects, filter, searchQuery])
+
+  const nonHobbyProjects = useMemo(() => {
+    return filteredProjects
+      .filter((p) => !p.hobby)
+      .sort((a, b) => a.id - b.id)
+  }, [filteredProjects])
+
+  const hobbyProjects = useMemo(() => {
+    return filteredProjects
+      .filter((p) => p.hobby)
+      .sort((a, b) => a.id - b.id)
+  }, [filteredProjects])
 
   // Count projects per category
   const countsByCategory = useMemo(() => {
@@ -559,135 +702,81 @@ export function ProjectsApp({ initialFilter = "all" }: ProjectsAppProps = {}) {
             </div>
           )}
 
-          {/* Project Target Cards Grid / List */}
-          <div
-            className={
-              viewMode === "targets"
-                ? "grid grid-cols-1 gap-4"
-                : "space-y-2.5"
-            }
-          >
-            {filteredProjects.map((project) => {
-              const DomainIcon = domainIcons[project.domain] || FaCode
-              const displayDomains = project.domains || [project.domain]
-              const isSelected = selectedProjectId === project.id
-              const appleTheme = domainAppleColors[project.domain] || defaultAppleColor
-
-              return (
-                <div
+          {/* Non-Hobby Projects Grid / List */}
+          {nonHobbyProjects.length > 0 && (
+            <div
+              className={
+                viewMode === "targets"
+                  ? "grid grid-cols-1 gap-4"
+                  : "space-y-2.5"
+              }
+            >
+              {nonHobbyProjects.map((project) => (
+                <ProjectCard
                   key={project.id}
-                  onClick={() => setSelectedProjectId(project.id)}
-                  className={`group relative rounded-xl border p-4 transition-all cursor-pointer ${
-                    isSelected
-                      ? isDark
-                        ? "bg-[#252830] border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
-                        : "bg-blue-50/60 border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
-                      : isDark
-                      ? "bg-[#222224] border-[#303033] hover:border-[#45454A]"
-                      : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
+                  project={project}
+                  isDark={isDark}
+                  isSelected={selectedProjectId === project.id}
+                  onSelect={setSelectedProjectId}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Distinction Line for Hobby Projects */}
+          {hobbyProjects.length > 0 && (
+            <div
+              className={`my-6 flex items-center gap-3 ${
+                nonHobbyProjects.length === 0 ? "mt-1 mb-4" : ""
+              }`}
+            >
+              <div
+                className={`h-px flex-1 ${
+                  isDark ? "bg-[#383838]" : "bg-gray-300"
+                }`}
+              />
+              <div className="flex items-center space-x-2 text-center px-2">
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-full border shadow-sm shrink-0 ${
+                    isDark
+                      ? "text-gray-200 bg-[#252526] border-[#383838]"
+                      : "text-gray-800 bg-gray-100 border-gray-300"
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    {/* Left & Center: Target Icon + Details */}
-                    <div className="flex items-start space-x-3.5 flex-1 min-w-0">
-                      {/* Target Icon Box styled with Apple System Color */}
-                      <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg shadow-inner transition-transform duration-200 group-hover:scale-105 ${
-                          isDark ? appleTheme.boxDark : appleTheme.boxLight
-                        }`}
-                      >
-                        <DomainIcon />
-                      </div>
+                  Hobby Projects
+                </span>
+                <span className="text-xs text-gray-400 font-medium">
+                  (Projects from here are hobby projects)
+                </span>
+              </div>
+              <div
+                className={`h-px flex-1 ${
+                  isDark ? "bg-[#383838]" : "bg-gray-300"
+                }`}
+              />
+            </div>
+          )}
 
-                      <div className="flex-1 min-w-0">
-                        {/* Title Row */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className={`text-sm font-bold truncate ${isDark ? "text-white" : "text-gray-900"}`}>
-                            {project.name}
-                          </h3>
-                          <span className="inline-flex items-center rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-semibold text-[#30D158]">
-                            <span className="mr-1 h-1.5 w-1.5 rounded-full bg-[#30D158]" />
-                            Compiled
-                          </span>
-
-                          {/* Domain Badges */}
-                          <div className="flex flex-wrap gap-1">
-                            {displayDomains.map((d, idx) => {
-                              const badgeStyle = (domainAppleColors[d] || defaultAppleColor).badge
-                              return (
-                                <span
-                                  key={idx}
-                                  className={`text-[10px] px-2 py-0.5 rounded font-medium ${badgeStyle}`}
-                                >
-                                  {d}
-                                </span>
-                              )
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Project Description */}
-                        <p
-                          className={`mt-1.5 text-xs leading-relaxed ${
-                            isDark ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          {project.description}
-                        </p>
-
-                        {/* Technology Stack Tags */}
-                        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                          {project.techStack.map((tech, index) => {
-                            const badgeColor = getTechBadgeStyle(tech)
-                            return (
-                              <span
-                                key={index}
-                                className={`px-2 py-0.5 text-[11px] rounded font-mono font-medium ${badgeColor}`}
-                              >
-                                {tech}
-                              </span>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Column: Oriented Actions (Xcode Build Output / Links) */}
-                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-end w-full sm:w-auto gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-800">
-                      {project.github && (
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className={`flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md px-3 py-2 sm:py-1.5 text-xs font-medium transition border ${
-                            isDark
-                              ? "bg-[#2D2D30] border-[#3E3E42] text-gray-200 hover:bg-[#38383C]"
-                              : "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200"
-                          }`}
-                        >
-                          <FaGithub className="text-xs" />
-                          <span>Source Code</span>
-                        </a>
-                      )}
-                      {project.live && (
-                        <a
-                          href={project.live}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex-1 sm:flex-initial w-full sm:w-auto flex items-center justify-center space-x-1.5 rounded-md bg-[#0A84FF] hover:bg-blue-500 text-white px-3 py-2 sm:py-1.5 text-xs font-medium shadow-sm transition"
-                        >
-                          <Play className="h-3 w-3 fill-current" />
-                          <span>Run Target</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {/* Hobby Projects Grid / List */}
+          {hobbyProjects.length > 0 && (
+            <div
+              className={
+                viewMode === "targets"
+                  ? "grid grid-cols-1 gap-4"
+                  : "space-y-2.5"
+              }
+            >
+              {hobbyProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  isDark={isDark}
+                  isSelected={selectedProjectId === project.id}
+                  onSelect={setSelectedProjectId}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -66,7 +66,8 @@ export function Dock({ apps, onAppClick }: DockProps) {
   const hoveredAppRef = useRef<string | null>(null)
 
   const xQuickToRef = useRef<((value: number) => void)[]>([])
-  const scaleQuickToRef = useRef<((value: number) => void)[]>([])
+  const scaleXQuickToRef = useRef<((value: number) => void)[]>([])
+  const scaleYQuickToRef = useRef<((value: number) => void)[]>([])
   const shadowQuickToRef = useRef<((value: number) => void)[]>([])
   const shelfScaleXQuickToRef = useRef<((value: number) => void) | null>(null)
   const shelfScaleYQuickToRef = useRef<((value: number) => void) | null>(null)
@@ -161,7 +162,8 @@ export function Dock({ apps, onAppClick }: DockProps) {
     if (isMobile) return
 
     xQuickToRef.current = []
-    scaleQuickToRef.current = []
+    scaleXQuickToRef.current = []
+    scaleYQuickToRef.current = []
     shadowQuickToRef.current = []
 
     dockItems.forEach((item, i) => {
@@ -169,42 +171,45 @@ export function Dock({ apps, onAppClick }: DockProps) {
       const iconEl = iconRefs.current[i]
       const shadowEl = shadowRefs.current[i]
 
-      if (itemEl && !xQuickToRef.current[i]) {
+      if (itemEl) {
         gsap.set(itemEl, { x: 0 })
         xQuickToRef.current[i] = gsap.quickTo(itemEl, "x", {
-          duration: 0.14,
-          ease: "power2.out",
+          duration: 0.2,
+          ease: "power3.out",
         })
       }
-      if (iconEl && !scaleQuickToRef.current[i]) {
+      if (iconEl) {
         gsap.set(iconEl, {
-          scale: 1,
           scaleX: 1,
           scaleY: 1,
           transformOrigin: "50% 100%",
         })
-        scaleQuickToRef.current[i] = gsap.quickTo(iconEl, "scale", {
-          duration: 0.14,
-          ease: "power2.out",
+        scaleXQuickToRef.current[i] = gsap.quickTo(iconEl, "scaleX", {
+          duration: 0.2,
+          ease: "power3.out",
+        })
+        scaleYQuickToRef.current[i] = gsap.quickTo(iconEl, "scaleY", {
+          duration: 0.2,
+          ease: "power3.out",
         })
       }
-      if (shadowEl && !shadowQuickToRef.current[i]) {
+      if (shadowEl) {
         gsap.set(shadowEl, { opacity: 0 })
         shadowQuickToRef.current[i] = gsap.quickTo(shadowEl, "opacity", {
-          duration: 0.14,
-          ease: "power2.out",
+          duration: 0.2,
+          ease: "power3.out",
         })
       }
     })
 
-    if (shelfRef.current && !shelfScaleXQuickToRef.current) {
+    if (shelfRef.current) {
       shelfScaleXQuickToRef.current = gsap.quickTo(shelfRef.current, "scaleX", {
-        duration: 0.14,
-        ease: "power2.out",
+        duration: 0.2,
+        ease: "power3.out",
       })
       shelfScaleYQuickToRef.current = gsap.quickTo(shelfRef.current, "scaleY", {
-        duration: 0.14,
-        ease: "power2.out",
+        duration: 0.2,
+        ease: "power3.out",
       })
     }
   }, [dockItems, isMobile])
@@ -379,7 +384,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
           }
         }
 
-        // Apply both horizontal displacement and magnification simultaneously
+        // Apply both horizontal displacement and magnification simultaneously via GSAP quickTo
         for (let i = 0; i < N; i++) {
           const itemEl = itemRefs.current[i]
           const iconEl = iconRefs.current[i]
@@ -387,21 +392,17 @@ export function Dock({ apps, onAppClick }: DockProps) {
 
           const targetX = positions[i] - (baseXRef.current[i] || 0) + C
 
-          if (itemEl) {
-            // Sole owner of horizontal displacement (translateX)
-            gsap.set(itemEl, { x: targetX })
+          if (itemEl && xQuickToRef.current[i]) {
+            xQuickToRef.current[i](targetX)
           }
 
           if (dockItems[i].type === "app" && iconEl) {
-            // Sole owner of vertical magnification (scale around bottom center)
-            gsap.set(iconEl, {
-              scale: scales[i],
-              transformOrigin: "50% 100%",
-            })
+            scaleXQuickToRef.current[i]?.(scales[i])
+            scaleYQuickToRef.current[i]?.(scales[i])
 
-            if (shadowEl) {
+            if (shadowEl && shadowQuickToRef.current[i]) {
               const shadowOpacity = Math.min(1, Math.max(0, (scales[i] - 1) / 0.7))
-              gsap.set(shadowEl, { opacity: shadowOpacity })
+              shadowQuickToRef.current[i](shadowOpacity)
             }
           }
         }
@@ -431,7 +432,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
           if (itemEl) {
             gsap.to(itemEl, {
               x: 0,
-              duration: 0.22,
+              duration: 0.25,
               ease: "power3.out",
               overwrite: "auto",
             })
@@ -439,7 +440,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
           if (iconEl) {
             gsap.to(iconEl, {
               scale: 1,
-              duration: 0.22,
+              duration: 0.25,
               ease: "power3.out",
               overwrite: "auto",
             })
@@ -447,7 +448,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
           if (shadowEl) {
             gsap.to(shadowEl, {
               opacity: 0,
-              duration: 0.22,
+              duration: 0.25,
               ease: "power3.out",
               overwrite: "auto",
             })
@@ -458,7 +459,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
           gsap.to(shelfRef.current, {
             scaleX: 1,
             scaleY: 1,
-            duration: 0.22,
+            duration: 0.25,
             ease: "power3.out",
             overwrite: "auto",
           })

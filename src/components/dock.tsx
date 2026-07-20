@@ -142,12 +142,17 @@ export function Dock({ apps, onAppClick }: DockProps) {
     dockItems.push({ type: "app", app, id: app.id })
   })
 
+  // Keep stable reference of dockItems inside callbacks
+  const dockItemsRef = useRef<DockItem[]>(dockItems)
+  dockItemsRef.current = dockItems
+
   // Measure base geometry without layout thrashing
   const measureDock = useCallback(() => {
     if (!dockContainerRef.current || isMobile) return
+    const items = dockItemsRef.current
     dockRectRef.current = dockContainerRef.current.getBoundingClientRect()
 
-    dockItems.forEach((_, i) => {
+    items.forEach((_, i) => {
       const el = itemRefs.current[i]
       if (!el) return
       const prevX = Number(gsap.getProperty(el, "x")) || 0
@@ -155,18 +160,19 @@ export function Dock({ apps, onAppClick }: DockProps) {
       baseXRef.current[i] = rect.left - prevX + rect.width / 2
       baseWidthRef.current[i] = rect.width
     })
-  }, [dockItems, isMobile])
+  }, [isMobile])
 
   // Initialize GSAP quickTo setters for inertia
   const initQuickTos = useCallback(() => {
     if (isMobile) return
+    const items = dockItemsRef.current
 
     xQuickToRef.current = []
     scaleXQuickToRef.current = []
     scaleYQuickToRef.current = []
     shadowQuickToRef.current = []
 
-    dockItems.forEach((item, i) => {
+    items.forEach((item, i) => {
       const itemEl = itemRefs.current[i]
       const iconEl = iconRefs.current[i]
       const shadowEl = shadowRefs.current[i]
@@ -212,15 +218,16 @@ export function Dock({ apps, onAppClick }: DockProps) {
         ease: "power3.out",
       })
     }
-  }, [dockItems, isMobile])
+  }, [isMobile])
 
   // Smooth label fade in / rise / fade out
   const updateLabels = useCallback(
     (activeAppId: string | null) => {
       if (activeAppId === hoveredAppRef.current) return
       hoveredAppRef.current = activeAppId
+      const items = dockItemsRef.current
 
-      dockItems.forEach((item, idx) => {
+      items.forEach((item, idx) => {
         if (item.type !== "app") return
         const labelEl = labelRefs.current[idx]
         if (!labelEl) return
@@ -244,7 +251,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
         }
       })
     },
-    [dockItems]
+    []
   )
 
   const dockItemIdsKey = dockItems.map((item) => item.id).join(",")
@@ -259,7 +266,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
     let frameId: number
     const startTime = performance.now()
     const trackLayout = () => {
-      measureDock()
+      if (!wasInDockRef.current) {
+        measureDock()
+      }
       if (performance.now() - startTime < 520) {
         frameId = requestAnimationFrame(trackLayout)
       }
@@ -275,7 +284,9 @@ export function Dock({ apps, onAppClick }: DockProps) {
     }
 
     const handleResize = () => {
-      measureDock()
+      if (!wasInDockRef.current) {
+        measureDock()
+      }
     }
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true })
@@ -286,12 +297,16 @@ export function Dock({ apps, onAppClick }: DockProps) {
     const updateDock = () => {
       if (isMobile) return
 
+      const items = dockItemsRef.current
       const mx = mouseRef.current.x
       const my = mouseRef.current.y
-      const dockRect = dockRectRef.current
-      const N = dockItems.length
+      const N = items.length
       if (N === 0 || !dockContainerRef.current) return
 
+      if (!wasInDockRef.current) {
+        dockRectRef.current = dockContainerRef.current.getBoundingClientRect()
+      }
+      const dockRect = dockRectRef.current
       if (!dockRect || dockRect.width === 0) {
         measureDock()
         return
@@ -305,14 +320,17 @@ export function Dock({ apps, onAppClick }: DockProps) {
         my <= window.innerHeight
 
       if (inDockZone) {
-        wasInDockRef.current = true
+        if (!wasInDockRef.current) {
+          measureDock()
+          wasInDockRef.current = true
+        }
 
         const scales = new Array(N).fill(1.0)
         let closestAppId: string | null = null
         let minDist = Infinity
 
         for (let i = 0; i < N; i++) {
-          const item = dockItems[i]
+          const item = items[i]
           if (item.type === "separator") {
             scales[i] = 1.0
             continue
@@ -396,7 +414,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
             xQuickToRef.current[i](targetX)
           }
 
-          if (dockItems[i].type === "app" && iconEl) {
+          if (items[i].type === "app" && iconEl) {
             scaleXQuickToRef.current[i]?.(scales[i])
             scaleYQuickToRef.current[i]?.(scales[i])
 
@@ -421,48 +439,29 @@ export function Dock({ apps, onAppClick }: DockProps) {
         shelfScaleXQuickToRef.current?.(targetShelfScaleX)
         shelfScaleYQuickToRef.current?.(targetShelfScaleY)
       } else if (wasInDockRef.current) {
-        // Return Animation: Critically damped spring settlement when leaving
+        // Return Animation: Smoothly return to baseline using quickTo instances directly without killing them
         wasInDockRef.current = false
         updateLabels(null)
 
-        dockItems.forEach((item, i) => {
+        items.forEach((item, i) => {
           const itemEl = itemRefs.current[i]
           const iconEl = iconRefs.current[i]
           const shadowEl = shadowRefs.current[i]
-          if (itemEl) {
-            gsap.to(itemEl, {
-              x: 0,
-              duration: 0.25,
-              ease: "power3.out",
-              overwrite: "auto",
-            })
+          if (itemEl && xQuickToRef.current[i]) {
+            xQuickToRef.current[i](0)
           }
-          if (iconEl) {
-            gsap.to(iconEl, {
-              scale: 1,
-              duration: 0.25,
-              ease: "power3.out",
-              overwrite: "auto",
-            })
+          if (iconEl && scaleXQuickToRef.current[i]) {
+            scaleXQuickToRef.current[i]?.(1)
+            scaleYQuickToRef.current[i]?.(1)
           }
-          if (shadowEl) {
-            gsap.to(shadowEl, {
-              opacity: 0,
-              duration: 0.25,
-              ease: "power3.out",
-              overwrite: "auto",
-            })
+          if (shadowEl && shadowQuickToRef.current[i]) {
+            shadowQuickToRef.current[i](0)
           }
         })
 
-        if (shelfRef.current) {
-          gsap.to(shelfRef.current, {
-            scaleX: 1,
-            scaleY: 1,
-            duration: 0.25,
-            ease: "power3.out",
-            overwrite: "auto",
-          })
+        if (shelfScaleXQuickToRef.current && shelfScaleYQuickToRef.current) {
+          shelfScaleXQuickToRef.current(1)
+          shelfScaleYQuickToRef.current(1)
         }
       }
     }
@@ -485,17 +484,13 @@ export function Dock({ apps, onAppClick }: DockProps) {
       if (iconEl) {
         gsap.to(iconEl, {
           y: -18,
-          scale: 1.08,
           duration: 0.2,
           ease: "power2.out",
-          overwrite: "auto",
           onComplete: () => {
             gsap.to(iconEl, {
               y: 0,
-              scale: 1,
               duration: 0.45,
               ease: "bounce.out",
-              overwrite: "auto",
             })
           },
         })

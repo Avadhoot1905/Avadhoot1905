@@ -1,8 +1,10 @@
 "use client"
 
 import React, { ReactElement, useState, useEffect, useRef } from "react"
-import { motion, PanInfo } from "framer-motion"
+import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
+import gsap from "gsap"
+import { Draggable } from "gsap/all"
 
 export interface AppIconProps {
   id?: string
@@ -29,7 +31,12 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
 }) => {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const wasDraggedRef = useRef(false)
+  const iconRef = useRef<HTMLDivElement>(null)
+  const isInitializedRef = useRef(false)
+  const isDraggingRef = useRef(false)
+  const draggableRef = useRef<Draggable[] | null>(null)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -43,19 +50,84 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
 
   const isDesktopPositioned = !isMobile && typeof x === "number" && typeof y === "number"
 
-  const handleDragStart = () => {
-    wasDraggedRef.current = false
-  }
+  useEffect(() => {
+    if (isMobile || !isDesktopPositioned || !iconRef.current || typeof x !== "number" || typeof y !== "number") return
 
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const dist = Math.hypot(info.offset.x, info.offset.y)
-    if (dist > 5) {
-      wasDraggedRef.current = true
-      if (isDesktopPositioned && onDragEnd && typeof x === "number" && typeof y === "number") {
-        onDragEnd(id, x + info.offset.x, y + info.offset.y)
-      }
+    if (!isInitializedRef.current) {
+      gsap.set(iconRef.current, { x, y })
+      isInitializedRef.current = true
+    } else if (!isDraggingRef.current) {
+      gsap.to(iconRef.current, {
+        x,
+        y,
+        duration: 0.38,
+        ease: "power3.out",
+        overwrite: "auto",
+      })
     }
-  }
+  }, [x, y, isMobile, isDesktopPositioned])
+
+  useEffect(() => {
+    if (isMobile || typeof window === "undefined" || !iconRef.current || !isDesktopPositioned) return
+
+    gsap.registerPlugin(Draggable)
+
+    const draggable = Draggable.create(iconRef.current, {
+      type: "x,y",
+      edgeResistance: 0.75,
+      cursor: "pointer",
+      activeCursor: "grabbing",
+      onPress: function () {
+        wasDraggedRef.current = false
+        isDraggingRef.current = true
+        setIsDragging(true)
+        gsap.to(iconRef.current, {
+          scale: 1.05,
+          zIndex: 40,
+          duration: 0.15,
+          ease: "power2.out",
+          overwrite: "auto",
+        })
+      },
+      onDragStart: function () {
+        wasDraggedRef.current = false
+      },
+      onRelease: function () {
+        isDraggingRef.current = false
+        setIsDragging(false)
+        gsap.to(iconRef.current, {
+          scale: 1,
+          zIndex: isSelected ? 30 : 10,
+          duration: 0.2,
+          ease: "power2.out",
+          overwrite: "auto",
+        })
+
+        const dist = Math.hypot(this.x - this.startX, this.y - this.startY)
+        if (dist > 5) {
+          wasDraggedRef.current = true
+          if (onDragEnd && typeof x === "number" && typeof y === "number") {
+            onDragEnd(id, this.x, this.y)
+          }
+        } else {
+          gsap.to(iconRef.current, {
+            x,
+            y,
+            duration: 0.3,
+            ease: "power3.out",
+            overwrite: "auto",
+          })
+        }
+      },
+    })
+
+    draggableRef.current = draggable
+
+    return () => {
+      draggable.forEach((d) => d.kill())
+      draggableRef.current = null
+    }
+  }, [isMobile, isDesktopPositioned, id, isSelected, x, y, onDragEnd])
 
   const handleClick = (e: React.MouseEvent) => {
     if (wasDraggedRef.current) {
@@ -125,25 +197,29 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
 
   // Desktop macOS Sonoma/Sequoia icon layout
   return (
-    <motion.div
+    <div
+      ref={iconRef}
       data-app-icon={id}
       onPointerDown={(e) => e.stopPropagation()}
       className="absolute flex w-[88px] flex-col items-center select-none cursor-pointer group"
       style={{
         left: 0,
         top: 0,
-        zIndex: isSelected ? 30 : 10,
+        zIndex: isSelected || isDragging ? 30 : 10,
+        transform: `translate3d(${x ?? 0}px, ${y ?? 0}px, 0px)`,
       }}
-      animate={{ x, y }}
-      transition={{ type: "spring", stiffness: 420, damping: 32 }}
-      drag
-      dragMomentum={false}
-      dragElastic={0.08}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      whileHover={{ y: y - 2 }}
+      onPointerEnter={() => {
+        if (!isDraggingRef.current && iconRef.current && typeof y === "number") {
+          gsap.to(iconRef.current, { y: y - 2, duration: 0.2, ease: "power2.out", overwrite: "auto" })
+        }
+      }}
+      onPointerLeave={() => {
+        if (!isDraggingRef.current && iconRef.current && typeof y === "number") {
+          gsap.to(iconRef.current, { y, duration: 0.2, ease: "power2.out", overwrite: "auto" })
+        }
+      }}
     >
       <div
         className={`relative mb-1.5 flex h-[60px] w-[60px] items-center justify-center transition-all duration-200 drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)] group-hover:scale-105 group-hover:brightness-105 group-hover:drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)] ${
@@ -166,7 +242,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       >
         {name}
       </div>
-    </motion.div>
+    </div>
   )
 })
 

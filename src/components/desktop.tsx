@@ -281,14 +281,6 @@ export function MacOSDesktop() {
   const [welcomeNotificationExit, setWelcomeNotificationExit] = useState<WelcomeNotificationExit>("right")
   const { theme } = useTheme()
 
-  // Desktop selection & layout states
-  const [selectedIcons, setSelectedIcons] = useState<string[]>([])
-  const [iconPositions, setIconPositions] = useState<Record<string, { x: number; y: number }>>({})
-  const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null)
-  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null)
-  const dragStartRef = useRef<{ x: number; y: number } | null>(null)
-  const desktopAreaRef = useRef<HTMLDivElement>(null)
-
   const desktopApps: DesktopAppDefinition[] = React.useMemo(() => [
     { id: "finder", name: "Finder", icon: finderIcon },
     { id: "safari", name: "Safari", icon: safariIcon },
@@ -322,8 +314,49 @@ export function MacOSDesktop() {
     return sanitizeIconPositions(positions, containerWidth, containerHeight, apps)
   }, [])
 
+  // Desktop selection & layout states
+  const [selectedIcons, setSelectedIcons] = useState<string[]>([])
+  const [iconPositions, setIconPositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    if (typeof window === "undefined") return {}
+    const width = window.innerWidth
+    const height = window.innerHeight
+    const defaults = computeDefaultPositions(width, height, desktopApps)
+
+    const savedJson = localStorage.getItem(ICON_POSITIONS_STORAGE_KEY)
+    if (savedJson) {
+      try {
+        const parsed = JSON.parse(savedJson) as Record<string, { x: number; y: number }>
+        const merged: Record<string, { x: number; y: number }> = {}
+        desktopApps.forEach((app) => {
+          if (
+            parsed[app.id] &&
+            parsed[app.id].x >= 0 &&
+            parsed[app.id].x <= width - 60 &&
+            parsed[app.id].y >= TOP_MARGIN &&
+            parsed[app.id].y <= height - 80
+          ) {
+            merged[app.id] = parsed[app.id]
+          } else {
+            merged[app.id] = defaults[app.id]
+          }
+        })
+        return sanitizeIconPositions(merged, width, height, desktopApps)
+      } catch {
+        // ignore error and fallback to defaults
+      }
+    }
+    return defaults
+  })
+  const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null)
+  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null)
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null)
+  const desktopAreaRef = useRef<HTMLDivElement>(null)
+
   // Initialize, load saved icon positions, and adjust dynamically on window resize
-  const prevSizeRef = useRef({ width: 0, height: 0 })
+  const prevSizeRef = useRef({
+    width: typeof window !== "undefined" ? window.innerWidth : 0,
+    height: typeof window !== "undefined" ? window.innerHeight : 0,
+  })
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -359,6 +392,10 @@ export function MacOSDesktop() {
         }
       }
       setIconPositions(defaults)
+    }
+
+    if (Object.keys(iconPositions).length === 0) {
+      updateLayout()
     }
 
     const handleResize = () => {
@@ -504,8 +541,16 @@ export function MacOSDesktop() {
     }
   }, [terminalCommand, openWindows])
 
+  const lastActivityRef = useRef(Date.now())
+
   const updateActivity = useCallback(() => {
-    setLastActivity(Date.now())
+    const now = Date.now()
+    if (now - lastActivityRef.current > 10000) {
+      lastActivityRef.current = now
+      setLastActivity(now)
+    } else {
+      lastActivityRef.current = now
+    }
     if (isLocked) {
       setIsLocked(false)
     }
@@ -527,22 +572,26 @@ export function MacOSDesktop() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastActivity > 300000) {
+      if (Date.now() - lastActivityRef.current > 300000) {
         setIsLocked(true)
       }
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [lastActivity])
+  }, [])
 
   const handleUnlock = () => {
     setIsLocked(false)
-    setLastActivity(Date.now())
+    const now = Date.now()
+    lastActivityRef.current = now
+    setLastActivity(now)
   }
 
   const handleLockScreen = () => {
     setIsLocked(true)
-    setLastActivity(Date.now())
+    const now = Date.now()
+    lastActivityRef.current = now
+    setLastActivity(now)
   }
 
   const handleShutdown = () => {

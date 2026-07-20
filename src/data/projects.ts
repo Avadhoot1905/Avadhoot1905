@@ -7,6 +7,7 @@ export interface Project {
   domains?: ("Website Development" | "App Development" | "Blockchain" | "IoT" | "system" | "Extension Development" | "Machine Learning")[]
   github?: string
   live?: string
+  hobby: boolean
 }
 
 export const projects: Project[] = [
@@ -17,35 +18,39 @@ export const projects: Project[] = [
     techStack: ["Next.js", "Tailwind CSS", "Redis", "AWS S3", "AWS Lambda", "AWS CloudFront", "AWS API Gateway", "Gemini API"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/Avadhoot1905",
-    live: "https://avadhootgm.in"
+    live: "https://avadhootgm.in",
+    hobby: true
   },
   {
     id: 2,
     name: "ExamCooker",
     description: "A scalable Website Development application for exam management and preparation, built with modern development practices and collaborative workflows",
-    techStack: ["Next.js", "CockroachDB", "Redis", "Python", "Prisma", "FastAPI","TailwindCSS", "GCP", "Vercel"],
+    techStack: ["Next.js", "CockroachDB", "Redis", "Python", "Prisma", "FastAPI", "TailwindCSS", "GCP", "Vercel"],
     domain: "Website Development",
     domains: ["Website Development", "Machine Learning"],
     github: "https://github.com/ACM-VIT/ExamCooker-2024",
-    live:"https://examcooker.acmvit.in"
+    live: "https://examcooker.acmvit.in",
+    hobby: false
   },
   {
     id: 3,
     name: "NagrikMitra",
     description: "A scalable Website Development application for citizen services and grievance redressal, built with modern development practices and collaborative workflows",
-    techStack: ["React.js", "Django", "MySQL", "Ethereum", "AWS S3", "AWS RDS" , "CNN", "SLM"],
+    techStack: ["React.js", "Django", "MySQL", "Ethereum", "AWS S3", "AWS RDS", "CNN", "SLM"],
     domain: "Website Development",
-    domains: ["Website Development","App Development","Blockchain", "IoT", "Machine Learning"],
+    domains: ["Website Development", "App Development", "Blockchain", "IoT", "Machine Learning"],
     github: "https://github.com/CodinGakpo/Yantra26-user",
+    hobby: false
   },
   {
     id: 4,
     name: "Kathuria Gun House",
     description: "Full-stack e-commerce solution with payment integration, inventory management, and admin dashboard",
-    techStack: ["Next.js", "AWS EC2", "PostgreSQL", "Prisma","Fuse.js","Razorpay"],
+    techStack: ["Next.js", "AWS EC2", "PostgreSQL", "Prisma", "Fuse.js", "Razorpay"],
     domain: "Website Development",
     github: "https://github.com/Avadhoot1905/KGH",
-    live: "https://buyairgunsindia.in"
+    live: "https://buyairgunsindia.in",
+    hobby: false
   },
   {
     id: 5,
@@ -54,7 +59,8 @@ export const projects: Project[] = [
     techStack: ["Swift", "Python", "Torch-Vision", "TensorFlow", "CoreML"],
     domain: "App Development",
     domains: ["App Development", "Machine Learning"],
-    github: "https://github.com/Avadhoot1905/iVision-App"
+    github: "https://github.com/Avadhoot1905/iVision-App",
+    hobby: false
   },
   {
     id: 6,
@@ -63,7 +69,8 @@ export const projects: Project[] = [
     techStack: ["Next.js", "TypeScript", "Gemini API", "Tailwind CSS"],
     domain: "Website Development",
     domains: ["Website Development", "Machine Learning"],
-    github: "https://github.com/Avadhoot1905/study-resource-allocator"
+    github: "https://github.com/Avadhoot1905/study-resource-allocator",
+    hobby: true
   },
   {
     id: 7,
@@ -71,15 +78,17 @@ export const projects: Project[] = [
     description: "Real-time chat application with WebSocket support, file sharing, and end-to-end encryption for users in the same subnet. It uses UDP for peer discovery and AES for encryption.",
     techStack: ["Python"],
     domain: "system",
-    github: "https://github.com/Avadhoot1905/SecureLink"
+    github: "https://github.com/Avadhoot1905/SecureLink",
+    hobby: true
   },
   {
     id: 8,
     name: "vit-wifi-password-automator",
     description: "Wi-Fi password automator for seamless connectivity",
-    techStack: ["JavaScript","Chrome Web Extensions"],
+    techStack: ["JavaScript", "Chrome Web Extensions"],
     domain: "Extension Development",
-    github: "https://github.com/Avadhoot1905/vit-wifi-password-manager"
+    github: "https://github.com/Avadhoot1905/vit-wifi-password-manager",
+    hobby: true
   },
   {
     id: 9,
@@ -87,7 +96,8 @@ export const projects: Project[] = [
     description: "Cross-platform file system storage manager with advanced search and batch operations",
     techStack: ["Bash", "Arch Linux", "rsync", "Threading", "Syncthing"],
     domain: "system",
-    github: "https://github.com/yourusername/file-manager"
+    github: "https://github.com/yourusername/file-manager",
+    hobby: true
   },
   {
     id: 10,
@@ -95,7 +105,8 @@ export const projects: Project[] = [
     description: "A comprehensive tool for scraping and analyzing financial statements of NYSE 500 companies, providing insights and visualizations.",
     techStack: ["Python", "beautifulsoup4", "requests", "pandas"],
     domain: "Machine Learning",
-    github: "https://github.com/AasaSingh05/Finance-DA"
+    github: "https://github.com/AasaSingh05/Finance-DA",
+    hobby: false
   },
   {
     id: 11,
@@ -103,7 +114,8 @@ export const projects: Project[] = [
     description: "Habit tracking webapp with goal setting, reminders, and progress visualization",
     techStack: ["React.js", "Vue.js", "Express.js"],
     domain: "Website Development",
-    github: "https://github.com/Avadhoot1905/habit-tracker"
+    github: "https://github.com/Avadhoot1905/habit-tracker",
+    hobby: true
   },
   {
     id: 12,
@@ -111,7 +123,8 @@ export const projects: Project[] = [
     description: "A government-based platform to monitor waste management and recycling, and routing effective waste truck paths",
     techStack: ["Next.js", "Drizzle ORM", "PostgreSQL", "TypeScript", "Tailwind CSS", "Clerk"],
     domain: "Website Development",
-    github: "https://github.com/Avadhoot1905/ReLeaf"
+    github: "https://github.com/Avadhoot1905/ReLeaf",
+    hobby: true
   },
   {
     id: 13,
@@ -119,15 +132,17 @@ export const projects: Project[] = [
     description: "Website Development scraper for extracting movie data from IMDB with search and filtering capabilities",
     techStack: ["Python", "beautifulsoup4"],
     domain: "Machine Learning",
-    github: "https://github.com/Avadhoot1905/Website Development-scrapper"
+    github: "https://github.com/Avadhoot1905/Website Development-scrapper",
+    hobby: true
   },
   {
     id: 14,
     name: "VTOP Login Automator",
     description: "Automates the login process for VTOP, enhancing user convenience and efficiency.",
-    techStack: ["JavaScript","Chrome Web Extensions"],
+    techStack: ["JavaScript", "Chrome Web Extensions"],
     domain: "Extension Development",
-    github: "https://github.com/Avadhoot1905/vtop-password-automater"
+    github: "https://github.com/Avadhoot1905/vtop-password-automater",
+    hobby: true
   },
   {
     id: 15,
@@ -135,7 +150,8 @@ export const projects: Project[] = [
     description: "Lost and Found Website (frontend)",
     techStack: ["Next.js"],
     domain: "Website Development",
-    github: "https://github.com/AasaSingh05/Found-It"
+    github: "https://github.com/AasaSingh05/Found-It",
+    hobby: true
   },
-  
+
 ]

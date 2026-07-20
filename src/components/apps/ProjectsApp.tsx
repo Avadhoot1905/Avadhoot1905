@@ -226,7 +226,7 @@ function ProjectCard({
   return (
     <div
       onClick={() => onSelect(project.id)}
-      className={`group relative rounded-xl border p-4 transition-all cursor-pointer ${
+      className={`group relative rounded-xl border p-4 transition-all duration-300 cursor-pointer ${
         isSelected
           ? isDark
             ? "bg-[#252830] border-[#0A84FF] ring-1 ring-[#0A84FF]/50"
@@ -234,6 +234,10 @@ function ProjectCard({
           : isDark
           ? "bg-[#222224] border-[#303033] hover:border-[#45454A]"
           : "bg-white border-gray-200 hover:border-gray-300 shadow-sm"
+      } ${
+        project.hobby && !isSelected
+          ? "opacity-75 grayscale-[50%] blur-[1px] hover:opacity-100 hover:grayscale-0 hover:blur-none"
+          : ""
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

@@ -13,7 +13,6 @@ import {
   FaFolder,
   FaImage,
   FaTimes,
-  FaExternalLinkAlt,
 } from "react-icons/fa"
 import {
   SiGmail,
@@ -367,13 +366,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
       <button
         type="button"
         onClick={() => navigateTab(id)}
-        className={`flex w-full items-center rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          isActive
+        className={`flex w-full items-center rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${isActive
             ? "bg-blue-500 text-white shadow-sm"
             : theme === "dark"
               ? "text-gray-300 hover:bg-white/10"
               : "text-gray-700 hover:bg-black/5"
-        }`}
+          }`}
       >
         <span className="mr-2.5 text-sm">{icon}</span>
         <span>{label}</span>
@@ -390,17 +388,15 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
 
   return (
     <div
-      className={`flex h-full flex-col select-none ${
-        theme === "dark" ? "bg-[#1E1E1E] text-white" : "bg-white text-gray-900"
-      }`}
+      className={`flex h-full flex-col select-none ${theme === "dark" ? "bg-[#1E1E1E] text-white" : "bg-white text-gray-900"
+        }`}
     >
       {/* Top Toolbar */}
       <div
-        className={`flex items-center justify-between border-b px-4 py-2 ${
-          theme === "dark"
+        className={`flex items-center justify-between border-b px-4 py-2 ${theme === "dark"
             ? "border-gray-700/80 bg-[#2A2A2A]"
             : "border-gray-200 bg-[#F5F5F7]"
-        }`}
+          }`}
       >
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1">
@@ -408,13 +404,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
               type="button"
               onClick={goBack}
               disabled={historyIndex <= 0}
-              className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
-                historyIndex <= 0
+              className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${historyIndex <= 0
                   ? "opacity-30 cursor-not-allowed"
                   : theme === "dark"
                     ? "hover:bg-white/10"
                     : "hover:bg-black/5"
-              }`}
+                }`}
               title="Back"
             >
               <FaChevronLeft className="text-xs" />
@@ -423,13 +418,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
               type="button"
               onClick={goForward}
               disabled={historyIndex >= history.length - 1}
-              className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
-                historyIndex >= history.length - 1
+              className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${historyIndex >= history.length - 1
                   ? "opacity-30 cursor-not-allowed"
                   : theme === "dark"
                     ? "hover:bg-white/10"
                     : "hover:bg-black/5"
-              }`}
+                }`}
               title="Forward"
             >
               <FaChevronRight className="text-xs" />
@@ -444,22 +438,20 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
         <div className="flex items-center space-x-2">
           {/* View Toggle */}
           <div
-            className={`flex items-center rounded-md border p-0.5 ${
-              theme === "dark"
+            className={`flex items-center rounded-md border p-0.5 ${theme === "dark"
                 ? "border-gray-700 bg-[#1A1A1A]"
                 : "border-gray-300 bg-white"
-            }`}
+              }`}
           >
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                viewMode === "grid"
+              className={`rounded px-2 py-1 text-xs transition-colors ${viewMode === "grid"
                   ? theme === "dark"
                     ? "bg-gray-700 text-white"
                     : "bg-gray-200 text-gray-900"
                   : "text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
               title="Icon View"
             >
               <FaThLarge />
@@ -467,13 +459,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                viewMode === "list"
+              className={`rounded px-2 py-1 text-xs transition-colors ${viewMode === "list"
                   ? theme === "dark"
                     ? "bg-gray-700 text-white"
                     : "bg-gray-200 text-gray-900"
                   : "text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
               title="List View"
             >
               <FaList />
@@ -482,11 +473,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
 
           {/* Search Bar */}
           <div
-            className={`flex items-center rounded-md border px-2.5 py-1 text-xs ${
-              theme === "dark"
+            className={`flex items-center rounded-md border px-2.5 py-1 text-xs ${theme === "dark"
                 ? "border-gray-700 bg-[#1A1A1A] text-white"
                 : "border-gray-300 bg-white text-gray-900"
-            }`}
+              }`}
           >
             <FaSearch className="mr-2 text-gray-400 text-xs" />
             <input
@@ -503,11 +493,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
       {/* Mobile Tabs Header */}
       {isMobile && (
         <div
-          className={`flex border-b overflow-x-auto px-2 py-1.5 space-x-1 ${
-            theme === "dark"
+          className={`flex border-b overflow-x-auto px-2 py-1.5 space-x-1 ${theme === "dark"
               ? "border-gray-700 bg-gray-800/80"
               : "border-gray-200 bg-gray-100"
-          }`}
+            }`}
         >
           {renderSidebarItem(
             "applications",
@@ -537,11 +526,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
         {/* Left Sidebar (Desktop) */}
         {!isMobile && (
           <div
-            className={`w-48 shrink-0 border-r p-3 flex flex-col justify-between ${
-              theme === "dark"
+            className={`w-48 shrink-0 border-r p-3 flex flex-col justify-between ${theme === "dark"
                 ? "bg-[#252526] border-gray-700/80"
                 : "bg-[#F3F4F6] border-gray-200"
-            }`}
+              }`}
           >
             <div>
               <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -583,11 +571,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
             <>
               {viewMode === "grid" ? (
                 <div
-                  className={`grid gap-5 ${
-                    isMobile
+                  className={`grid gap-5 ${isMobile
                       ? "grid-cols-3"
                       : "grid-cols-4 sm:grid-cols-5 md:grid-cols-6"
-                  }`}
+                    }`}
                 >
                   {filteredApplications.map((app) => {
                     const isSelected = selectedItemId === app.id
@@ -605,23 +592,21 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                           e.stopPropagation()
                           handleAppClick(app)
                         }}
-                        className={`group flex flex-col items-center justify-start rounded-xl p-2.5 cursor-pointer transition-all duration-150 ${
-                          isSelected
+                        className={`group flex flex-col items-center justify-start rounded-xl p-2.5 cursor-pointer transition-all duration-150 ${isSelected
                             ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
                             : theme === "dark"
                               ? "border border-transparent hover:bg-white/10"
                               : "border border-transparent hover:bg-black/5"
-                        }`}
+                          }`}
                       >
                         <div className="flex h-14 w-14 items-center justify-center transition-transform duration-200 group-hover:scale-105">
                           {app.icon}
                         </div>
                         <div
-                          className={`mt-2 text-center text-xs font-medium leading-tight line-clamp-1 rounded px-1.5 py-0.5 ${
-                            isSelected
+                          className={`mt-2 text-center text-xs font-medium leading-tight line-clamp-1 rounded px-1.5 py-0.5 ${isSelected
                               ? "bg-blue-500 text-white"
                               : ""
-                          }`}
+                            }`}
                         >
                           {app.name}
                         </div>
@@ -632,9 +617,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
               ) : (
                 <div className="w-full">
                   <div
-                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${
-                      theme === "dark" ? "border-gray-700" : "border-gray-200"
-                    }`}
+                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${theme === "dark" ? "border-gray-700" : "border-gray-200"
+                      }`}
                   >
                     <div className="col-span-6">Name</div>
                     <div className="col-span-4">Kind</div>
@@ -657,13 +641,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                             e.stopPropagation()
                             handleAppClick(app)
                           }}
-                          className={`grid grid-cols-12 items-center py-2 px-1.5 rounded-md cursor-pointer text-xs transition-colors ${
-                            isSelected
+                          className={`grid grid-cols-12 items-center py-2 px-1.5 rounded-md cursor-pointer text-xs transition-colors ${isSelected
                               ? "bg-blue-500 text-white"
                               : theme === "dark"
                                 ? "hover:bg-white/10"
                                 : "hover:bg-black/5"
-                          }`}
+                            }`}
                         >
                           <div className="col-span-6 flex items-center space-x-3">
                             <div className="h-6 w-6 flex items-center justify-center shrink-0">
@@ -672,9 +655,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                             <span className="font-medium">{app.name}</span>
                           </div>
                           <div
-                            className={`col-span-4 ${
-                              isSelected ? "text-blue-100" : "text-gray-400"
-                            }`}
+                            className={`col-span-4 ${isSelected ? "text-blue-100" : "text-gray-400"
+                              }`}
                           >
                             {app.kind}
                           </div>
@@ -685,9 +667,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                                 e.stopPropagation()
                                 handleAppClick(app)
                               }}
-                              className={`text-[11px] hover:underline font-medium ${
-                                isSelected ? "text-white" : "text-blue-500"
-                              }`}
+                              className={`text-[11px] hover:underline font-medium ${isSelected ? "text-white" : "text-blue-500"
+                                }`}
                             >
                               Open
                             </button>
@@ -706,9 +687,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
             <>
               {viewMode === "grid" ? (
                 <div
-                  className={`grid gap-4 ${
-                    isMobile ? "grid-cols-3" : "grid-cols-5"
-                  }`}
+                  className={`grid gap-4 ${isMobile ? "grid-cols-3" : "grid-cols-5"
+                    }`}
                 >
                   <div
                     onClick={(e) => {
@@ -722,23 +702,21 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                       e.stopPropagation()
                       handleResumeClick()
                     }}
-                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
-                      selectedItemId === "resume-doc"
+                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${selectedItemId === "resume-doc"
                         ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
                         : theme === "dark"
                           ? "border border-transparent hover:bg-white/10"
                           : "border border-transparent hover:bg-black/5"
-                    }`}
+                      }`}
                   >
                     <div className="h-16 w-16 rounded-xl flex items-center justify-center bg-red-500/10 transition-transform duration-200 group-hover:scale-105">
                       <FaFilePdf className="text-4xl text-red-500" />
                     </div>
                     <div
-                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${
-                        selectedItemId === "resume-doc"
+                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${selectedItemId === "resume-doc"
                           ? "bg-blue-500 text-white"
                           : ""
-                      }`}
+                        }`}
                     >
                       Resume.pdf
                     </div>
@@ -747,9 +725,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
               ) : (
                 <div className="w-full">
                   <div
-                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${
-                      theme === "dark" ? "border-gray-700" : "border-gray-200"
-                    }`}
+                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${theme === "dark" ? "border-gray-700" : "border-gray-200"
+                      }`}
                   >
                     <div className="col-span-6">Name</div>
                     <div className="col-span-4">Kind</div>
@@ -767,33 +744,30 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                       e.stopPropagation()
                       handleResumeClick()
                     }}
-                    className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
-                      selectedItemId === "resume-doc"
+                    className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${selectedItemId === "resume-doc"
                         ? "bg-blue-500 text-white"
                         : theme === "dark"
                           ? "hover:bg-white/10"
                           : "hover:bg-black/5"
-                    }`}
+                      }`}
                   >
                     <div className="col-span-6 flex items-center space-x-3">
                       <FaFilePdf className="text-lg text-red-500 shrink-0" />
                       <span className="font-medium">Resume.pdf</span>
                     </div>
                     <div
-                      className={`col-span-4 ${
-                        selectedItemId === "resume-doc"
+                      className={`col-span-4 ${selectedItemId === "resume-doc"
                           ? "text-blue-100"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       PDF Document
                     </div>
                     <div
-                      className={`col-span-2 text-right ${
-                        selectedItemId === "resume-doc"
+                      className={`col-span-2 text-right ${selectedItemId === "resume-doc"
                           ? "text-blue-100"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       2.4 MB
                     </div>
@@ -807,11 +781,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
           {activeTab === "photos" && (
             <div>
               <div
-                className={`grid gap-4 ${
-                  isMobile
+                className={`grid gap-4 ${isMobile
                     ? "grid-cols-2"
                     : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"
-                }`}
+                  }`}
               >
                 {filteredPhotos.map((photo, index) => {
                   const isSelected = selectedItemId === photo.src
@@ -826,13 +799,12 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                         e.stopPropagation()
                         setSelectedPhoto(photo)
                       }}
-                      className={`group flex flex-col rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 ${
-                        isSelected
+                      className={`group flex flex-col rounded-xl overflow-hidden border cursor-pointer transition-all duration-200 ${isSelected
                           ? "border-blue-500 ring-2 ring-blue-500 shadow-md bg-blue-500/10"
                           : theme === "dark"
                             ? "border-gray-700/70 bg-[#252526] hover:border-blue-500/50"
                             : "border-gray-200 bg-white hover:border-blue-500/50"
-                      }`}
+                        }`}
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-gray-900/10">
                         <img
@@ -842,9 +814,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                         />
                       </div>
                       <div
-                        className={`p-2 text-center text-xs font-medium truncate ${
-                          isSelected ? "bg-blue-500 text-white" : ""
-                        }`}
+                        className={`p-2 text-center text-xs font-medium truncate ${isSelected ? "bg-blue-500 text-white" : ""
+                          }`}
                       >
                         {photo.alt}
                       </div>
@@ -860,9 +831,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
             <>
               {viewMode === "grid" ? (
                 <div
-                  className={`grid gap-4 ${
-                    isMobile ? "grid-cols-3" : "grid-cols-5"
-                  }`}
+                  className={`grid gap-4 ${isMobile ? "grid-cols-3" : "grid-cols-5"
+                    }`}
                 >
                   <div
                     onClick={(e) => {
@@ -876,23 +846,21 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                       e.stopPropagation()
                       handleResumeClick()
                     }}
-                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${
-                      selectedItemId === "resume-dl"
+                    className={`group flex flex-col items-center rounded-xl p-3 cursor-pointer transition-all ${selectedItemId === "resume-dl"
                         ? "bg-blue-500/20 border border-blue-500/50 shadow-sm"
                         : theme === "dark"
                           ? "border border-transparent hover:bg-white/10"
                           : "border border-transparent hover:bg-black/5"
-                    }`}
+                      }`}
                   >
                     <div className="h-16 w-16 rounded-xl flex items-center justify-center bg-red-500/10 transition-transform duration-200 group-hover:scale-105">
                       <FaFilePdf className="text-4xl text-red-500" />
                     </div>
                     <div
-                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${
-                        selectedItemId === "resume-dl"
+                      className={`mt-2 text-xs font-medium rounded px-1.5 py-0.5 ${selectedItemId === "resume-dl"
                           ? "bg-blue-500 text-white"
                           : ""
-                      }`}
+                        }`}
                     >
                       Resume.pdf
                     </div>
@@ -901,9 +869,8 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
               ) : (
                 <div className="w-full">
                   <div
-                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${
-                      theme === "dark" ? "border-gray-700" : "border-gray-200"
-                    }`}
+                    className={`grid grid-cols-12 border-b pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 ${theme === "dark" ? "border-gray-700" : "border-gray-200"
+                      }`}
                   >
                     <div className="col-span-6">Name</div>
                     <div className="col-span-4">Kind</div>
@@ -921,33 +888,30 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
                       e.stopPropagation()
                       handleResumeClick()
                     }}
-                    className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
-                      selectedItemId === "resume-dl"
+                    className={`grid grid-cols-12 items-center py-2.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${selectedItemId === "resume-dl"
                         ? "bg-blue-500 text-white"
                         : theme === "dark"
                           ? "hover:bg-white/10"
                           : "hover:bg-black/5"
-                    }`}
+                      }`}
                   >
                     <div className="col-span-6 flex items-center space-x-3">
                       <FaFilePdf className="text-lg text-red-500 shrink-0" />
                       <span className="font-medium">Resume.pdf</span>
                     </div>
                     <div
-                      className={`col-span-4 ${
-                        selectedItemId === "resume-dl"
+                      className={`col-span-4 ${selectedItemId === "resume-dl"
                           ? "text-blue-100"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       PDF Document
                     </div>
                     <div
-                      className={`col-span-2 text-right ${
-                        selectedItemId === "resume-dl"
+                      className={`col-span-2 text-right ${selectedItemId === "resume-dl"
                           ? "text-blue-100"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       2.4 MB
                     </div>
@@ -961,11 +925,10 @@ export function FinderApp({ onOpenApp, initialTab = "documents" }: FinderAppProp
 
       {/* Footer Status Bar */}
       <div
-        className={`flex items-center justify-between border-t px-4 py-1 text-[11px] ${
-          theme === "dark"
+        className={`flex items-center justify-between border-t px-4 py-1 text-[11px] ${theme === "dark"
             ? "border-gray-700/80 bg-[#252526] text-gray-400"
             : "border-gray-200 bg-[#F5F5F7] text-gray-500"
-        }`}
+          }`}
       >
         <div>
           {currentCount} {currentCount === 1 ? "item" : "items"}

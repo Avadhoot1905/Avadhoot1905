@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import gsap from "gsap"
 
 interface LoadingScreenProps {
@@ -28,7 +29,6 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const unifiedTextRef = useRef<HTMLDivElement>(null)
   const finalNameRef = useRef<HTMLDivElement>(null)
-  const clickTextRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -231,35 +231,11 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
           ease: "power2.out",
         }, FINAL_START)
 
-        if (clickTextRef.current) {
-          clickTextRef.current.style.opacity = "0"
-          clickTextRef.current.style.transform = "translateY(-4px)"
-          clickTextRef.current.style.filter = "blur(3px)"
-
-          tl.to(clickTextRef.current, {
-            opacity: 0.7,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.8,
-            ease: "power2.out",
-            onComplete: () => {
-              setCtaReady(true)
-              if (clickTextRef.current) {
-                gsap.to(clickTextRef.current, {
-                  opacity: 0.3,
-                  duration: 1.5,
-                  ease: "sine.inOut",
-                  repeat: -1,
-                  yoyo: true,
-                })
-              }
-            },
-          }, FINAL_START + 0.4)
-
-          tl.add(() => {
-            setAnimationComplete(true)
-          }, FINAL_START + 0.8)
-        }
+        // The CTA / loader (rendered by React) reveals just after the name
+        // settles. Its own entrance + spinner are CSS/framer-motion driven, so
+        // we only need to flip the state flags here.
+        tl.add(() => setAnimationComplete(true), FINAL_START + 0.8)
+        tl.add(() => setCtaReady(true), FINAL_START + 1.2)
       }
     }
 
@@ -331,19 +307,44 @@ export function LoadingScreen({ isLoaded, onDismiss }: LoadingScreenProps) {
             color: "#39FF14",
           }}
         />
-        <div
-          ref={clickTextRef}
-          className="text-center"
-          style={{
-            fontFamily: "'Eckmannpsych Small', Eckmannpsych, system-ui, -apple-system, sans-serif",
-            fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)",
-            letterSpacing: "0.15em",
-            color: "#ffff3f",
-            opacity: 0,
-          }}
-        >
-          Click to enter
-        </div>
+        {ctaReady && (
+          <motion.div
+            className="flex flex-col items-center gap-3 text-center"
+            initial={{ opacity: 0, y: -4, filter: "blur(3px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            {isLoaded ? (
+              // Assets are cached — invite the user in.
+              <span
+                className="animate-pulse"
+                style={{
+                  fontFamily: "'Eckmannpsych Small', Eckmannpsych, system-ui, -apple-system, sans-serif",
+                  fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)",
+                  letterSpacing: "0.15em",
+                  color: "#ffff3f",
+                }}
+              >
+                Click to enter
+              </span>
+            ) : (
+              // Assets still downloading into the browser cache.
+              <>
+                <span className="block h-6 w-6 rounded-full border-2 border-white/15 border-t-[#39FF14] animate-spin" />
+                <span
+                  style={{
+                    fontFamily: "'Eckmannpsych Small', Eckmannpsych, system-ui, -apple-system, sans-serif",
+                    fontSize: "clamp(0.7rem, 1vw, 0.9rem)",
+                    letterSpacing: "0.15em",
+                    color: "rgba(255,255,255,0.55)",
+                  }}
+                >
+                  Loading assets…
+                </span>
+              </>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   )

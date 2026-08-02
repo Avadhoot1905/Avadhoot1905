@@ -13,19 +13,6 @@ import { ContextMenu, ContextMenuPosition } from "@/components/context-menu"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence, type PanInfo } from "framer-motion"
 import { X } from "lucide-react"
-import { GiTicTacToe } from "react-icons/gi"
-import {
-  FaSafari,
-  FaCommentDots,
-  FaImages,
-  FaUser,
-  FaCode,
-  FaGraduationCap,
-  FaBriefcase,
-  FaGamepad,
-  FaTerminal
-} from "react-icons/fa"
-import { PiBirdFill } from "react-icons/pi"
 import {
   SiGithub,
   SiLinkedin,
@@ -554,12 +541,46 @@ export function MacOSDesktop() {
     setIsLoading(true)
     setIsAssetsLoaded(false)
 
-    const timer = setTimeout(() => {
+    // Preload the first-view assets (lock-screen wallpapers + desktop
+    // backgrounds) so they're warm in the browser cache before the user
+    // dismisses the loading screen — no loading flashes on the lock screen.
+    const CRITICAL_ASSETS = [
+      "/assets/tahoejpg.webp",         // desktop lock screen
+      "/assets/lock-screen-phone.png", // mobile lock screen
+      "/assets/v-dark-c.jpg",          // desktop background (light theme)
+      "/assets/v-light-c.jpg",         // desktop background (dark theme)
+    ]
+
+    let settled = false
+    const markLoaded = () => {
+      if (settled) return
+      settled = true
       setIsAssetsLoaded(true)
-    }, 6500)
+    }
+
+    let remaining = CRITICAL_ASSETS.length
+    const images: HTMLImageElement[] = []
+    CRITICAL_ASSETS.forEach((src) => {
+      const img = new Image()
+      const onSettle = () => {
+        remaining -= 1
+        if (remaining <= 0) markLoaded()
+      }
+      img.onload = onSettle
+      img.onerror = onSettle
+      img.src = src
+      images.push(img)
+    })
+
+    // Safety net: never trap the user if a request stalls.
+    const timer = setTimeout(markLoaded, 15000)
 
     return () => {
       clearTimeout(timer)
+      images.forEach((img) => {
+        img.onload = null
+        img.onerror = null
+      })
       window.removeEventListener("resize", checkMobile)
     }
   }, [])
@@ -596,7 +617,7 @@ export function MacOSDesktop() {
     } else {
       lastActivityRef.current = now
     }
-    
+
     if (isLocked) {
       // Only unlock on deliberate actions, not just moving the mouse
       if (e && (e.type === 'click' || e.type === 'keydown' || e.type === 'touchstart' || e.type === 'mousedown')) {

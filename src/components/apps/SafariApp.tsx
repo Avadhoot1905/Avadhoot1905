@@ -5,16 +5,12 @@ import { useTheme } from "next-themes"
 import {
   FaChevronLeft,
   FaChevronRight,
-  FaStar,
-  FaCodeBranch,
-  FaBook,
   FaLock,
   FaRedoAlt,
   FaShareSquare,
   FaPlus,
   FaExternalLinkAlt,
   FaCompass,
-  FaBookmark,
   FaCheck,
 } from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
@@ -290,27 +286,24 @@ export function SafariApp() {
 
   return (
     <div
-      className={`flex h-full flex-col select-none font-sans overflow-hidden ${
-        isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
-      }`}
+      className={`flex h-full flex-col select-none font-sans overflow-hidden ${isDark ? "bg-[#1E1E1E] text-[#D4D4D4]" : "bg-[#F5F5F7] text-[#1D1D1F]"
+        }`}
     >
       {/* Authentic macOS Safari Window Toolbar & Smart Search Bar */}
       <div
-        className={`flex h-13 shrink-0 items-center justify-between border-b px-3 py-2 gap-2 ${
-          isDark
-            ? "border-[#2D2D2E] bg-[#323233]"
-            : "border-[#D1D1D6] bg-[#F6F6F6]"
-        }`}
+        className={`flex h-13 shrink-0 items-center justify-between border-b px-3 py-2 gap-2 ${isDark
+          ? "border-[#2D2D2E] bg-[#323233]"
+          : "border-[#D1D1D6] bg-[#F6F6F6]"
+          }`}
       >
         {/* Left Controls: Sidebar & History Chevrons */}
         <div className="flex items-center space-x-2.5 shrink-0">
           <button
             type="button"
-            className={`p-1.5 rounded-md transition ${
-              isDark
-                ? "hover:bg-white/10 text-gray-300"
-                : "hover:bg-black/10 text-gray-600"
-            }`}
+            className={`p-1.5 rounded-md transition ${isDark
+              ? "hover:bg-white/10 text-gray-300"
+              : "hover:bg-black/10 text-gray-600"
+              }`}
             title="Show Sidebar"
           >
             <FaCompass className="h-4 w-4" />
@@ -318,19 +311,17 @@ export function SafariApp() {
 
           {/* Navigation Back/Forward Group */}
           <div
-            className={`flex items-center rounded-md border p-0.5 ${
-              isDark
-                ? "border-white/15 bg-[#252526]"
-                : "border-black/15 bg-white/70"
-            }`}
+            className={`flex items-center rounded-md border p-0.5 ${isDark
+              ? "border-white/15 bg-[#252526]"
+              : "border-black/15 bg-white/70"
+              }`}
           >
             <button
               type="button"
-              className={`px-2 py-1 text-xs transition rounded-l ${
-                isDark
-                  ? "hover:bg-white/10 text-gray-300"
-                  : "hover:bg-black/5 text-gray-600"
-              }`}
+              className={`px-2 py-1 text-xs transition rounded-l ${isDark
+                ? "hover:bg-white/10 text-gray-300"
+                : "hover:bg-black/5 text-gray-600"
+                }`}
               title="Back"
             >
               <FaChevronLeft className="h-3 w-3" />
@@ -338,11 +329,10 @@ export function SafariApp() {
             <div className={`h-3 w-[1px] ${isDark ? "bg-white/10" : "bg-black/10"}`} />
             <button
               type="button"
-              className={`px-2 py-1 text-xs transition rounded-r ${
-                isDark
-                  ? "hover:bg-white/10 text-gray-300"
-                  : "hover:bg-black/5 text-gray-600"
-              }`}
+              className={`px-2 py-1 text-xs transition rounded-r ${isDark
+                ? "hover:bg-white/10 text-gray-300"
+                : "hover:bg-black/5 text-gray-600"
+                }`}
               title="Forward"
             >
               <FaChevronRight className="h-3 w-3" />
@@ -352,11 +342,10 @@ export function SafariApp() {
 
         {/* Center: macOS Safari Smart Search URL Bar */}
         <div
-          className={`flex items-center justify-between max-w-xl w-full h-8 rounded-lg border px-3 transition-all shadow-inner ${
-            isDark
-              ? "bg-[#1C1C1E] border-white/15 text-gray-200"
-              : "bg-white border-black/15 text-gray-800"
-          }`}
+          className={`flex items-center justify-between max-w-xl w-full h-8 rounded-lg border px-3 transition-all shadow-inner ${isDark
+            ? "bg-[#1C1C1E] border-white/15 text-gray-200"
+            : "bg-white border-black/15 text-gray-800"
+            }`}
         >
           {/* SSL Lock + Domain & Path */}
           <div className="flex items-center space-x-2 min-w-0 flex-1 truncate">
@@ -375,17 +364,15 @@ export function SafariApp() {
           <button
             type="button"
             onClick={handleReload}
-            className={`ml-2 p-1 rounded-full transition ${
-              isDark
-                ? "hover:bg-white/10 text-gray-400 hover:text-white"
-                : "hover:bg-black/10 text-gray-500 hover:text-black"
-            }`}
+            className={`ml-2 p-1 rounded-full transition ${isDark
+              ? "hover:bg-white/10 text-gray-400 hover:text-white"
+              : "hover:bg-black/10 text-gray-500 hover:text-black"
+              }`}
             title="Reload Page"
           >
             <FaRedoAlt
-              className={`h-3 w-3 transition-transform duration-500 ${
-                isReloading ? "animate-spin text-blue-500" : ""
-              }`}
+              className={`h-3 w-3 transition-transform duration-500 ${isReloading ? "animate-spin text-blue-500" : ""
+                }`}
             />
           </button>
         </div>
@@ -395,13 +382,12 @@ export function SafariApp() {
           <button
             type="button"
             onClick={handleShare}
-            className={`p-1.5 rounded-md transition relative ${
-              copiedUrl
-                ? "text-emerald-500"
-                : isDark
+            className={`p-1.5 rounded-md transition relative ${copiedUrl
+              ? "text-emerald-500"
+              : isDark
                 ? "hover:bg-white/10 text-gray-300"
                 : "hover:bg-black/10 text-gray-600"
-            }`}
+              }`}
             title={copiedUrl ? "Copied URL!" : "Share URL"}
           >
             {copiedUrl ? <FaCheck className="h-4 w-4" /> : <FaShareSquare className="h-4 w-4" />}
@@ -410,11 +396,10 @@ export function SafariApp() {
           <button
             type="button"
             onClick={handleOpenExternal}
-            className={`p-1.5 rounded-md transition ${
-              isDark
-                ? "hover:bg-white/10 text-blue-400"
-                : "hover:bg-black/10 text-blue-600"
-            }`}
+            className={`p-1.5 rounded-md transition ${isDark
+              ? "hover:bg-white/10 text-blue-400"
+              : "hover:bg-black/10 text-blue-600"
+              }`}
             title="Open Live URL in Browser"
           >
             <FaExternalLinkAlt className="h-3.5 w-3.5" />
@@ -422,11 +407,10 @@ export function SafariApp() {
 
           <button
             type="button"
-            className={`p-1.5 rounded-md transition ${
-              isDark
-                ? "hover:bg-white/10 text-gray-300"
-                : "hover:bg-black/10 text-gray-600"
-            }`}
+            className={`p-1.5 rounded-md transition ${isDark
+              ? "hover:bg-white/10 text-gray-300"
+              : "hover:bg-black/10 text-gray-600"
+              }`}
             title="New Safari Tab"
           >
             <FaPlus className="h-3.5 w-3.5" />
@@ -436,11 +420,10 @@ export function SafariApp() {
 
       {/* macOS Safari Favorites / Tab Strip */}
       <div
-        className={`flex items-center h-9 shrink-0 border-b px-2 gap-1.5 overflow-x-auto no-scrollbar ${
-          isDark
-            ? "border-[#2D2D2E] bg-[#252526]"
-            : "border-[#D1D1D6] bg-[#EBEBED]"
-        }`}
+        className={`flex items-center h-9 shrink-0 border-b px-2 gap-1.5 overflow-x-auto no-scrollbar ${isDark
+          ? "border-[#2D2D2E] bg-[#252526]"
+          : "border-[#D1D1D6] bg-[#EBEBED]"
+          }`}
       >
         {(["github", "linkedin", "leetcode", "medium"] as const).map((tabId) => {
           const isActive = activeSafariTab === tabId
@@ -457,15 +440,14 @@ export function SafariApp() {
               key={tabId}
               type="button"
               onClick={() => setActiveSafariTab(tabId)}
-              className={`group shrink-0 flex items-center space-x-2 px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                isActive
-                  ? isDark
-                    ? "bg-[#3A3A3C] text-white shadow-sm border border-white/10"
-                    : "bg-white text-gray-900 shadow-sm border border-black/10"
-                  : isDark
+              className={`group shrink-0 flex items-center space-x-2 px-3 py-1 rounded-md text-xs font-medium transition-all ${isActive
+                ? isDark
+                  ? "bg-[#3A3A3C] text-white shadow-sm border border-white/10"
+                  : "bg-white text-gray-900 shadow-sm border border-black/10"
+                : isDark
                   ? "hover:bg-white/5 text-gray-400 hover:text-gray-200"
                   : "hover:bg-black/5 text-gray-600 hover:text-gray-900"
-              }`}
+                }`}
             >
               <TabIcon
                 className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:scale-110 ${tabConfig.color}`}

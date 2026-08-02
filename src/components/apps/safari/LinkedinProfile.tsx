@@ -1,4 +1,4 @@
-import React from "react"
+
 import { SiLinkedin } from "react-icons/si"
 import {
   FaSearch,
@@ -38,15 +38,15 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
             </svg>
             <div className={`hidden md:flex items-center h-[30px] w-[240px] rounded-sm px-3 ${isDark ? "bg-[#38434f]" : "bg-[#edf3f8]"}`}>
               <FaSearch className={textMuted} />
-              <input 
-                type="text" 
-                placeholder="Search" 
-                className={`bg-transparent border-none outline-none ml-2 text-[13px] w-full ${textMain} placeholder:${textMuted}`} 
+              <input
+                type="text"
+                placeholder="Search"
+                className={`bg-transparent border-none outline-none ml-2 text-[13px] w-full ${textMain} placeholder:${textMuted}`}
                 readOnly
               />
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 md:gap-6 h-full">
             <div className={`flex flex-col items-center justify-center cursor-pointer ${textMuted} hover:${textMain}`}>
               <FaHome className="w-[18px] h-[18px] md:w-[20px] md:h-[20px]" />
@@ -81,18 +81,18 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
       <div className="max-w-[1128px] mx-auto pt-6 flex flex-col lg:flex-row gap-6 px-4 md:px-6">
         {/* Main Column */}
         <div className="w-full lg:w-2/3 flex flex-col gap-2">
-          
+
           {/* View Profile Widget (Mobile) */}
           <div className="flex lg:hidden w-full flex-col mb-2">
             <div className={`w-full rounded-lg border ${borderMain} ${bgCard} p-5`}>
-               <h2 className={`text-[15px] font-semibold ${textMain} mb-2`}>About this profile</h2>
-               <p className={`text-[13px] ${textMuted} mb-4 leading-relaxed`}>
-                 This is a mocked version of Avadhoot's LinkedIn profile built for this portfolio. To connect or view his full professional background, please visit his actual LinkedIn page.
-               </p>
-               <a href="https://www.linkedin.com/in/avadhoot-mahadik/" target="_blank" rel="noopener noreferrer" className={`w-full flex items-center justify-center gap-2 px-4 py-1.5 rounded-full border border-[#0a66c2] text-[#0a66c2] font-semibold hover:bg-[#0a66c2]/10 transition-colors`}>
-                 <SiLinkedin className="text-[16px]" />
-                 View Full Profile
-               </a>
+              <h2 className={`text-[15px] font-semibold ${textMain} mb-2`}>About this profile</h2>
+              <p className={`text-[13px] ${textMuted} mb-4 leading-relaxed`}>
+                This is a mocked version of Avadhoot's LinkedIn profile built for this portfolio. To connect or view his full professional background, please visit his actual LinkedIn page.
+              </p>
+              <a href="https://www.linkedin.com/in/avadhoot-mahadik/" target="_blank" rel="noopener noreferrer" className={`w-full flex items-center justify-center gap-2 px-4 py-1.5 rounded-full border border-[#0a66c2] text-[#0a66c2] font-semibold hover:bg-[#0a66c2]/10 transition-colors`}>
+                <SiLinkedin className="text-[16px]" />
+                View Full Profile
+              </a>
             </div>
           </div>
 
@@ -101,17 +101,17 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
             {/* Banner */}
             <div className="w-full h-[80px] md:h-[120px] relative bg-[#a0b4b7]">
               <div className="absolute inset-0 overflow-hidden">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/VIT_university%2C_vellore.jpg" alt="VIT Vellore" className="w-full h-full object-cover" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/VIT_university%2C_vellore.jpg" alt="VIT Vellore" className="w-full h-full object-cover" />
               </div>
               <button className={`absolute top-3 right-3 p-1.5 md:p-2 rounded-full ${bgCard} shadow-sm ${textMain} hover:bg-black/10 transition-colors`}>
                 <FaCamera className="text-[14px]" />
               </button>
             </div>
-            
+
             {/* Avatar */}
             <div className="absolute top-[40px] md:top-[70px] left-4 md:left-6">
               <div className={`w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-full border-4 ${bgCard} overflow-hidden`}>
-                 <img src="/favicon.ico" alt="Avadhoot Mahadik" className="w-full h-full object-cover" />
+                <img src="/favicon.ico" alt="Avadhoot Mahadik" className="w-full h-full object-cover" />
               </div>
             </div>
 
@@ -126,8 +126,8 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
                 </div>
                 <div className="flex flex-col gap-1 shrink-0">
                   <div className="flex items-center gap-1.5 cursor-pointer hover:underline">
-                     <FaBuilding className="text-[14px] md:text-[16px] text-gray-500" />
-                     <span className={`text-[13px] font-semibold ${textMain}`}>VIT University</span>
+                    <FaBuilding className="text-[14px] md:text-[16px] text-gray-500" />
+                    <span className={`text-[13px] font-semibold ${textMain}`}>VIT University</span>
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
             </div>
             <div className={`text-[13px] md:text-[14px] leading-relaxed ${textMain}`}>
               <p>Passionate software engineer currently pursuing a B.Tech in Computer Science and Engineering at VIT Vellore. Experienced in full-stack web development, scalable cloud architectures, and open-source contributions.</p>
-              <br/>
+              <br />
               <p>Skilled in Next.js, React, Node.js, Go, AWS, Docker, and Kubernetes. Active senior core member of ACM-VIT, where I lead technical workshops and develop community platforms.</p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
                       <h3 className={`text-[15px] font-semibold ${textMain}`}>{exp.role}</h3>
                       <p className={`text-[13px] md:text-[14px] ${textMain}`}>{exp.organization}</p>
                       <p className={`text-[12px] md:text-[13px] ${textMuted}`}>{exp.duration} · {exp.location || "Remote"}</p>
-                      
+
                       <div className={`mt-2 text-[13px] md:text-[14px] leading-relaxed ${textMain}`}>
                         <p>{exp.description}</p>
                         {exp.bullets && exp.bullets.length > 0 && (
@@ -188,7 +188,7 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
                           </ul>
                         )}
                       </div>
-                      
+
                       {exp.techStack && exp.techStack.length > 0 && (
                         <div className="mt-2.5 flex items-center gap-1.5">
                           <span className={`text-[13px] font-semibold ${textMain}`}>Skills:</span>
@@ -208,14 +208,14 @@ export function LinkedinProfile({ isDark }: LinkedinProfileProps) {
         <div className="hidden lg:flex w-[300px] flex-col gap-2">
           {/* View Profile Widget */}
           <div className={`w-full rounded-lg border ${borderMain} ${bgCard} p-5`}>
-             <h2 className={`text-[15px] font-semibold ${textMain} mb-2`}>About this profile</h2>
-             <p className={`text-[13px] ${textMuted} mb-4 leading-relaxed`}>
-               This is a mocked version of Avadhoot's LinkedIn profile built for this portfolio. To connect or view his full professional background, please visit his actual LinkedIn page.
-             </p>
-             <a href="https://www.linkedin.com/in/avadhoot-mahadik/" target="_blank" rel="noopener noreferrer" className={`w-full flex items-center justify-center gap-2 px-4 py-1.5 rounded-full border border-[#0a66c2] text-[#0a66c2] font-semibold hover:bg-[#0a66c2]/10 transition-colors`}>
-               <SiLinkedin className="text-[16px]" />
-               View Full Profile
-             </a>
+            <h2 className={`text-[15px] font-semibold ${textMain} mb-2`}>About this profile</h2>
+            <p className={`text-[13px] ${textMuted} mb-4 leading-relaxed`}>
+              This is a mocked version of Avadhoot's LinkedIn profile built for this portfolio. To connect or view his full professional background, please visit his actual LinkedIn page.
+            </p>
+            <a href="https://www.linkedin.com/in/avadhoot-mahadik/" target="_blank" rel="noopener noreferrer" className={`w-full flex items-center justify-center gap-2 px-4 py-1.5 rounded-full border border-[#0a66c2] text-[#0a66c2] font-semibold hover:bg-[#0a66c2]/10 transition-colors`}>
+              <SiLinkedin className="text-[16px]" />
+              View Full Profile
+            </a>
           </div>
         </div>
       </div>

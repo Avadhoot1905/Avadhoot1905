@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { useTheme } from "next-themes"
 import { FaGraduationCap, FaUniversity, FaSchool } from "react-icons/fa"
 import {

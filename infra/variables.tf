@@ -79,6 +79,27 @@ variable "lambda_handler" {
 }
 
 # ---------------------------------------------------------------------------
+# Viewer TLS certificate (crypto-hygiene remediation).
+# ---------------------------------------------------------------------------
+
+variable "certificate_key_algorithm" {
+  description = <<-EOT
+    Key algorithm for the ACM viewer certificate. Defaults to ECDSA P-256
+    (EC_prime256v1) which delivers 128-bit classical security, replacing the
+    scanned RSA-2048 leaf (112-bit, quantum-weak). ACM public certificates are
+    free regardless of algorithm, so this has no cost impact. RSA_2048 is kept
+    selectable only for rollback/compatibility.
+  EOT
+  type        = string
+  default     = "EC_prime256v1"
+
+  validation {
+    condition     = contains(["EC_prime256v1", "EC_secp384r1", "RSA_2048"], var.certificate_key_algorithm)
+    error_message = "certificate_key_algorithm must be one of: EC_prime256v1, EC_secp384r1, RSA_2048."
+  }
+}
+
+# ---------------------------------------------------------------------------
 # Bedrock.
 # ---------------------------------------------------------------------------
 

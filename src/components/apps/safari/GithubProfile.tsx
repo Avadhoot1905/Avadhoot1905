@@ -1,4 +1,4 @@
-import React from "react"
+
 import {
   FaBook,
   FaCodeBranch,
@@ -82,7 +82,7 @@ export function GithubProfile({ user, repos, isDark }: GithubProfileProps) {
               <h2 className={`text-lg font-light ${textMuted}`}>{user.login}</h2>
             </div>
           </div>
-          
+
           <div className="mt-4 md:mt-6 mb-4">
             <p className="text-base">{user.bio}</p>
           </div>
@@ -213,7 +213,7 @@ export function GithubProfile({ user, repos, isDark }: GithubProfileProps) {
               </div>
             </div>
           </div>
-          
+
 
 
         </div>

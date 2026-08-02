@@ -58,6 +58,7 @@ infra/
 ├── apigateway.tf                HTTP API v2: routes, integration, permissions, CORS
 ├── dynamodb.tf                  chat_history table
 ├── cloudfront.tf                API origin + behaviors for the EXISTING distribution
+├── acm.tf                       Free ECDSA P-256 viewer cert (RSA-2048 remediation)
 ├── outputs.tf                   Outputs (incl. CloudFront wiring guidance)
 ├── terraform.tfvars.example     Example variable values
 └── .gitignore                   Ignores state, tfvars, build artifacts
@@ -80,6 +81,7 @@ infra/
 | `lambda_runtime`             | `string`      | `nodejs20.x`              | Runtime for the future implementation.                            |
 | `lambda_handler`             | `string`      | `index.handler`           | Handler for the future implementation.                            |
 | `bedrock_model_id`           | `string`      | `amazon.nova-lite-v1:0`   | Model ID used to scope Bedrock IAM.                               |
+| `certificate_key_algorithm`  | `string`      | `EC_prime256v1`           | Viewer cert key algorithm (ECDSA P-256; free). RSA-2048 remediation. |
 | `tags`                       | `map(string)` | `{}`                      | Extra tags merged onto every resource.                           |
 
 ---
@@ -109,6 +111,28 @@ infra/
    an all-viewer-except-Host origin request policy). The exact origin + ordered
    behaviors (`/chat`, `/admin/*`, HTTPS-only, GET/POST/OPTIONS, caching disabled)
    are published as **outputs** to apply to the existing distribution.
+
+6. **ACM (`acm.tf`)** — Provisions a **free** ECDSA P-256 (`EC_prime256v1`) public
+   certificate for the apex + `www` domain. A TLS/CBOM scan of the live edge found
+   the current leaf certificate is **RSA-2048** (112-bit classical security,
+   quantum-vulnerable); ECDSA P-256 raises this to 128-bit at **zero cost** (ACM
+   public certs are free for any algorithm). The rest of the handshake is already
+   sound — TLS 1.3 with the `X25519MLKEM768` post-quantum hybrid key exchange — so
+   the certificate key was the only weak link. The cert is **not** attached to the
+   live distribution here (same no-import rule as CloudFront); its ARN, DNS
+   validation records, and the recommended `viewer_certificate` block
+   (`sni-only` + `minimum_protocol_version = TLSv1.2_2021`, which also enables
+   AES-256-GCM suites) are published as outputs to apply out of band.
+
+### Applying the crypto remediation
+
+After `terraform plan`:
+1. Add the CNAME records from `acm_certificate_validation_records` to the domain's
+   DNS zone; ACM validates and auto-renews for free.
+2. Once the cert shows `ISSUED`, set the existing distribution's viewer
+   certificate to `acm_viewer_certificate_arn` using the settings in the
+   `cloudfront_viewer_certificate` output. The frontend origin and all existing
+   behaviors stay untouched.
 
 ### Applying the CloudFront behaviors
 
@@ -152,13 +176,19 @@ terraform plan
 All chosen services are effectively pay-per-use with no idle cost: Lambda
 (per-invocation), API Gateway HTTP API (per-request, cheaper than REST), DynamoDB
 `PAY_PER_REQUEST` (+ negligible PITR), and CloudWatch Logs (14-day retention).
-Bedrock is billed per token by the model itself.
+Bedrock is billed per token by the model itself. The ACM viewer certificate
+(`acm.tf`) is a **public certificate and is free** — including DNS validation and
+auto-renewal — so the crypto remediation adds **$0/month**. Total recurring idle
+cost remains effectively zero and well under the $1/month target.
 
 ---
 
 ## Not created (by design)
 
 REST API Gateway, ECS, EC2, ALB/NLB, VPC, NAT, ECR, Step Functions, EventBridge,
-SNS, SQS, WAF, Cognito, Secrets Manager, Route53, ACM, RDS, ElastiCache,
-OpenSearch. No Lambda code, no Bedrock inference code — Terraform provisions
-infrastructure and IAM only.
+SNS, SQS, WAF, Cognito, Secrets Manager, Route53, RDS, ElastiCache, OpenSearch.
+No Lambda code, no Bedrock inference code — Terraform provisions infrastructure
+and IAM only.
+
+> **ACM** is now used — but only for a single **free** public certificate
+> (`acm.tf`) that remediates the RSA-2048 finding. No private CA, no cost.

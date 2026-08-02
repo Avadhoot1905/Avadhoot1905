@@ -75,3 +75,29 @@ output "existing_cloudfront_domain_name" {
   description = "Domain name of the existing (referenced) CloudFront distribution."
   value       = data.aws_cloudfront_distribution.existing.domain_name
 }
+
+# --- Viewer TLS certificate remediation (ECDSA P-256, free ACM cert) --------
+# The CBOM scan flagged the live RSA-2048 leaf (112-bit). These outputs give an
+# operator everything needed to validate and attach the replacement cert to the
+# existing distribution out of band — nothing here modifies the live edge.
+
+output "acm_viewer_certificate_arn" {
+  description = "ARN of the ECDSA P-256 viewer certificate to set on the existing CloudFront distribution."
+  value       = aws_acm_certificate.viewer.arn
+}
+
+output "acm_certificate_validation_records" {
+  description = "DNS CNAME records to create for ACM validation (free, auto-renewing)."
+  value = [
+    for o in aws_acm_certificate.viewer.domain_validation_options : {
+      name  = o.resource_record_name
+      type  = o.resource_record_type
+      value = o.resource_record_value
+    }
+  ]
+}
+
+output "cloudfront_viewer_certificate" {
+  description = "viewer_certificate block (SNI + TLSv1.2_2021) to apply to the existing distribution once the ACM cert is validated."
+  value       = local.cloudfront_viewer_certificate
+}

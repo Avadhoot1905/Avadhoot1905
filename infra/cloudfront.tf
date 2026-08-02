@@ -92,10 +92,21 @@ resource "aws_cloudfront_origin_request_policy" "api_all_viewer" {
 # ---------------------------------------------------------------------------
 locals {
   cloudfront_api_origin = {
-    origin_id           = local.api_origin_id
-    domain_name         = local.api_origin_domain_name
-    origin_protocol     = "https-only" # CloudFront -> origin is always HTTPS
+    origin_id            = local.api_origin_id
+    domain_name          = local.api_origin_domain_name
+    origin_protocol      = "https-only" # CloudFront -> origin is always HTTPS
     origin_ssl_protocols = ["TLSv1.2"]
+  }
+
+  # Recommended viewer certificate for the existing distribution. Swapping the
+  # scanned RSA-2048 leaf (112-bit, quantum-weak) for this free ECDSA P-256 cert
+  # (128-bit) is the sole crypto remediation the CBOM scan calls for; TLS 1.3 and
+  # the X25519MLKEM768 post-quantum hybrid key exchange are already in place.
+  # Pinning TLSv1.2_2021 drops legacy ciphers and enables AES-256-GCM suites.
+  cloudfront_viewer_certificate = {
+    acm_certificate_arn      = aws_acm_certificate.viewer.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   cloudfront_api_behaviors = [

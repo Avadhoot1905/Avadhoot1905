@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect, type ReactNode } from "react"
-import { Moon, Sun, Monitor, WifiHigh, BatteryHigh, SpeakerHigh, Lightbulb, CellSignalHigh, Bluetooth, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext } from "phosphor-react"
+import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
-import Script from "next/script"
 
 interface MenuBarProps {
   onLockScreen?: () => void

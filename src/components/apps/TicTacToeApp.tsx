@@ -37,7 +37,7 @@ export function TicTacToeApp() {
 
   const minimax = (squares: Player[], isMaximizing: boolean): number => {
     const winner = calculateWinner(squares)
-    
+
     // Terminal states
     if (winner === "O") return 10
     if (winner === "X") return -10
@@ -115,7 +115,7 @@ export function TicTacToeApp() {
       setGameOver(true)
       return
     }
-    
+
     if (newBoard.every((square) => square !== null)) {
       setGameOver(true)
       return
@@ -123,7 +123,7 @@ export function TicTacToeApp() {
 
     // Switch to AI's turn
     setIsXNext(false)
-    
+
     // AI makes move after a short delay for better UX
     setTimeout(() => {
       makeAIMove(newBoard)
@@ -152,35 +152,30 @@ export function TicTacToeApp() {
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center h-full p-6 ${
-      theme === "dark" ? "bg-gray-900" : "bg-gradient-to-br from-purple-100 to-pink-100"
-    }`}>
+    <div className={`flex flex-col items-center justify-center h-full p-6 ${theme === "dark" ? "bg-gray-900" : "bg-gradient-to-br from-purple-100 to-pink-100"
+      }`}>
       {/* Retro Header */}
       <div className="mb-6 text-center">
-        <h1 className={`text-4xl font-bold mb-2 ${
-          theme === "dark" 
-            ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400" 
+        <h1 className={`text-4xl font-bold mb-2 ${theme === "dark"
+            ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400"
             : "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600"
-        }`} style={{ fontFamily: "'Press Start 2P', cursive" }}>
+          }`} style={{ fontFamily: "'Press Start 2P', cursive" }}>
           TIC TAC TOE
         </h1>
-        <div className={`text-lg font-semibold px-4 py-2 rounded-lg ${
-          theme === "dark" 
-            ? "bg-gray-800 text-cyan-400 border-2 border-cyan-400" 
+        <div className={`text-lg font-semibold px-4 py-2 rounded-lg ${theme === "dark"
+            ? "bg-gray-800 text-cyan-400 border-2 border-cyan-400"
             : "bg-white text-purple-600 border-2 border-purple-600"
-        } shadow-lg`}>
+          } shadow-lg`}>
           {getStatusMessage()}
         </div>
       </div>
 
       {/* Retro Game Board */}
-      <div className={`inline-block p-4 rounded-xl ${
-        theme === "dark" 
-          ? "bg-gray-800 shadow-2xl shadow-cyan-500/50" 
+      <div className={`inline-block p-4 rounded-xl ${theme === "dark"
+          ? "bg-gray-800 shadow-2xl shadow-cyan-500/50"
           : "bg-white shadow-2xl shadow-purple-500/50"
-      } border-4 ${
-        theme === "dark" ? "border-cyan-400" : "border-purple-600"
-      }`}>
+        } border-4 ${theme === "dark" ? "border-cyan-400" : "border-purple-600"
+        }`}>
         <div className="grid grid-cols-3 gap-3">
           {board.map((cell, index) => (
             <button
@@ -195,13 +190,13 @@ export function TicTacToeApp() {
                   ? cell === "X"
                     ? "bg-cyan-600 text-cyan-100 shadow-lg shadow-cyan-500/50"
                     : cell === "O"
-                    ? "bg-pink-600 text-pink-100 shadow-lg shadow-pink-500/50"
-                    : "bg-gray-700 hover:bg-gray-600 text-gray-500"
+                      ? "bg-pink-600 text-pink-100 shadow-lg shadow-pink-500/50"
+                      : "bg-gray-700 hover:bg-gray-600 text-gray-500"
                   : cell === "X"
-                  ? "bg-purple-500 text-white shadow-lg shadow-purple-500/50"
-                  : cell === "O"
-                  ? "bg-pink-500 text-white shadow-lg shadow-pink-500/50"
-                  : "bg-purple-50 hover:bg-purple-100 text-gray-300"
+                    ? "bg-purple-500 text-white shadow-lg shadow-purple-500/50"
+                    : cell === "O"
+                      ? "bg-pink-500 text-white shadow-lg shadow-pink-500/50"
+                      : "bg-purple-50 hover:bg-purple-100 text-gray-300"
                 }
                 ${cell !== null ? "ring-2 ring-offset-2" : ""}
                 ${cell === "X" && theme === "dark" ? "ring-cyan-400" : ""}

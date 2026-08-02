@@ -1,18 +1,53 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { Redis } from '@upstash/redis'
-import { asc, desc, eq } from 'drizzle-orm'
-import { db, chatSessionTable, messageTable } from './src/db'
+import { randomUUID } from 'node:crypto'
+import {
+  BedrockRuntimeClient,
+  ConverseCommand,
+  type Message as BedrockMessage,
+} from '@aws-sdk/client-bedrock-runtime'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import {
+  DynamoDBDocumentClient,
+  QueryCommand,
+  PutCommand,
+  BatchWriteCommand,
+  ScanCommand,
+} from '@aws-sdk/lib-dynamodb'
 import { PERSONALITY_PROMPT } from './personality-prompt'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-})
+// ---------------------------------------------------------------------------
+// Configuration (all from environment — no hardcoded values)
+// ---------------------------------------------------------------------------
+const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'amazon.nova-lite-v1:0'
+const DYNAMODB_TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'chat_history'
+// Region is picked up automatically from AWS_REGION in Lambda.
+const AWS_REGION = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
 
-const SESSION_TTL = 3600
 const MAX_HISTORY_MESSAGES = 30
+const ADMIN_LIMIT = 100
+
+// ---------------------------------------------------------------------------
+// Singleton AWS SDK v3 clients (reused across warm invocations)
+// ---------------------------------------------------------------------------
+declare global {
+  // eslint-disable-next-line no-var
+  var __bedrockClient__: BedrockRuntimeClient | undefined
+  // eslint-disable-next-line no-var
+  var __dynamoDoc__: DynamoDBDocumentClient | undefined
+}
+
+const bedrock =
+  globalThis.__bedrockClient__ ??
+  new BedrockRuntimeClient({ region: AWS_REGION, maxAttempts: 3 })
+if (!globalThis.__bedrockClient__) globalThis.__bedrockClient__ = bedrock
+
+const ddb =
+  globalThis.__dynamoDoc__ ??
+  DynamoDBDocumentClient.from(new DynamoDBClient({ region: AWS_REGION, maxAttempts: 3 }), {
+    marshallOptions: { removeUndefinedValues: true },
+  })
+if (!globalThis.__dynamoDoc__) globalThis.__dynamoDoc__ = ddb
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': '*',
@@ -103,55 +138,79 @@ function jsonResponse(statusCode: number, bodyObject: unknown): APIGatewayProxyR
   }
 }
 
+// A stored chat message item in the `chat_history` DynamoDB table.
+//   PK: chatId    (== sessionId)
+//   SK: timestamp (ISO-8601 string, lexicographically sortable)
+type ChatItem = {
+  chatId: string
+  timestamp: string
+  id: string
+  sessionId: string
+  role: string
+  content: string
+  createdAt: string
+}
+
+// ---------------------------------------------------------------------------
+// Conversation persistence (DynamoDB)
+// ---------------------------------------------------------------------------
+
+/**
+ * Load conversation history for a session. Returns the most recent
+ * MAX_HISTORY_MESSAGES messages in chronological (ascending) order — the same
+ * shape the previous Redis-cached history provided to the model.
+ */
 async function getChatHistory(sessionId: string): Promise<{ role: string; content: string }[]> {
   try {
-    const cacheKey = `chat:${sessionId}`
-    const cached = await redis.get<{ role: string; content: string }[]>(cacheKey)
-    if (cached && cached.length > 0) {
-      console.log(`[lambda] getChatHistory cache hit: sessionId=${sessionId} count=${cached.length}`)
-      return cached
-    }
+    const result = await ddb.send(
+      new QueryCommand({
+        TableName: DYNAMODB_TABLE_NAME,
+        KeyConditionExpression: 'chatId = :c',
+        ExpressionAttributeValues: { ':c': sessionId },
+        // Newest first, then reverse to chronological order below.
+        ScanIndexForward: false,
+        Limit: MAX_HISTORY_MESSAGES,
+      })
+    )
 
-    const dbMessages = await db
-      .select({ role: messageTable.role, content: messageTable.content })
-      .from(messageTable)
-      .where(eq(messageTable.sessionId, sessionId))
-      .orderBy(asc(messageTable.timestamp))
-      .limit(MAX_HISTORY_MESSAGES)
+    const items = (result.Items || []) as ChatItem[]
+    console.log(`[lambda] getChatHistory: sessionId=${sessionId} count=${items.length}`)
 
-    console.log(`[lambda] getChatHistory cache miss: sessionId=${sessionId} dbCount=${dbMessages.length}`)
-
-    return dbMessages.map((msg) => ({ role: msg.role, content: msg.content }))
+    return items
+      .reverse()
+      .map((item) => ({ role: item.role, content: item.content }))
   } catch (error) {
     console.error('[lambda] getChatHistory error:', error)
     return []
   }
 }
 
-async function saveChatHistory(sessionId: string, history: { role: string; content: string }[]): Promise<void> {
-  try {
-    await redis.setex(`chat:${sessionId}`, SESSION_TTL, JSON.stringify(history))
-    console.log(`[lambda] saveChatHistory success: sessionId=${sessionId} count=${history.length}`)
-  } catch (error) {
-    console.warn('[lambda] saveChatHistory warning:', error)
-    // best effort cache
-  }
-}
-
+/**
+ * Persist a single message with retry + exponential backoff.
+ * An explicit timestamp is passed so user/assistant messages keep a stable,
+ * strictly-ordered sort key.
+ */
 async function saveMessage(
   sessionId: string,
   role: 'user' | 'assistant',
   content: string,
+  timestamp: string,
   retries: number = 3
 ): Promise<void> {
+  const item: ChatItem = {
+    chatId: sessionId,
+    timestamp,
+    id: randomUUID(),
+    sessionId,
+    role,
+    content,
+    createdAt: timestamp,
+  }
+
   let lastError: Error | null = null
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      await db.insert(chatSessionTable).values({ sessionId, updatedAt: new Date() }).onConflictDoUpdate({
-        target: chatSessionTable.sessionId,
-        set: { updatedAt: new Date() },
-      })
-      await db.insert(messageTable).values({ sessionId, role, content })
+      await ddb.send(new PutCommand({ TableName: DYNAMODB_TABLE_NAME, Item: item }))
       console.log(`[lambda] saveMessage success: sessionId=${sessionId} role=${role} attempt=${attempt}`)
       return
     } catch (error) {
@@ -163,10 +222,41 @@ async function saveMessage(
   throw new Error(`Failed to save ${role} message: ${lastError?.message}`)
 }
 
+/**
+ * Delete all messages for a session (paginated query + batched deletes).
+ */
 async function clearChatHistory(sessionId: string): Promise<void> {
   try {
-    await redis.del(`chat:${sessionId}`)
-    await db.delete(messageTable).where(eq(messageTable.sessionId, sessionId))
+    let lastKey: Record<string, unknown> | undefined
+    do {
+      const result = await ddb.send(
+        new QueryCommand({
+          TableName: DYNAMODB_TABLE_NAME,
+          KeyConditionExpression: 'chatId = :c',
+          ExpressionAttributeValues: { ':c': sessionId },
+          ProjectionExpression: 'chatId, #ts',
+          ExpressionAttributeNames: { '#ts': 'timestamp' },
+          ExclusiveStartKey: lastKey as Record<string, never> | undefined,
+        })
+      )
+
+      const items = (result.Items || []) as { chatId: string; timestamp: string }[]
+      for (let i = 0; i < items.length; i += 25) {
+        const batch = items.slice(i, i + 25)
+        await ddb.send(
+          new BatchWriteCommand({
+            RequestItems: {
+              [DYNAMODB_TABLE_NAME]: batch.map((it) => ({
+                DeleteRequest: { Key: { chatId: it.chatId, timestamp: it.timestamp } },
+              })),
+            },
+          })
+        )
+      }
+
+      lastKey = result.LastEvaluatedKey
+    } while (lastKey)
+
     console.log(`[lambda] clearChatHistory success: sessionId=${sessionId}`)
   } catch (error) {
     console.error(`[lambda] clearChatHistory error: sessionId=${sessionId}`, error)
@@ -174,41 +264,82 @@ async function clearChatHistory(sessionId: string): Promise<void> {
   }
 }
 
-async function sendMessageToGemini(sessionId: string, userMessage: string): Promise<string> {
+// ---------------------------------------------------------------------------
+// Model inference (Amazon Bedrock — Nova Lite via the Converse API)
+// ---------------------------------------------------------------------------
+
+/** Retry helper for transient Bedrock errors (throttling / service blips). */
+function isRetryableBedrockError(error: unknown): boolean {
+  const name = (error as { name?: string })?.name || ''
+  return (
+    name === 'ThrottlingException' ||
+    name === 'ServiceUnavailableException' ||
+    name === 'ModelTimeoutException' ||
+    name === 'InternalServerException'
+  )
+}
+
+async function sendMessageToBedrock(sessionId: string, userMessage: string): Promise<string> {
   try {
-    console.log(`[lambda] sendMessageToGemini start: sessionId=${sessionId} messageLength=${userMessage.length}`)
+    console.log(`[lambda] sendMessageToBedrock start: sessionId=${sessionId} messageLength=${userMessage.length}`)
     const history = await getChatHistory(sessionId)
-    const conversationHistory = history.map((msg) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
+
+    // Build the Converse messages array. Nova requires the conversation to
+    // begin with a `user` turn and to alternate — drop any leading assistant
+    // turn that could violate that (e.g. from a truncated window).
+    const conversation: BedrockMessage[] = history.map((msg) => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: [{ text: msg.content }],
     }))
+    while (conversation.length > 0 && conversation[0].role !== 'user') {
+      conversation.shift()
+    }
+    conversation.push({ role: 'user', content: [{ text: userMessage }] })
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
-      systemInstruction: PERSONALITY_PROMPT,
-    })
-    const chat = model.startChat({
-      history: conversationHistory,
-      generationConfig: { maxOutputTokens: 2048, temperature: 0.85 },
-    })
+    let aiResponse = ''
+    let lastError: Error | null = null
+    const retries = 3
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const result = await bedrock.send(
+          new ConverseCommand({
+            modelId: BEDROCK_MODEL_ID,
+            system: [{ text: PERSONALITY_PROMPT }],
+            messages: conversation,
+            inferenceConfig: { maxTokens: 2048, temperature: 0.85 },
+          })
+        )
+        aiResponse = result.output?.message?.content?.[0]?.text ?? ''
+        break
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        console.error(`[lambda] Bedrock invoke failed: sessionId=${sessionId} attempt=${attempt}`, lastError)
+        if (attempt < retries && isRetryableBedrockError(error)) {
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 200))
+          continue
+        }
+        throw lastError
+      }
+    }
 
-    const result = await chat.sendMessage(userMessage)
-    const aiResponse = (await result.response).text()
-    console.log(`[lambda] sendMessageToGemini generated response: sessionId=${sessionId} responseLength=${aiResponse.length}`)
+    console.log(`[lambda] sendMessageToBedrock generated response: sessionId=${sessionId} responseLength=${aiResponse.length}`)
 
-    await saveMessage(sessionId, 'user', userMessage)
-    await saveMessage(sessionId, 'assistant', aiResponse)
-
-    const updatedHistory = [...history, { role: 'user', content: userMessage }, { role: 'assistant', content: aiResponse }]
-      .slice(-MAX_HISTORY_MESSAGES)
-    await saveChatHistory(sessionId, updatedHistory)
+    // Persist the exchange. Distinct, strictly-ordered timestamps keep the
+    // user turn before the assistant turn in the sort key.
+    const base = Date.now()
+    await saveMessage(sessionId, 'user', userMessage, new Date(base).toISOString())
+    await saveMessage(sessionId, 'assistant', aiResponse, new Date(base + 1).toISOString())
 
     return aiResponse
   } catch (error) {
-    console.error(`[lambda] sendMessageToGemini error: sessionId=${sessionId}`, error)
+    console.error(`[lambda] sendMessageToBedrock error: sessionId=${sessionId}`, error)
     throw error
   }
 }
+
+// ---------------------------------------------------------------------------
+// Route handlers
+// ---------------------------------------------------------------------------
 
 async function handleChat(body: Record<string, unknown>): Promise<APIGatewayProxyResult> {
   try {
@@ -225,7 +356,7 @@ async function handleChat(body: Record<string, unknown>): Promise<APIGatewayProx
     }
     if (!message.trim()) return jsonResponse(400, { error: 'message is required' })
 
-    const response = await sendMessageToGemini(sessionId, message.trim())
+    const response = await sendMessageToBedrock(sessionId, message.trim())
     return jsonResponse(200, { success: true, response, sessionId })
   } catch (error) {
     console.error('[lambda] handleChat error:', error)
@@ -245,21 +376,52 @@ async function handleAdmin(headers: Record<string, string>): Promise<APIGatewayP
       return jsonResponse(401, { error: 'Unauthorized' })
     }
 
-    const rows = await db
-      .select()
-      .from(messageTable)
-      .leftJoin(chatSessionTable, eq(messageTable.sessionId, chatSessionTable.sessionId))
-      .orderBy(desc(messageTable.timestamp))
-      .limit(100)
+    // Read the full table (paginated) and return the newest ADMIN_LIMIT
+    // messages in descending timestamp order — equivalent to the previous
+    // `ORDER BY timestamp DESC LIMIT 100`. DynamoDB Scan is unordered, so
+    // ordering is applied in memory (fine at this table's scale).
+    const items: ChatItem[] = []
+    let lastKey: Record<string, unknown> | undefined
+    do {
+      const result = await ddb.send(
+        new ScanCommand({
+          TableName: DYNAMODB_TABLE_NAME,
+          ExclusiveStartKey: lastKey as Record<string, never> | undefined,
+        })
+      )
+      items.push(...((result.Items || []) as ChatItem[]))
+      lastKey = result.LastEvaluatedKey
+    } while (lastKey)
 
-    console.log(`[lambda] handleAdmin success: rows=${rows.length}`)
-    const messages = rows.map((row) => ({ ...row.Message, chatSession: row.ChatSession }))
+    items.sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0))
+    const top = items.slice(0, ADMIN_LIMIT)
+
+    console.log(`[lambda] handleAdmin success: scanned=${items.length} returned=${top.length}`)
+
+    const messages = top.map((item) => ({
+      id: item.id,
+      sessionId: item.sessionId,
+      role: item.role,
+      content: item.content,
+      timestamp: item.timestamp,
+      chatSession: {
+        id: `cs-${item.sessionId}`,
+        sessionId: item.sessionId,
+        createdAt: item.createdAt ?? item.timestamp,
+        updatedAt: item.timestamp,
+      },
+    }))
+
     return jsonResponse(200, messages)
   } catch (error) {
     console.error('[lambda] handleAdmin error:', error)
     throw error
   }
 }
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
 
 export const handler = async (
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2
@@ -270,11 +432,18 @@ export const handler = async (
 
     if (normalized.method === 'OPTIONS') return jsonResponse(200, { ok: true })
 
-    if (normalized.method === 'POST' && normalized.path === '/api/chat') {
+    // Accept both the API Gateway route paths (/chat, /admin/chats) and the
+    // /api-prefixed paths used by the local dev server / legacy CloudFront.
+    const path = normalized.path
+
+    if (normalized.method === 'POST' && (path === '/chat' || path === '/api/chat')) {
       return await handleChat(parseJsonBody(normalized))
     }
 
-    if (normalized.method === 'GET' && normalized.path === '/api/admin/chats') {
+    if (
+      normalized.method === 'GET' &&
+      (path === '/admin/chats' || path === '/api/admin/chats' || path.endsWith('/admin/chats'))
+    ) {
       return await handleAdmin(normalized.headers)
     }
 

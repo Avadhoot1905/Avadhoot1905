@@ -6,34 +6,27 @@
  * Single source of truth for all backend API calls.
  *
  * Infrastructure:
- *   Browser → CloudFront → API Gateway (/prod) → Lambda
+ *   Browser → CloudFront → API Gateway (HTTP API) → Lambda → Bedrock/DynamoDB
  *
  * CloudFront behavior:
- *   /api/* → API Gateway (origin path /prod stripped transparently)
- *   default → S3 (static assets)
+ *   /chat, /admin/*  → API Gateway (routes: POST /chat, GET /admin/chats)
+ *   default          → S3 (static assets)
  *
  * Rules enforced here:
- *   ✅ Only relative paths in production (/api/...)
+ *   ✅ Only relative paths in production (/chat, /admin/chats)
  *   ✅ No hardcoded execute-api or region URLs
- *   ✅ No /prod prefix (CloudFront origin path handles this)
- *   ✅ Local dev uses dev-server ports (no /api prefix on those servers)
+ *   ✅ Local dev uses dev-server port 3001 (/api/* paths)
  *
  * Backend contract (verified from lambda/index.ts):
  *
- *   POST /api/chat
+ *   POST /chat
  *     Body:     { sessionId: string, message: string, clearHistory?: boolean }
  *     Response: { success: boolean, response: string, sessionId: string }
  *
- *   GET /api/admin/chats
+ *   GET /admin/chats
  *     Header:   x-admin-secret: <secret>
  *     Response: AdminMessage[]
  */
-
-// ====================================================
-// CONSTANTS
-// ====================================================
-
-const API_BASE = "/api"
 
 // ====================================================
 // HELPERS
@@ -56,7 +49,7 @@ function getChatEndpoint(): string {
   if (isLocalDev()) {
     return "http://localhost:3001/api/chat"
   }
-  return `${API_BASE}/chat`
+  return "/chat"
 }
 
 /**
@@ -69,7 +62,7 @@ function getAdminChatsEndpoint(): string {
   if (isLocalDev()) {
     return "http://localhost:3001/api/admin/chats"
   }
-  return `${API_BASE}/admin/chats`
+  return "/admin/chats"
 }
 
 // ====================================================

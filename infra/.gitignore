@@ -1,0 +1,16 @@
+# Terraform state (never commit)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Variable files with real values
+terraform.tfvars
+*.auto.tfvars
+
+# Generated placeholder Lambda package
+build/
+
+# Crash logs / plans
+crash.log
+*.tfplan

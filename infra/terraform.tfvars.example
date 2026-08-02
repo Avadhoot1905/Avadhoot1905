@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# terraform.tfvars.example
+# Copy to terraform.tfvars and fill in your values.
+#   cp terraform.tfvars.example terraform.tfvars
+# ---------------------------------------------------------------------------
+
+# Core
+aws_region   = "us-east-1"
+environment  = "prod"
+project_name = "avadhoot1905"
+
+# Existing frontend infrastructure (referenced, never recreated)
+cloudfront_distribution_id = "E1234567890ABC"     # <-- your existing distribution ID
+s3_bucket_name             = "my-frontend-bucket" # <-- existing frontend bucket (reference only)
+frontend_domain            = "example.com"        # <-- apex domain; www.<domain> is allowed too
+
+# Lambda tuning
+lambda_memory  = 512
+lambda_timeout = 30
+# lambda_runtime = "nodejs20.x"
+# lambda_handler = "index.handler"
+
+# Bedrock
+# bedrock_model_id = "amazon.nova-lite-v1:0"
+
+# Extra tags merged onto every resource
+tags = {
+  Owner = "avadhoot"
+}

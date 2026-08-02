@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback, ReactElement } from "react"
+import { useState, useEffect, useRef, useCallback, ReactElement, memo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import gsap from "gsap"
@@ -16,6 +16,7 @@ export interface DockApp {
 export interface DockProps {
   apps: DockApp[]
   onAppClick: (appId: string) => void
+  onPreload?: (appId: string) => void
 }
 
 type DockItem =
@@ -44,7 +45,7 @@ const appIdToName: Record<string, string> = {
 }
 
 
-export function Dock({ apps, onAppClick }: DockProps) {
+function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
   const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
   const socialAppIds = ["gmail", "github", "linkedin", "leetcode", "medium"]
@@ -275,8 +276,36 @@ export function Dock({ apps, onAppClick }: DockProps) {
     }
     trackLayout()
 
+    // ── Idle-ticker gating ──────────────────────────────────────────────
+    // The 60fps updateDock loop only needs to run when the cursor is near the
+    // dock. When the cursor is away it is added/removed to free the main
+    // thread. The magnify/return tweens are driven by GSAP's own ticker via
+    // quickTo, so they still complete smoothly even while updateDock is paused.
+    let tickerActive = false
+    let idleStopAt = 0
+    const startTicker = () => {
+      if (tickerActive) return
+      tickerActive = true
+      idleStopAt = 0
+      gsap.ticker.add(updateDock)
+    }
+    const stopTicker = () => {
+      if (!tickerActive) return
+      tickerActive = false
+      idleStopAt = 0
+      gsap.ticker.remove(updateDock)
+    }
+    const isNearDock = (x: number, y: number) => {
+      const r = dockRectRef.current
+      if (!r) return true
+      const margin = 48
+      return x >= r.left - margin && x <= r.right + margin && y >= r.top - margin
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY }
+      // Resume instantly the moment the cursor approaches the dock.
+      if (!tickerActive && isNearDock(e.clientX, e.clientY)) startTicker()
     }
 
     const handleMouseLeave = () => {
@@ -464,16 +493,29 @@ export function Dock({ apps, onAppClick }: DockProps) {
           shelfScaleYQuickToRef.current(1)
         }
       }
+
+      // Once settled back at baseline (cursor away from the dock), pause the
+      // loop until the cursor approaches again. The return tweens above run on
+      // GSAP's own ticker, so they still complete after updateDock is paused.
+      if (!inDockZone && !wasInDockRef.current) {
+        if (idleStopAt === 0) {
+          idleStopAt = performance.now() + 400
+        } else if (performance.now() >= idleStopAt) {
+          stopTicker()
+        }
+      } else {
+        idleStopAt = 0
+      }
     }
 
-    gsap.ticker.add(updateDock)
+    startTicker()
 
     return () => {
       cancelAnimationFrame(frameId)
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("mouseleave", handleMouseLeave)
       window.removeEventListener("resize", handleResize)
-      gsap.ticker.remove(updateDock)
+      stopTicker()
     }
   }, [dockItemIdsKey, isMobile, measureDock, initQuickTos, updateLabels])
 
@@ -620,6 +662,7 @@ export function Dock({ apps, onAppClick }: DockProps) {
                       itemRefs.current[index] = el
                     }}
                     onClick={() => handleAppClick(app.id, index)}
+                    onMouseEnter={() => onPreload?.(app.id)}
                     className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${
                       isMobile ? "mx-1" : "mx-1.5"
                     }`}
@@ -695,4 +738,8 @@ export function Dock({ apps, onAppClick }: DockProps) {
     </div>
   )
 }
+
+// Memoized so the Dock only re-renders when its props actually change
+// (open-state list / callbacks), not on every unrelated desktop state update.
+export const Dock = memo(DockComponent)
 

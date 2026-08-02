@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import { Moon, Sun, Monitor, WifiHigh, BatteryHigh, SpeakerHigh, Lightbulb, CellSignalHigh, Bluetooth, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
@@ -14,12 +14,25 @@ interface MenuBarProps {
   activeApp?: string | null
 }
 
+/**
+ * Self-contained clock leaf. Holds its own 1s interval so only the time/date
+ * text re-renders each second — the surrounding MenuBar (and its many
+ * backdrop-filter layers) is never re-reconciled by the tick.
+ */
+function Clock({ children }: { children: (now: Date) => ReactNode }) {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+  return <>{children(now)}</>
+}
+
 export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [showNotificationPanel, setShowNotificationPanel] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
   const [brightness, setBrightness] = useState(70)
   const [volume, setVolume] = useState(60)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -44,10 +57,6 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   useEffect(() => {
     setMounted(true)
 
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -63,7 +72,6 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     document.addEventListener('fullscreenchange', handleFullscreenChange)
 
     return () => {
-      clearInterval(timer)
       window.removeEventListener('resize', checkMobile)
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
@@ -115,7 +123,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           >
             {/* Time */}
             <div className="text-sm font-semibold">
-              {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              <Clock>{(now) => now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Clock>
             </div>
 
             <div className="flex-1"></div>
@@ -199,12 +207,18 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                   <div className="p-6 pt-16 pb-6">
                     {/* Date */}
                     <div className="text-center mb-6">
-                      <div className="text-2xl font-semibold mb-1">
-                        {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
-                      </div>
-                      <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                        {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-                      </div>
+                      <Clock>
+                        {(now) => (
+                          <>
+                            <div className="text-2xl font-semibold mb-1">
+                              {now.toLocaleDateString('en-US', { weekday: 'long' })}
+                            </div>
+                            <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                              {now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                            </div>
+                          </>
+                        )}
+                      </Clock>
                     </div>
 
                     {/* Main Control Section */}
@@ -468,16 +482,17 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
   const dropdownItemClass = "w-full rounded-md px-3 py-1.5 text-left leading-none tracking-tight transition-all duration-200 ease-out hover:bg-blue-500 hover:text-white"
   const dropdownDividerClass = `my-1 border-t ${theme === "dark" ? "border-white/10" : "border-black/5"}`
-  const desktopDateParts = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-  }).formatToParts(currentTime)
-  const desktopWeekday = desktopDateParts.find((part) => part.type === "weekday")?.value ?? ""
-  const desktopDay = desktopDateParts.find((part) => part.type === "day")?.value ?? ""
-  const desktopMonth = desktopDateParts.find((part) => part.type === "month")?.value ?? ""
-  const desktopDate = `${desktopWeekday} ${desktopDay} ${desktopMonth}`.trim()
-  const desktopTime = currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  const formatDesktopDate = (now: Date) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+    }).formatToParts(now)
+    const weekday = parts.find((part) => part.type === "weekday")?.value ?? ""
+    const day = parts.find((part) => part.type === "day")?.value ?? ""
+    const month = parts.find((part) => part.type === "month")?.value ?? ""
+    return `${weekday} ${day} ${month}`.trim()
+  }
 
   return (
     <IconContext.Provider value={{ weight: "fill" }}>
@@ -767,13 +782,19 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
             />
           </div>
 
-          <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>
-            {desktopDate}
-          </div>
+          <Clock>
+            {(now) => (
+              <>
+                <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/85" : "text-black/75"}`}>
+                  {formatDesktopDate(now)}
+                </div>
 
-          <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/90" : "text-black/85"}`}>
-            {desktopTime}
-          </div>
+                <div className={`px-2 py-1 text-sm font-medium leading-none ${theme === "dark" ? "text-white/90" : "text-black/85"}`}>
+                  {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </>
+            )}
+          </Clock>
         </div>
       </motion.div>
     </IconContext.Provider>

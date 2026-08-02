@@ -606,24 +606,30 @@ export function SafariApp() {
 
         {/* LinkedIn Tab - Fallback UI */}
         {activeSafariTab === "linkedin" && (
-          <div className="w-full h-full flex items-center justify-center p-6 md:p-8">
-            <div className="w-full max-w-2xl flex flex-col items-center justify-center gap-5 text-center">
-              <DinoGame />
-              <p className={`text-base md:text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                Website unavailable :(
-              </p>
-              <button
-                onClick={() => window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank", "noopener,noreferrer")}
-                className={`inline-flex items-center gap-2 rounded-md border px-5 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-all ${theme === "dark"
-                  ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
-                  : "border-black/10 bg-white/70 text-gray-800 hover:bg-white"
-                  }`}
-              >
-                <SiLinkedin className="text-blue-500" />
-                <span>Click here to view my LinkedIn</span>
-              </button>
-              <div className={`text-xs ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}>
-                Play while the page is unavailable.
+          <div className={`w-full h-full overflow-y-auto overflow-x-hidden py-6 md:py-12 ${isDark ? "bg-[#202124] text-[#9aa0a6]" : "bg-white text-[#5f6368]"}`}>
+            <div className="w-full flex flex-col pt-10">
+              <DinoGame className="w-full mb-8" />
+              <div className="w-full max-w-2xl mx-auto px-6 md:px-12 flex flex-col items-start pl-4">
+                <h1 className={`text-2xl font-semibold mb-4 ${isDark ? "text-[#e8eaed]" : "text-[#202124]"}`}>
+                  No internet
+                </h1>
+                <div className="mb-4 text-sm md:text-base">
+                  <p className="mb-2">Try:</p>
+                  <ul className="list-disc pl-8 space-y-1">
+                    <li>Checking the network cables, modem, and router</li>
+                    <li>Reconnecting to Wi-Fi</li>
+                  </ul>
+                </div>
+                <p className="text-xs text-gray-500 mb-6">ERR_INTERNET_DISCONNECTED</p>
+                <button
+                  onClick={() => window.open("https://www.linkedin.com/in/avadhoot-mahadik/", "_blank", "noopener,noreferrer")}
+                  className={`px-6 py-2.5 rounded-full font-medium text-sm transition-colors ${isDark
+                    ? "bg-[#8ab4f8] text-[#202124] hover:bg-[#aecbfa]"
+                    : "bg-[#1a73e8] text-white hover:bg-[#1b66c9]"
+                    }`}
+                >
+                  View LinkedIn Profile
+                </button>
               </div>
             </div>
           </div>

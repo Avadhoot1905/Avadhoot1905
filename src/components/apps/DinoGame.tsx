@@ -37,7 +37,12 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   const [isRunning, setIsRunning] = useState(false)
   const [isIntroJump, setIsIntroJump] = useState(false)
   const [dinoFrame, setDinoFrame] = useState<"left" | "right">("left")
+  const [hasStarted, setHasStarted] = useState(false)
+  const [dinoX, setDinoX] = useState(DINO_X)
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const gameWidthRef = useRef(GAME_WIDTH)
+  const dinoXRef = useRef(DINO_X)
   const rafRef = useRef<number | null>(null)
   const lastFrameRef = useRef<number>(0)
   const velocityYRef = useRef(0)
@@ -73,6 +78,9 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     setDinoFrame("left")
     setIsGameOver(false)
     setIsRunning(startRunning)
+    if (!startRunning && !startWithIntroJump) {
+      setHasStarted(false)
+    }
     syncState()
   }, [syncState])
 
@@ -85,6 +93,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     if (!isRunning && !isIntroJumpRef.current) {
       isIntroJumpRef.current = true
       setIsIntroJump(true)
+      setHasStarted(true)
       velocityYRef.current = -9.5
       return
     }
@@ -108,6 +117,22 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     return () => {
       preloaded.length = 0
     }
+  }, [])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        gameWidthRef.current = entry.contentRect.width
+        const isMobile = window.innerWidth < 768
+        const textOffset = isMobile ? 40 : 64
+        const newDinoX = Math.max(0, (entry.contentRect.width - 672) / 2) + textOffset
+        dinoXRef.current = newDinoX
+        setDinoX(newDinoX)
+      }
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -188,7 +213,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           const multiCactus = sprite === "multi"
           obstaclesRef.current.push({
             id: nextObstacleIdRef.current++,
-            x: GAME_WIDTH + 16,
+            x: gameWidthRef.current + 16,
             width: multiCactus ? 46 : 19,
             height: multiCactus ? 31 : 33,
             sprite,
@@ -196,8 +221,8 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           spawnCooldownRef.current = 52 + Math.random() * 42
         }
 
-        const dinoLeft = DINO_X + 2
-        const dinoRight = DINO_X + DINO_WIDTH - 2
+        const dinoLeft = dinoXRef.current + 2
+        const dinoRight = dinoXRef.current + DINO_WIDTH - 2
         const dinoTop = dinoYRef.current + 2
         const dinoBottom = dinoYRef.current + DINO_HEIGHT - 2
 
@@ -240,9 +265,10 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   }, [resetGame])
 
   return (
-    <div className={`w-full max-w-[560px] ${className}`}>
+    <div className={`w-full ${className}`}>
       <div
-        className="relative w-full overflow-hidden rounded-xl border border-black/10 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/20"
+        ref={containerRef}
+        className="relative w-full overflow-hidden"
         style={{ height: `${GAME_HEIGHT}px` }}
         onClick={jump}
         role="button"
@@ -255,19 +281,25 @@ export function DinoGame({ className = "" }: DinoGameProps) {
         }}
         aria-label="Dino mini-game"
       >
-        <div className="absolute left-4 top-3 text-[11px] tracking-wide text-black/60 dark:text-white/60">
-          SCORE {score}
-        </div>
+        {hasStarted && (
+          <div className="absolute left-4 top-3 text-[11px] tracking-wide text-black/60 dark:text-white/60">
+            SCORE {score}
+          </div>
+        )}
 
         <div
-          className="absolute left-0 right-0 border-t border-black/10 dark:border-white/10"
-          style={{ top: `${GAME_HEIGHT - GROUND_HEIGHT}px` }}
+          className={`absolute border-t border-black/10 dark:border-white/10 transition-all duration-700 ease-in-out`}
+          style={{ 
+            top: `${GAME_HEIGHT - GROUND_HEIGHT}px`,
+            left: hasStarted ? '0px' : `${Math.max(0, dinoX - 20)}px`,
+            right: hasStarted ? '0px' : `calc(100% - ${Math.max(0, dinoX - 20) + 560}px)`
+          }}
         />
 
         <div
           className="absolute"
           style={{
-            left: `${DINO_X}px`,
+            left: `${dinoX}px`,
             top: `${dinoY}px`,
             width: `${DINO_WIDTH}px`,
             height: `${DINO_HEIGHT}px`,

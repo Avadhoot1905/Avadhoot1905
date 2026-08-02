@@ -23,6 +23,11 @@ lambda_timeout = 30
 # Bedrock
 # bedrock_model_id = "amazon.nova-lite-v1:0"
 
+# Viewer TLS certificate (crypto-hygiene remediation).
+# ECDSA P-256 (128-bit) replaces the scanned RSA-2048 leaf (112-bit). Free.
+# Options: EC_prime256v1 (default), EC_secp384r1, RSA_2048 (rollback only).
+# certificate_key_algorithm = "EC_prime256v1"
+
 # Extra tags merged onto every resource
 tags = {
   Owner = "avadhoot"

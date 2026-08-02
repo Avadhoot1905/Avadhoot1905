@@ -69,12 +69,6 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     }
   }, [])
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).AarushIcons) {
-      (window as any).AarushIcons.render()
-    }
-  }, [mounted, theme])
-
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen()
@@ -487,15 +481,6 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
   return (
     <IconContext.Provider value={{ weight: "fill" }}>
-      <Script
-        src="https://icons.aarushpal.in/cdn/aarush-icons.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          if (typeof window !== "undefined" && (window as any).AarushIcons) {
-            (window as any).AarushIcons.render()
-          }
-        }}
-      />
       <motion.div
         className={`fixed left-0 top-0 z-[10000] flex h-9 w-full items-center px-3.5 text-sm backdrop-blur-2xl ${theme === "dark"
           ? "bg-black/40 text-white"
@@ -775,10 +760,10 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           </div>
 
           <div className={iconTriggerClass} title="Control Center">
-            <i
-              className={`ap-apple-control-center !w-4 !h-4 flex items-center justify-center ${theme === "dark" ? "text-white" : "text-black"
-                } dark:text-white`}
-              style={{ fontSize: "16px" }}
+            <img
+              src="/assets/macos/apple-control-center.svg"
+              alt="Control Center"
+              className={`h-[16px] w-[16px] ${theme === "dark" ? "invert" : ""}`}
             />
           </div>
 

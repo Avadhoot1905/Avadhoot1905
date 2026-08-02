@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 
 type Obstacle = {
   id: number
@@ -23,10 +24,10 @@ const DINO_X = 52
 const DINO_GROUND_Y = GAME_HEIGHT - GROUND_HEIGHT - DINO_HEIGHT
 
 const SPRITES = {
-  cactusSingle: "https://upload.wikimedia.org/wikipedia/commons/a/af/1_Cactus_Chrome_Dino.webp",
-  cactusMulti: "https://upload.wikimedia.org/wikipedia/commons/6/6b/3_Cactus_Chrome_Dino.webp",
-  dinoLeft: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Chrome_T-Rex_Left_Run.webp",
-  dinoRight: "https://upload.wikimedia.org/wikipedia/commons/9/91/Chrome_T-Rex_Right_Run.webp",
+  cactusSingle: "/assets/macos/cactus_single.webp",
+  cactusMulti: "/assets/macos/cactus_multi.webp",
+  dinoLeft: "/assets/macos/dino_left.webp",
+  dinoRight: "/assets/macos/dino_right.webp",
 }
 
 export function DinoGame({ className = "" }: DinoGameProps) {
@@ -37,7 +38,12 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   const [isRunning, setIsRunning] = useState(false)
   const [isIntroJump, setIsIntroJump] = useState(false)
   const [dinoFrame, setDinoFrame] = useState<"left" | "right">("left")
+  const [hasStarted, setHasStarted] = useState(false)
+  const [dinoX, setDinoX] = useState(DINO_X)
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const gameWidthRef = useRef(GAME_WIDTH)
+  const dinoXRef = useRef(DINO_X)
   const rafRef = useRef<number | null>(null)
   const lastFrameRef = useRef<number>(0)
   const velocityYRef = useRef(0)
@@ -73,6 +79,9 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     setDinoFrame("left")
     setIsGameOver(false)
     setIsRunning(startRunning)
+    if (!startRunning && !startWithIntroJump) {
+      setHasStarted(false)
+    }
     syncState()
   }, [syncState])
 
@@ -85,6 +94,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     if (!isRunning && !isIntroJumpRef.current) {
       isIntroJumpRef.current = true
       setIsIntroJump(true)
+      setHasStarted(true)
       velocityYRef.current = -9.5
       return
     }
@@ -108,6 +118,22 @@ export function DinoGame({ className = "" }: DinoGameProps) {
     return () => {
       preloaded.length = 0
     }
+  }, [])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        gameWidthRef.current = entry.contentRect.width
+        const isMobile = window.innerWidth < 768
+        const textOffset = isMobile ? 40 : 64
+        const newDinoX = Math.max(0, (entry.contentRect.width - 672) / 2) + textOffset
+        dinoXRef.current = newDinoX
+        setDinoX(newDinoX)
+      }
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -188,7 +214,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           const multiCactus = sprite === "multi"
           obstaclesRef.current.push({
             id: nextObstacleIdRef.current++,
-            x: GAME_WIDTH + 16,
+            x: gameWidthRef.current + 16,
             width: multiCactus ? 46 : 19,
             height: multiCactus ? 31 : 33,
             sprite,
@@ -196,16 +222,16 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           spawnCooldownRef.current = 52 + Math.random() * 42
         }
 
-        const dinoLeft = DINO_X + 2
-        const dinoRight = DINO_X + DINO_WIDTH - 2
-        const dinoTop = dinoYRef.current + 2
+        const dinoLeft = dinoXRef.current + 6
+        const dinoRight = dinoXRef.current + DINO_WIDTH - 6
+        const dinoTop = dinoYRef.current + 4
         const dinoBottom = dinoYRef.current + DINO_HEIGHT - 2
 
         const hasCollision = obstaclesRef.current.some((obstacle) => {
-          const obstacleTop = GAME_HEIGHT - GROUND_HEIGHT - obstacle.height
+          const obstacleTop = GAME_HEIGHT - GROUND_HEIGHT - obstacle.height + 4
           const obstacleBottom = GAME_HEIGHT - GROUND_HEIGHT
-          const obstacleLeft = obstacle.x
-          const obstacleRight = obstacle.x + obstacle.width
+          const obstacleLeft = obstacle.x + 4
+          const obstacleRight = obstacle.x + obstacle.width - 4
 
           return (
             dinoRight > obstacleLeft &&
@@ -240,9 +266,10 @@ export function DinoGame({ className = "" }: DinoGameProps) {
   }, [resetGame])
 
   return (
-    <div className={`w-full max-w-[560px] ${className}`}>
+    <div className={`w-full ${className}`}>
       <div
-        className="relative w-full overflow-hidden rounded-xl border border-black/10 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/20"
+        ref={containerRef}
+        className="relative w-full overflow-hidden"
         style={{ height: `${GAME_HEIGHT}px` }}
         onClick={jump}
         role="button"
@@ -255,19 +282,30 @@ export function DinoGame({ className = "" }: DinoGameProps) {
         }}
         aria-label="Dino mini-game"
       >
-        <div className="absolute left-4 top-3 text-[11px] tracking-wide text-black/60 dark:text-white/60">
-          SCORE {score}
-        </div>
+        {hasStarted && (
+          <div className="absolute left-4 top-3 text-[11px] tracking-wide text-black/60 dark:text-white/60">
+            SCORE {score}
+          </div>
+        )}
 
-        <div
-          className="absolute left-0 right-0 border-t border-black/10 dark:border-white/10"
-          style={{ top: `${GAME_HEIGHT - GROUND_HEIGHT}px` }}
+        <motion.div
+          className="absolute border-t border-black/10 dark:border-white/10"
+          initial={false}
+          animate={{
+            top: GAME_HEIGHT - GROUND_HEIGHT,
+            left: hasStarted ? 0 : Math.max(0, dinoX - 20),
+            width: hasStarted ? "100%" : 560
+          }}
+          transition={{
+            duration: 0.7,
+            ease: "easeInOut"
+          }}
         />
 
         <div
           className="absolute"
           style={{
-            left: `${DINO_X}px`,
+            left: `${dinoX}px`,
             top: `${dinoY}px`,
             width: `${DINO_WIDTH}px`,
             height: `${DINO_HEIGHT}px`,
@@ -277,7 +315,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           <img
             src={dinoFrame === "left" ? SPRITES.dinoLeft : SPRITES.dinoRight}
             alt="Dino runner"
-            className="h-full w-full select-none object-contain"
+            className="h-full w-full select-none object-contain dark:invert"
             draggable={false}
           />
         </div>
@@ -297,14 +335,14 @@ export function DinoGame({ className = "" }: DinoGameProps) {
             <img
               src={obstacle.sprite === "multi" ? SPRITES.cactusMulti : SPRITES.cactusSingle}
               alt="Cactus obstacle"
-              className="h-full w-full select-none object-contain"
+              className="h-full w-full select-none object-contain dark:invert"
               draggable={false}
             />
           </div>
         ))}
 
         {isGameOver && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/55 backdrop-blur-[1px] dark:bg-black/45">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-lg border border-black/10 bg-white/70 px-4 py-2 text-center text-xs text-black/75 shadow-sm dark:border-white/15 dark:bg-black/40 dark:text-white/80">
               <p className="font-medium tracking-wide">GAME OVER</p>
               <p className="mt-1 text-[11px]">Press space or click to restart</p>

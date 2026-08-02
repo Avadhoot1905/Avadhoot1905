@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import gsap from "gsap"
 
 interface LockScreenProps {
   isLocked: boolean
@@ -12,6 +12,13 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isMobile, setIsMobile] = useState(false)
+  const [shouldRender, setShouldRender] = useState(isLocked)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timeRef = useRef<HTMLDivElement>(null)
+  const promptRef = useRef<HTMLDivElement>(null)
+  const bounceRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
 
   useEffect(() => {
     setMounted(true)
@@ -33,13 +40,73 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
     }
   }, [])
 
+  // Handle lock/unlock GSAP animations
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      if (isLocked && containerRef.current) {
+        gsap.set(containerRef.current, { y: "0%" })
+      }
+      return
+    }
+
+    if (isLocked) {
+      setShouldRender(true)
+      if (containerRef.current) {
+        gsap.fromTo(containerRef.current,
+          { y: "-100%" },
+          { y: "0%", duration: 0.8, ease: "power3.inOut" }
+        )
+      }
+    } else {
+      if (containerRef.current) {
+        gsap.to(containerRef.current, {
+          y: "-100%",
+          duration: 0.8,
+          ease: "power3.inOut",
+          onComplete: () => setShouldRender(false)
+        })
+      } else {
+        setShouldRender(false)
+      }
+    }
+  }, [isLocked])
+
+  // Handle entrance animations for internal elements
+  useEffect(() => {
+    if (shouldRender) {
+      if (timeRef.current) {
+        gsap.fromTo(timeRef.current,
+          { opacity: 0, scale: 0.8 },
+          { opacity: 1, scale: 1, duration: 0.5, delay: 0.5, ease: "power2.out" }
+        )
+      }
+      
+      if (promptRef.current) {
+        gsap.fromTo(promptRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 1, ease: "power2.out" }
+        )
+      }
+
+      if (bounceRef.current) {
+        gsap.to(bounceRef.current, {
+          y: -8,
+          duration: 1,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut"
+        })
+      }
+    }
+  }, [shouldRender])
+
   const handleClick = () => {
     onUnlock()
   }
 
   if (!mounted) return null
-
-  if (!isLocked) return null
+  if (!shouldRender) return null
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], {
@@ -58,7 +125,8 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
   }
 
   return (
-    <motion.div
+    <div
+      ref={containerRef}
       className="fixed inset-0 z-[20000] flex flex-col items-center justify-center cursor-pointer"
       style={{
         backgroundImage: isMobile
@@ -66,16 +134,8 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           : 'url(/assets/tahoejpg.webp)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-      initial={{ y: '-100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '-100%' }}
-      transition={{
-        type: "spring",
-        stiffness: 100,
-        damping: 20,
-        duration: 0.8
+        backgroundRepeat: 'no-repeat',
+        transform: 'translateY(0%)'
       }}
       onClick={handleClick}
     >
@@ -83,12 +143,10 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
       <div className="absolute inset-0 bg-black/20" />
 
       {/* Time display at top - iOS style */}
-      <motion.div
+      <div
+        ref={timeRef}
         className={`absolute left-1/2 transform -translate-x-1/2 text-center z-10 ${isMobile ? 'top-24' : 'top-16'
           }`}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
       >
         <div className={`font-bold tracking-tight text-white mb-1 ${isMobile ? 'text-7xl' : 'text-8xl'
           }`}>
@@ -98,46 +156,25 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           }`}>
           {formatDate(currentTime)}
         </div>
-      </motion.div>
+      </div>
 
       {/* Bottom section with unlock prompt */}
       <div className={`absolute left-1/2 transform -translate-x-1/2 text-center text-white z-10 ${isMobile ? 'bottom-32' : 'bottom-8'
         }`}>
         {/* Unlock instruction */}
-        <motion.div
+        <div
+          ref={promptRef}
           className="mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
         >
           <div className={`font-light mb-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
             {isMobile ? 'Swipe up to unlock' : 'Click anywhere to unlock'}
           </div>
-          {!isMobile && (
-            <motion.div
-              className="inline-block"
-              animate={{ y: [0, -5, 0] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
+          <div ref={bounceRef} className={!isMobile ? "inline-block" : "flex justify-center"}>
+            {!isMobile ? (
               <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
                 <div className="w-1 h-3 bg-white/60 rounded-full mt-2" />
               </div>
-            </motion.div>
-          )}
-          {isMobile && (
-            <motion.div
-              className="flex justify-center"
-              animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
+            ) : (
               <svg
                 width="40"
                 height="40"
@@ -151,9 +188,9 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
               >
                 <polyline points="18 15 12 9 6 15" />
               </svg>
-            </motion.div>
-          )}
-        </motion.div>
+            )}
+          </div>
+        </div>
 
         {/* Glassmorphic branding panel */}
         <div
@@ -170,6 +207,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
+

@@ -588,7 +588,7 @@ export function MacOSDesktop() {
 
   const lastActivityRef = useRef(Date.now())
 
-  const updateActivity = useCallback(() => {
+  const updateActivity = useCallback((e?: Event) => {
     const now = Date.now()
     if (now - lastActivityRef.current > 10000) {
       lastActivityRef.current = now
@@ -596,8 +596,15 @@ export function MacOSDesktop() {
     } else {
       lastActivityRef.current = now
     }
+    
     if (isLocked) {
-      setIsLocked(false)
+      // Only unlock on deliberate actions, not just moving the mouse
+      if (e && (e.type === 'click' || e.type === 'keydown' || e.type === 'touchstart' || e.type === 'mousedown')) {
+        setIsLocked(false)
+      } else if (!e) {
+        // e.g. called directly from handleUnlock
+        setIsLocked(false)
+      }
     }
   }, [isLocked])
 
@@ -1041,13 +1048,11 @@ export function MacOSDesktop() {
         backgroundRepeat: 'no-repeat'
       }}
     >
-      <AnimatePresence mode="wait">
-        <LockScreen
-          key="lockscreen"
-          isLocked={isLocked}
-          onUnlock={handleUnlock}
-        />
-      </AnimatePresence>
+      <LockScreen
+        key="lockscreen"
+        isLocked={isLocked}
+        onUnlock={handleUnlock}
+      />
       {!isLocked && (
         <>
           <MenuBar

@@ -1,12 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import { useTheme } from "next-themes"
+
+// Self-contained clock leaf: only the date text re-renders each second, not the
+// blurred widget cards around it.
+function Clock({ children }: { children: (now: Date) => ReactNode }) {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+  return <>{children(now)}</>
+}
 
 export function Widgets() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
   const [weather, setWeather] = useState({
     temp: 28,
     condition: "Sunny",
@@ -25,11 +35,6 @@ export function Widgets() {
     
     checkMobile()
     window.addEventListener('resize', checkMobile)
-
-    // Update time every second
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
 
     // Fetch weather data for Bangalore
     const fetchWeatherData = async () => {
@@ -79,22 +84,21 @@ export function Widgets() {
 
     return () => {
       window.removeEventListener('resize', checkMobile)
-      clearInterval(timer)
     }
   }, [])
 
-  const getDayName = () => {
+  const getDayName = (now: Date) => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    return days[currentTime.getDay()]
+    return days[now.getDay()]
   }
 
-  const getMonthName = () => {
+  const getMonthName = (now: Date) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    return months[currentTime.getMonth()]
+    return months[now.getMonth()]
   }
 
-  const getDate = () => {
-    return currentTime.getDate()
+  const getDate = (now: Date) => {
+    return now.getDate()
   }
 
   if (!mounted) return null
@@ -121,18 +125,24 @@ export function Widgets() {
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         }}
       >
-        <div className="flex items-center justify-center">
-          <span className={`font-bold ${
-            theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-          } ${isMobile ? 'text-sm' : 'text-lg'}`}>
-            {getDayName()} {getMonthName()}
-          </span>
-        </div>
-        <div className={`${
-          theme === 'dark' ? 'text-white' : 'text-gray-900'
-        } font-bold ${isMobile ? 'text-5xl' : 'text-7xl'} leading-none flex items-center justify-center flex-1`}>
-          {getDate()}
-        </div>
+        <Clock>
+          {(now) => (
+            <>
+              <div className="flex items-center justify-center">
+                <span className={`font-bold ${
+                  theme === 'dark' ? 'text-white/90' : 'text-gray-900'
+                } ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                  {getDayName(now)} {getMonthName(now)}
+                </span>
+              </div>
+              <div className={`${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              } font-bold ${isMobile ? 'text-5xl' : 'text-7xl'} leading-none flex items-center justify-center flex-1`}>
+                {getDate(now)}
+              </div>
+            </>
+          )}
+        </Clock>
       </div>
 
       {/* Weather Widget */}

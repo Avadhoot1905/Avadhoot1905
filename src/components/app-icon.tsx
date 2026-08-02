@@ -16,6 +16,7 @@ export interface AppIconProps {
   x?: number
   y?: number
   onDragEnd?: (id: string, newX: number, newY: number) => void
+  onPreload?: () => void
 }
 
 export const AppIcon: React.FC<AppIconProps> = React.memo(({
@@ -28,6 +29,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
   x,
   y,
   onDragEnd,
+  onPreload,
 }) => {
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
@@ -159,6 +161,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       <motion.div
         data-app-icon={id}
         onPointerDown={(e) => e.stopPropagation()}
+        onPointerEnter={onPreload}
         className="flex flex-col items-center cursor-pointer select-none"
         onClick={handleClick}
         whileHover={{ scale: isMobile ? 1 : 1.05 }}
@@ -211,6 +214,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onPointerEnter={() => {
+        onPreload?.()
         if (!isDraggingRef.current && iconRef.current && typeof y === "number") {
           gsap.to(iconRef.current, { y: y - 2, duration: 0.2, ease: "power2.out", overwrite: "auto" })
         }

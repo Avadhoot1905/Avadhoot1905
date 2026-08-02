@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "nprogress/nprogress.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -29,13 +28,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth theme transitions */
+/* Smooth theme transitions.
+   NOTE: the universal color transition is kept intentionally so theme switching
+   fades every element identically. The previous companion rule
+   `*:where(:not(:has(> *)))` re-declared this exact same transition for leaf
+   nodes — visually redundant, but the relational `:has()` selector forced the
+   engine to re-evaluate it on every DOM mutation (opening windows, marquee
+   selection, etc.). Removing it changes nothing visually while eliminating that
+   style-invalidation cost. */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Exclude animations and transforms from transition */
-*:where(:not(:has(> *))) {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 

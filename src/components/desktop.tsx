@@ -33,20 +33,60 @@ import {
   SiMedium,
   SiGmail
 } from "react-icons/si"
-import { FinderApp } from "@/components/apps/FinderApp"
-import { SafariApp } from "@/components/apps/SafariApp"
-import { AboutApp } from "@/components/apps/AboutApp"
-import { ProjectsApp } from "@/components/apps/ProjectsApp"
-import { EducationApp } from "@/components/apps/EducationApp"
-import { ExperienceApp } from "@/components/apps/ExperienceApp"
-import { MessagesApp } from "@/components/apps/MessagesApp"
-import { PhotosApp } from "@/components/apps/PhotosApp"
-import { TicTacToeApp } from "@/components/apps/TicTacToeApp"
-import { Game2048App } from "@/components/apps/Game2048App"
-import { FlappyBirdApp } from "@/components/apps/FlappyBirdApp"
-import { TerminalApp } from "@/components/apps/TerminalApp"
-import { AchievementsApp, AchievementsAppIcon } from "@/components/apps/AchievementsApp"
+import dynamic from "next/dynamic"
 import { Widgets } from "@/components/widgets"
+
+/**
+ * ===================================================
+ * LAZY-LOADED DESKTOP APPLICATIONS
+ * ===================================================
+ * Each app window is code-split with next/dynamic so its JavaScript is only
+ * downloaded when the user opens (or hovers) that app — instead of shipping
+ * every app (and Pixi.js) in the first-paint bundle.
+ *
+ * `appImport` holds the raw import() thunks. The bundler dedupes these with the
+ * dynamic() loaders (same module specifier => same chunk), so we can trigger a
+ * preload on hover without a second network request. Flappy Bird (Pixi.js) is
+ * intentionally excluded from hover-preload so Pixi is never fetched until the
+ * game is actually opened.
+ */
+const appImport = {
+  finder: () => import("@/components/apps/FinderApp"),
+  safari: () => import("@/components/apps/SafariApp"),
+  about: () => import("@/components/apps/AboutApp"),
+  projects: () => import("@/components/apps/ProjectsApp"),
+  education: () => import("@/components/apps/EducationApp"),
+  experience: () => import("@/components/apps/ExperienceApp"),
+  messages: () => import("@/components/apps/MessagesApp"),
+  photos: () => import("@/components/apps/PhotosApp"),
+  tictactoe: () => import("@/components/apps/TicTacToeApp"),
+  "2048": () => import("@/components/apps/Game2048App"),
+  flappybird: () => import("@/components/apps/FlappyBirdApp"),
+  terminal: () => import("@/components/apps/TerminalApp"),
+  achievements: () => import("@/components/apps/AchievementsApp"),
+} as const
+
+const FinderApp = dynamic(() => appImport.finder().then((m) => m.FinderApp), { ssr: false })
+const SafariApp = dynamic(() => appImport.safari().then((m) => m.SafariApp), { ssr: false })
+const AboutApp = dynamic(() => appImport.about().then((m) => m.AboutApp), { ssr: false })
+const ProjectsApp = dynamic(() => appImport.projects().then((m) => m.ProjectsApp), { ssr: false })
+const EducationApp = dynamic(() => appImport.education().then((m) => m.EducationApp), { ssr: false })
+const ExperienceApp = dynamic(() => appImport.experience().then((m) => m.ExperienceApp), { ssr: false })
+const MessagesApp = dynamic(() => appImport.messages().then((m) => m.MessagesApp), { ssr: false })
+const PhotosApp = dynamic(() => appImport.photos().then((m) => m.PhotosApp), { ssr: false })
+const TicTacToeApp = dynamic(() => appImport.tictactoe().then((m) => m.TicTacToeApp), { ssr: false })
+const Game2048App = dynamic(() => appImport["2048"]().then((m) => m.Game2048App), { ssr: false })
+const FlappyBirdApp = dynamic(() => appImport.flappybird().then((m) => m.FlappyBirdApp), { ssr: false })
+const TerminalApp = dynamic(() => appImport.terminal().then((m) => m.TerminalApp), { ssr: false })
+const AchievementsApp = dynamic(() => appImport.achievements().then((m) => m.AchievementsApp), { ssr: false })
+
+// Preload an app's chunk ahead of open (on hover) for instant-feel UX.
+// Pixi.js-backed Flappy Bird is excluded so Pixi stays off the wire until opened.
+const preloadApp = (id: string) => {
+  if (id === "flappybird") return
+  const loader = (appImport as Record<string, (() => Promise<unknown>) | undefined>)[id]
+  loader?.()
+}
 
 const LOADING_SEEN_STORAGE_KEY = "macosDesktopLoadingSeen"
 const ICON_POSITIONS_STORAGE_KEY = "macos_desktop_icon_positions"
@@ -351,6 +391,11 @@ export function MacOSDesktop() {
   const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null)
   const dragStartRef = useRef<{ x: number; y: number } | null>(null)
   const desktopAreaRef = useRef<HTMLDivElement>(null)
+  // Marquee-selection rAF throttling: coalesce pointer moves to one update/frame
+  // and cache the desktop rect for the drag so we avoid a reflow per move event.
+  const selectionRafRef = useRef<number | null>(null)
+  const pendingPointRef = useRef<{ x: number; y: number } | null>(null)
+  const desktopRectRef = useRef<DOMRect | null>(null)
 
   // Initialize, load saved icon positions, and adjust dynamically on window resize
   const prevSizeRef = useRef({
@@ -766,8 +811,53 @@ export function MacOSDesktop() {
     return { x: 220, opacity: 0, scale: 0.92, transition: { duration: 0.22 } }
   }, [])
 
+  // Compute the marquee rect + icon intersections once per animation frame.
+  // Behaviour is identical to running this on every pointermove — it is simply
+  // coalesced to the display refresh rate and skips redundant selection updates.
+  const flushSelection = useCallback(() => {
+    selectionRafRef.current = null
+    const pt = pendingPointRef.current
+    const rect = desktopRectRef.current
+    const start = dragStartRef.current
+    if (!pt || !rect || !start) return
+
+    const currentX = pt.x - rect.left
+    const currentY = pt.y - rect.top
+
+    const left = Math.min(start.x, currentX)
+    const top = Math.min(start.y, currentY)
+    const width = Math.abs(currentX - start.x)
+    const height = Math.abs(currentY - start.y)
+
+    setSelectionRect({ left, top, width, height })
+
+    // Check intersections with icons
+    if (width > 4 || height > 4) {
+      const intersectingIds: string[] = []
+      desktopApps.forEach((app) => {
+        const pos = iconPositions[app.id]
+        if (!pos) return
+        const iconRect = { left: pos.x, top: pos.y, right: pos.x + 88, bottom: pos.y + 88 }
+        const intersects = !(
+          iconRect.right < left ||
+          iconRect.left > left + width ||
+          iconRect.bottom < top ||
+          iconRect.top > top + height
+        )
+        if (intersects) {
+          intersectingIds.push(app.id)
+        }
+      })
+      setSelectedIcons((prev) =>
+        prev.length === intersectingIds.length && prev.every((id, i) => id === intersectingIds[i])
+          ? prev
+          : intersectingIds
+      )
+    }
+  }, [desktopApps, iconPositions])
+
   // Desktop selection box handlers
-  const handleDesktopPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handleDesktopPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (isMobile) return
     if (e.button !== 0) return
 
@@ -795,60 +885,41 @@ export function MacOSDesktop() {
     const rect = desktopAreaRef.current?.getBoundingClientRect()
     if (!rect) return
 
+    // Cache the desktop rect for the duration of the drag (it doesn't move),
+    // so pointermove never forces a layout read.
+    desktopRectRef.current = rect
     const startX = e.clientX - rect.left
     const startY = e.clientY - rect.top
 
     dragStartRef.current = { x: startX, y: startY }
     setSelectionRect({ left: startX, top: startY, width: 0, height: 0 })
-  }
+  }, [isMobile])
 
-  const handleDesktopPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isMobile || !dragStartRef.current || !desktopAreaRef.current) return
-
-    const rect = desktopAreaRef.current.getBoundingClientRect()
-    const currentX = e.clientX - rect.left
-    const currentY = e.clientY - rect.top
-
-    const left = Math.min(dragStartRef.current.x, currentX)
-    const top = Math.min(dragStartRef.current.y, currentY)
-    const width = Math.abs(currentX - dragStartRef.current.x)
-    const height = Math.abs(currentY - dragStartRef.current.y)
-
-    setSelectionRect({ left, top, width, height })
-
-    // Check intersections with icons
-    if (width > 4 || height > 4) {
-      const intersectingIds: string[] = []
-      desktopApps.forEach((app) => {
-        const pos = iconPositions[app.id]
-        if (!pos) return
-        const iconRect = { left: pos.x, top: pos.y, right: pos.x + 88, bottom: pos.y + 88 }
-        const intersects = !(
-          iconRect.right < left ||
-          iconRect.left > left + width ||
-          iconRect.bottom < top ||
-          iconRect.top > top + height
-        )
-        if (intersects) {
-          intersectingIds.push(app.id)
-        }
-      })
-      setSelectedIcons(intersectingIds)
+  const handleDesktopPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile || !dragStartRef.current) return
+    pendingPointRef.current = { x: e.clientX, y: e.clientY }
+    if (selectionRafRef.current == null) {
+      selectionRafRef.current = requestAnimationFrame(flushSelection)
     }
-  }
+  }, [isMobile, flushSelection])
 
-  const handleDesktopPointerUp = () => {
+  const handleDesktopPointerUp = useCallback(() => {
+    if (selectionRafRef.current != null) {
+      cancelAnimationFrame(selectionRafRef.current)
+      selectionRafRef.current = null
+    }
     dragStartRef.current = null
+    pendingPointRef.current = null
     setSelectionRect(null)
-  }
+  }, [])
 
-  const handleDesktopContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleDesktopContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (isMobile) return
     e.preventDefault()
     setContextMenuPos({ x: e.clientX, y: e.clientY })
-  }
+  }, [isMobile])
 
-  const handleIconClick = (appId: string, e: React.MouseEvent) => {
+  const handleIconClick = useCallback((appId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setContextMenuPos(null)
 
@@ -859,11 +930,11 @@ export function MacOSDesktop() {
     } else {
       setSelectedIcons([appId])
     }
-  }
+  }, [])
 
-  const handleIconDoubleClick = (appId: string) => {
+  const handleIconDoubleClick = useCallback((appId: string) => {
     openOrActivateWindow(appId)
-  }
+  }, [openOrActivateWindow])
 
   // Keyboard navigation for desktop icons
   useEffect(() => {
@@ -881,6 +952,60 @@ export function MacOSDesktop() {
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isMobile, isLocked, selectedIcons, openOrActivateWindow])
+
+  // Stable Dock app list — only rebuilt when window open-state changes, so the
+  // memoized <Dock> doesn't re-render on unrelated desktop state updates
+  // (selection, welcome notification, activity, etc.).
+  const dockApps = React.useMemo(() => [
+    { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
+    { id: "about", icon: profileIcon, isOpen: openWindows.includes("about") },
+    { id: "experience", icon: experienceIcon, isOpen: openWindows.includes("experience") },
+    { id: "projects", icon: projectsIcon, isOpen: openWindows.includes("projects") },
+    { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
+    { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
+    { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
+    { id: "flappybird", name: "Flappy Bird", icon: flappyBirdIcon, isOpen: openWindows.includes("flappybird"), isPinned: false },
+    { id: "tictactoe", name: "Tic Tac Toe", icon: ticTacToeIcon, isOpen: openWindows.includes("tictactoe"), isPinned: false },
+    { id: "2048", name: "2048", icon: game2048Icon, isOpen: openWindows.includes("2048"), isPinned: false },
+    { id: "messages", name: "Messages", icon: messagesIcon, isOpen: openWindows.includes("messages"), isPinned: false },
+    { id: "photos", name: "Photos", icon: photosIcon, isOpen: openWindows.includes("photos"), isPinned: false },
+    { id: "achievements", name: "Achievements", icon: achievementsIcon, isOpen: openWindows.includes("achievements"), isPinned: false },
+    {
+      id: "gmail", icon: (
+        <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
+          <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
+        </div>
+      ), isOpen: false
+    },
+    {
+      id: "github", icon: (
+        <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
+          <SiGithub className="h-3/5 w-3/5 text-white" />
+        </div>
+      ), isOpen: false
+    },
+    {
+      id: "linkedin", icon: (
+        <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
+          <SiLinkedin className="h-3/5 w-3/5 text-white" />
+        </div>
+      ), isOpen: false
+    },
+    {
+      id: "leetcode", icon: (
+        <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
+          <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
+        </div>
+      ), isOpen: false
+    },
+    {
+      id: "medium", icon: (
+        <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
+          <SiMedium className="h-3/5 w-3/5 text-white" />
+        </div>
+      ), isOpen: false
+    },
+  ], [openWindows])
 
   if (!mounted) return null
 
@@ -1020,6 +1145,7 @@ export function MacOSDesktop() {
                     name={app.name}
                     icon={app.icon}
                     onClick={() => openOrActivateWindow(app.id)}
+                    onPreload={() => preloadApp(app.id)}
                   />
                 ))}
               </motion.div>
@@ -1048,6 +1174,7 @@ export function MacOSDesktop() {
                       onClick={(e) => handleIconClick(app.id, e)}
                       onDoubleClick={() => handleIconDoubleClick(app.id)}
                       onDragEnd={handleIconDragEnd}
+                      onPreload={() => preloadApp(app.id)}
                     />
                   )
                 })}
@@ -1278,57 +1405,9 @@ export function MacOSDesktop() {
           </div>
 
           <Dock
-            apps={[
-              { id: "finder", icon: finderIcon, isOpen: openWindows.includes("finder") },
-              { id: "about", icon: profileIcon, isOpen: openWindows.includes("about") },
-              { id: "experience", icon: experienceIcon, isOpen: openWindows.includes("experience") },
-              { id: "projects", icon: projectsIcon, isOpen: openWindows.includes("projects") },
-              { id: "education", icon: educationIcon, isOpen: openWindows.includes("education") },
-              { id: "safari", icon: safariIcon, isOpen: openWindows.includes("safari") },
-              { id: "terminal", icon: terminalIcon, isOpen: openWindows.includes("terminal") },
-              { id: "flappybird", name: "Flappy Bird", icon: flappyBirdIcon, isOpen: openWindows.includes("flappybird"), isPinned: false },
-              { id: "tictactoe", name: "Tic Tac Toe", icon: ticTacToeIcon, isOpen: openWindows.includes("tictactoe"), isPinned: false },
-              { id: "2048", name: "2048", icon: game2048Icon, isOpen: openWindows.includes("2048"), isPinned: false },
-              { id: "messages", name: "Messages", icon: messagesIcon, isOpen: openWindows.includes("messages"), isPinned: false },
-              { id: "photos", name: "Photos", icon: photosIcon, isOpen: openWindows.includes("photos"), isPinned: false },
-              { id: "achievements", name: "Achievements", icon: achievementsIcon, isOpen: openWindows.includes("achievements"), isPinned: false },
-              {
-                id: "gmail", icon: (
-                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-white shadow-sm">
-                    <SiGmail className="h-3/5 w-3/5 text-[#EA4335]" />
-                  </div>
-                ), isOpen: false
-              },
-              {
-                id: "github", icon: (
-                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#181717] shadow-sm border border-white/10">
-                    <SiGithub className="h-3/5 w-3/5 text-white" />
-                  </div>
-                ), isOpen: false
-              },
-              {
-                id: "linkedin", icon: (
-                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#0A66C2] shadow-sm">
-                    <SiLinkedin className="h-3/5 w-3/5 text-white" />
-                  </div>
-                ), isOpen: false
-              },
-              {
-                id: "leetcode", icon: (
-                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-[#282828] shadow-sm">
-                    <SiLeetcode className="h-3/5 w-3/5 text-[#FFA116]" />
-                  </div>
-                ), isOpen: false
-              },
-              {
-                id: "medium", icon: (
-                  <div className="flex h-[88%] w-[88%] items-center justify-center rounded-[22%] bg-black shadow-sm border border-white/10">
-                    <SiMedium className="h-3/5 w-3/5 text-white" />
-                  </div>
-                ), isOpen: false
-              },
-            ]}
+            apps={dockApps}
             onAppClick={openOrActivateWindow}
+            onPreload={preloadApp}
           />
         </>
       )}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 
 type Obstacle = {
   id: number
@@ -23,10 +24,10 @@ const DINO_X = 52
 const DINO_GROUND_Y = GAME_HEIGHT - GROUND_HEIGHT - DINO_HEIGHT
 
 const SPRITES = {
-  cactusSingle: "https://upload.wikimedia.org/wikipedia/commons/a/af/1_Cactus_Chrome_Dino.webp",
-  cactusMulti: "https://upload.wikimedia.org/wikipedia/commons/6/6b/3_Cactus_Chrome_Dino.webp",
-  dinoLeft: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Chrome_T-Rex_Left_Run.webp",
-  dinoRight: "https://upload.wikimedia.org/wikipedia/commons/9/91/Chrome_T-Rex_Right_Run.webp",
+  cactusSingle: "/assets/macos/cactus_single.webp",
+  cactusMulti: "/assets/macos/cactus_multi.webp",
+  dinoLeft: "/assets/macos/dino_left.webp",
+  dinoRight: "/assets/macos/dino_right.webp",
 }
 
 export function DinoGame({ className = "" }: DinoGameProps) {
@@ -221,16 +222,16 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           spawnCooldownRef.current = 52 + Math.random() * 42
         }
 
-        const dinoLeft = dinoXRef.current + 2
-        const dinoRight = dinoXRef.current + DINO_WIDTH - 2
-        const dinoTop = dinoYRef.current + 2
+        const dinoLeft = dinoXRef.current + 6
+        const dinoRight = dinoXRef.current + DINO_WIDTH - 6
+        const dinoTop = dinoYRef.current + 4
         const dinoBottom = dinoYRef.current + DINO_HEIGHT - 2
 
         const hasCollision = obstaclesRef.current.some((obstacle) => {
-          const obstacleTop = GAME_HEIGHT - GROUND_HEIGHT - obstacle.height
+          const obstacleTop = GAME_HEIGHT - GROUND_HEIGHT - obstacle.height + 4
           const obstacleBottom = GAME_HEIGHT - GROUND_HEIGHT
-          const obstacleLeft = obstacle.x
-          const obstacleRight = obstacle.x + obstacle.width
+          const obstacleLeft = obstacle.x + 4
+          const obstacleRight = obstacle.x + obstacle.width - 4
 
           return (
             dinoRight > obstacleLeft &&
@@ -287,12 +288,17 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           </div>
         )}
 
-        <div
-          className={`absolute border-t border-black/10 dark:border-white/10 transition-all duration-700 ease-in-out`}
-          style={{ 
-            top: `${GAME_HEIGHT - GROUND_HEIGHT}px`,
-            left: hasStarted ? '0px' : `${Math.max(0, dinoX - 20)}px`,
-            right: hasStarted ? '0px' : `calc(100% - ${Math.max(0, dinoX - 20) + 560}px)`
+        <motion.div
+          className="absolute border-t border-black/10 dark:border-white/10"
+          initial={false}
+          animate={{
+            top: GAME_HEIGHT - GROUND_HEIGHT,
+            left: hasStarted ? 0 : Math.max(0, dinoX - 20),
+            width: hasStarted ? "100%" : 560
+          }}
+          transition={{
+            duration: 0.7,
+            ease: "easeInOut"
           }}
         />
 
@@ -309,7 +315,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           <img
             src={dinoFrame === "left" ? SPRITES.dinoLeft : SPRITES.dinoRight}
             alt="Dino runner"
-            className="h-full w-full select-none object-contain"
+            className="h-full w-full select-none object-contain dark:invert"
             draggable={false}
           />
         </div>
@@ -329,14 +335,14 @@ export function DinoGame({ className = "" }: DinoGameProps) {
             <img
               src={obstacle.sprite === "multi" ? SPRITES.cactusMulti : SPRITES.cactusSingle}
               alt="Cactus obstacle"
-              className="h-full w-full select-none object-contain"
+              className="h-full w-full select-none object-contain dark:invert"
               draggable={false}
             />
           </div>
         ))}
 
         {isGameOver && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/55 backdrop-blur-[1px] dark:bg-black/45">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-lg border border-black/10 bg-white/70 px-4 py-2 text-center text-xs text-black/75 shadow-sm dark:border-white/15 dark:bg-black/40 dark:text-white/80">
               <p className="font-medium tracking-wide">GAME OVER</p>
               <p className="mt-1 text-[11px]">Press space or click to restart</p>

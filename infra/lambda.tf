@@ -58,8 +58,11 @@ resource "aws_lambda_function" "api" {
     variables = {
       ENVIRONMENT         = var.environment
       DYNAMODB_TABLE_NAME = aws_dynamodb_table.chat_history.name
-      BEDROCK_MODEL_ID    = var.bedrock_model_id
+      # Runtime invoke id = inference profile (on-demand Nova Lite requires it).
+      # IAM stays scoped to the underlying foundation model via bedrock_model_id.
+      BEDROCK_MODEL_ID    = var.bedrock_inference_profile_id
       ALLOWED_ORIGINS     = join(",", local.cors_allowed_origins)
+      ADMIN_SECRET        = var.admin_secret
     }
   }
 

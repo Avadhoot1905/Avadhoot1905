@@ -12,6 +12,7 @@ import {
   FaExternalLinkAlt,
   FaCompass,
   FaCheck,
+  FaExclamationTriangle,
 } from "react-icons/fa"
 import { SiGithub, SiLinkedin, SiLeetcode, SiMedium } from "react-icons/si"
 import { DinoGame } from "./DinoGame"
@@ -76,7 +77,7 @@ interface MediumArticle {
 }
 
 export function SafariApp() {
-  const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium">("github")
+  const [activeSafariTab, setActiveSafariTab] = useState<"github" | "linkedin" | "leetcode" | "medium" | "unavailable">("github")
   const { theme } = useTheme()
   const [isMobile, setIsMobile] = useState(false)
 
@@ -263,6 +264,14 @@ export function SafariApp() {
       icon: SiMedium,
       iconColor: theme === "dark" ? "text-white" : "text-gray-800",
     },
+    unavailable: {
+      domain: "offline",
+      path: "",
+      url: "safari://offline",
+      label: "Page Unavailable",
+      icon: FaExclamationTriangle,
+      iconColor: theme === "dark" ? "text-gray-400" : "text-gray-500",
+    },
   }[activeSafariTab]
 
   const handleReload = () => {
@@ -425,13 +434,14 @@ export function SafariApp() {
           : "border-[#D1D1D6] bg-[#EBEBED]"
           }`}
       >
-        {(["github", "linkedin", "leetcode", "medium"] as const).map((tabId) => {
+        {(["github", "linkedin", "leetcode", "medium", "unavailable"] as const).map((tabId) => {
           const isActive = activeSafariTab === tabId
           const tabConfig = {
             github: { label: "GitHub Profile", icon: SiGithub, color: isDark ? "text-white" : "text-gray-800" },
             linkedin: { label: "LinkedIn", icon: SiLinkedin, color: "text-[#0A84FF]" },
             leetcode: { label: "LeetCode", icon: SiLeetcode, color: isDark ? "text-[#FF9F0A]" : "text-amber-600" },
             medium: { label: "Medium Articles", icon: SiMedium, color: isDark ? "text-white" : "text-gray-800" },
+            unavailable: { label: "Page Unavailable", icon: FaExclamationTriangle, color: isDark ? "text-gray-400" : "text-gray-500" },
           }[tabId]
           const TabIcon = tabConfig.icon
 
@@ -535,6 +545,28 @@ export function SafariApp() {
                 <p className="text-gray-600 dark:text-gray-400">No articles found. Check back later!</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Unavailable Tab with Dino Game */}
+        {activeSafariTab === "unavailable" && (
+          <div className={`w-full h-full flex flex-col overflow-y-auto ${theme === "dark" ? "bg-[#202124]" : "bg-[#f7f7f7]"}`}>
+            <DinoGame className="w-full h-full flex flex-col">
+              <div className="w-full max-w-[600px] mx-auto px-4 text-left">
+                <h1 className="text-[22px] font-semibold mb-4 text-[#202124] dark:text-[#E8EAED]">No internet</h1>
+                <p className="text-[15px] text-[#5F6368] dark:text-[#9AA0A6] mb-3">
+                  Try:
+                </p>
+                <ul className="list-disc list-inside text-[15px] text-[#5F6368] dark:text-[#9AA0A6] mb-8 space-y-1">
+                  <li>Checking the network cables, modem, and router</li>
+                  <li>Reconnecting to Wi-Fi</li>
+                  <li>Playing the dinosaur game while you wait</li>
+                </ul>
+                <div className="text-[12px] text-[#5F6368] dark:text-[#9AA0A6]">
+                  ERR_INTERNET_DISCONNECTED
+                </div>
+              </div>
+            </DinoGame>
           </div>
         )}
       </div>

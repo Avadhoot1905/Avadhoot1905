@@ -13,6 +13,7 @@ type Obstacle = {
 
 interface DinoGameProps {
   className?: string
+  children?: React.ReactNode
 }
 
 const GAME_WIDTH = 560
@@ -30,7 +31,7 @@ const SPRITES = {
   dinoRight: "/assets/macos/dino_right.webp",
 }
 
-export function DinoGame({ className = "" }: DinoGameProps) {
+export function DinoGame({ className = "", children }: DinoGameProps) {
   const [dinoY, setDinoY] = useState(DINO_GROUND_Y)
   const [obstacles, setObstacles] = useState<Obstacle[]>([])
   const [score, setScore] = useState(0)
@@ -126,8 +127,7 @@ export function DinoGame({ className = "" }: DinoGameProps) {
       for (const entry of entries) {
         gameWidthRef.current = entry.contentRect.width
         const isMobile = window.innerWidth < 768
-        const textOffset = isMobile ? 40 : 64
-        const newDinoX = Math.max(0, (entry.contentRect.width - 672) / 2) + textOffset
+        const newDinoX = Math.max(0, (entry.contentRect.width - 600) / 2) + (isMobile ? 16 : 16)
         dinoXRef.current = newDinoX
         setDinoX(newDinoX)
       }
@@ -289,12 +289,12 @@ export function DinoGame({ className = "" }: DinoGameProps) {
         )}
 
         <motion.div
-          className="absolute border-t border-black/10 dark:border-white/10"
+          className="absolute border-t border-[#535353] dark:border-[#acacac]"
           initial={false}
           animate={{
             top: GAME_HEIGHT - GROUND_HEIGHT,
-            left: hasStarted ? 0 : Math.max(0, dinoX - 20),
-            width: hasStarted ? "100%" : 560
+            left: hasStarted ? 0 : dinoX,
+            width: hasStarted ? "100%" : 0
           }}
           transition={{
             duration: 0.7,
@@ -350,12 +350,15 @@ export function DinoGame({ className = "" }: DinoGameProps) {
           </div>
         )}
 
-        {!isGameOver && score < 4 && (
-          <div className="absolute inset-x-0 bottom-3 text-center text-[11px] text-black/50 dark:text-white/50">
-            {isRunning || isIntroJump ? "Press space or click to jump" : "Press space or click to start"}
-          </div>
-        )}
+
       </div>
+
+      {/* Offline Page Text / Children */}
+      {children && (
+        <div>
+          {children}
+        </div>
+      )}
     </div>
   )
 }

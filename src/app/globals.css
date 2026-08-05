@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Eckmannpsych Small";
+  src: url("/fonts/EckmannpsychSmall.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));

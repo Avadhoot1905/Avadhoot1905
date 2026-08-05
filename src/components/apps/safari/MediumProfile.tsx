@@ -1,5 +1,5 @@
 
-import { FaSearch, FaBell, FaRegBookmark, FaPlayCircle } from "react-icons/fa"
+import { FaSearch, FaRegBookmark } from "react-icons/fa"
 import { BsThreeDots } from "react-icons/bs"
 import { PiHandsClapping } from "react-icons/pi"
 import { BiMessageRounded } from "react-icons/bi"

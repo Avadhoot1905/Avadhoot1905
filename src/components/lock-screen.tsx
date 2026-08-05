@@ -130,7 +130,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
       className="fixed inset-0 z-[20000] flex flex-col items-center justify-center cursor-pointer"
       style={{
         backgroundImage: isMobile
-          ? 'url(/assets/lock-screen-phone.png)'
+          ? 'url(/assets/lock-screen-phone.webp)'
           : 'url(/assets/tahoejpg.webp)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',

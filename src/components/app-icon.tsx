@@ -174,15 +174,15 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
         >
           <div
             className={`flex items-center justify-center ${
-              isMobile ? "h-14 w-14 text-4xl" : "h-14 w-14 text-4xl"
+              isMobile ? "h-[60px] w-[60px] text-[40px]" : "h-14 w-14 text-4xl"
             }`}
           >
             {icon}
           </div>
         </motion.div>
         <div
-          className={`rounded px-1 py-0.5 text-center ${
-            isMobile ? "text-[10px] max-w-[60px] leading-tight" : "text-xs"
+          className={`rounded px-1 py-0.5 text-center mt-1 ${
+            isMobile ? "text-[11px] font-medium max-w-[72px] leading-tight" : "text-xs"
           } ${theme === "dark" ? "text-white" : "text-black"} truncate`}
           style={{
             textShadow: isMobile

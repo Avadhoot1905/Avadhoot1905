@@ -1148,7 +1148,7 @@ export function MacOSDesktop() {
 
           <div
             ref={desktopAreaRef}
-            className="relative h-screen w-full overflow-hidden p-4 pt-14 pb-24"
+            className={`relative h-screen w-full pt-14 pb-24 ${isMobile ? 'overflow-y-auto px-0' : 'p-4 overflow-hidden'}`}
             onPointerDown={handleDesktopPointerDown}
             onPointerMove={handleDesktopPointerMove}
             onPointerUp={handleDesktopPointerUp}
@@ -1156,10 +1156,12 @@ export function MacOSDesktop() {
           >
             {/* Boundary element keeping app windows below the 36px menu bar */}
             <div id="desktop-window-area" className="absolute top-9 bottom-0 left-0 right-0 pointer-events-none" />
+            
+            <Widgets />
             {isMobile ? (
               /* Mobile Grid View (unchanged) */
               <motion.div
-                className="grid gap-3 p-3 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 pt-48 md:pt-0"
+                className="grid gap-x-4 gap-y-8 px-6 pt-2 md:gap-4 md:p-4 md:grid-cols-6 grid-cols-4 max-w-md md:max-w-none mx-auto mt-0 md:mt-0 md:pt-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, staggerChildren: 0.1 }}
@@ -1427,7 +1429,6 @@ export function MacOSDesktop() {
               )}
             </AnimatePresence>
 
-            <Widgets />
           </div>
 
           <Dock

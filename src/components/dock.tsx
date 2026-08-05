@@ -553,13 +553,17 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
         onPointerDown={(e) => e.stopPropagation()}
         className={`relative flex items-center ${
           isMobile
-            ? `w-[calc(100%-24px)] max-w-[430px] justify-around rounded-3xl px-5 py-3 mb-2 shadow-2xl backdrop-blur-xl border ${
+            ? `w-[calc(100%-24px)] max-w-[420px] justify-evenly rounded-[2.25rem] px-3 py-4 mb-1 shadow-2xl border ${
                 theme === "dark"
-                  ? "bg-black/20 border-white/10"
-                  : "bg-white/20 border-black/10"
+                  ? "bg-white/10 border-white/20"
+                  : "bg-white/40 border-white/60"
               }`
             : "px-3 py-2 mb-2 h-[72px]"
         }`}
+        style={isMobile ? {
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        } : undefined}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -664,7 +668,7 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                     onClick={() => handleAppClick(app.id, index)}
                     onMouseEnter={() => onPreload?.(app.id)}
                     className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${
-                      isMobile ? "mx-1" : "mx-1.5"
+                      isMobile ? "mx-0" : "mx-1.5"
                     }`}
                   >
                     {/* App Icon Container (Magnifies upwards around bottom center) */}
@@ -674,8 +678,8 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                       }}
                       className="relative flex items-center justify-center will-change-transform"
                       style={{
-                        width: isMobile ? 50 : 52,
-                        height: isMobile ? 50 : 52,
+                        width: isMobile ? 64 : 52,
+                        height: isMobile ? 64 : 52,
                         transformOrigin: "50% 100%",
                       }}
                     >

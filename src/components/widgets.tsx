@@ -107,19 +107,19 @@ export function Widgets() {
     <div 
       data-widget="true"
       onPointerDown={(e) => e.stopPropagation()}
-      className={`fixed z-[1] flex gap-4 ${
+      className={`z-[1] ${
         isMobile 
-          ? 'top-16 left-0 right-0 px-4 justify-between' 
-          : 'top-14 left-6 flex-row items-start'
+          ? 'relative w-full max-w-md mx-auto px-6 grid grid-cols-2 gap-x-4 mb-8 mt-4' 
+          : 'fixed top-14 left-6 flex gap-4 flex-row items-start'
       }`}
     >
       {/* Date & Time Widget */}
       <div
-        className={`backdrop-blur-xl rounded-2xl border ${
+        className={`backdrop-blur-xl rounded-[1.5rem] border ${
           theme === 'dark'
             ? 'bg-white/10 border-white/20'
             : 'bg-white/40 border-white/60'
-        } shadow-lg ${isMobile ? 'w-[48%]' : 'w-44 h-44'} p-4 flex flex-col justify-between`}
+        } shadow-lg ${isMobile ? 'w-full aspect-square' : 'w-44 h-44'} p-4 flex flex-col justify-between`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -145,13 +145,12 @@ export function Widgets() {
         </Clock>
       </div>
 
-      {/* Weather Widget */}
       <div
-        className={`backdrop-blur-xl rounded-2xl border ${
+        className={`backdrop-blur-xl rounded-[1.5rem] border ${
           theme === 'dark'
             ? 'bg-white/10 border-white/20'
             : 'bg-white/40 border-white/60'
-        } shadow-lg ${isMobile ? 'w-[48%]' : 'w-44 h-44'} p-4 flex flex-col justify-between`}
+        } shadow-lg ${isMobile ? 'w-full aspect-square' : 'w-44 h-44'} p-4 flex flex-col justify-between`}
         style={{
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',

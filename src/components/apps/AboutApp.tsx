@@ -148,7 +148,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                     }`}
                 >
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+                    src="/assets/macos/Terminalicon2.svg"
                     alt="Terminal"
                     className="h-6 w-6 shrink-0 object-contain drop-shadow-sm"
                   />
@@ -253,7 +253,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                   title="Open Terminal Contact"
                 >
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+                    src="/assets/macos/Terminalicon2.webp"
                     alt="Terminal"
                     className="h-10 w-10 object-contain drop-shadow-md transition-transform group-hover:scale-105"
                     draggable={false}

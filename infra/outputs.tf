@@ -68,7 +68,7 @@ output "cloudfront_cache_policy_id" {
 
 output "cloudfront_origin_request_policy_id" {
   description = "ID of the origin request policy to use on the API behaviors."
-  value       = aws_cloudfront_origin_request_policy.api_all_viewer.id
+  value       = data.aws_cloudfront_origin_request_policy.api_all_viewer.id
 }
 
 output "existing_cloudfront_domain_name" {

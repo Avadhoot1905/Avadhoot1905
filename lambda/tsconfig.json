@@ -4,7 +4,6 @@
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./",
     "removeComments": true,
     "strict": true,
     "esModuleInterop": true,
@@ -22,8 +21,6 @@
     "node_modules",
     "dist",
     "deploy",
-    "admin",
-    "chat",
     "dev-server.ts"
   ]
 }

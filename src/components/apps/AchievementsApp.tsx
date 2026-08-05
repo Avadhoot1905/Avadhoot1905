@@ -75,7 +75,7 @@ function CheckCircleIcon({ className = "" }: { className?: string }) {
 export function AchievementsAppIcon() {
   return (
     <img
-      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
+      src="/assets/macos/Apple_Notes_icon.svg"
       alt="Achievements"
       className="h-[88%] w-[88%] object-contain drop-shadow-sm"
       draggable={false}
@@ -89,8 +89,8 @@ function AchievementListItem({ achievement, isActive, onSelect }: AchievementLis
       type="button"
       onClick={() => onSelect(achievement.id)}
       className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${isActive
-          ? "bg-neutral-200 dark:bg-neutral-800"
-          : "hover:bg-neutral-100 dark:hover:bg-neutral-800/70"
+        ? "bg-neutral-200 dark:bg-neutral-800"
+        : "hover:bg-neutral-100 dark:hover:bg-neutral-800/70"
         }`}
     >
       <CheckCircleIcon

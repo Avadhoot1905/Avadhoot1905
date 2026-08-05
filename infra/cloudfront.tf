@@ -53,31 +53,24 @@ resource "aws_cloudfront_cache_policy" "api_no_cache" {
     query_strings_config {
       query_string_behavior = "none"
     }
-    enable_accept_encoding_gzip   = true
-    enable_accept_encoding_brotli = true
+    # NOTE: Accept-Encoding gzip/brotli normalization is invalid on a
+    # caching-disabled policy (all TTLs = 0); CloudFront rejects it. Omitted
+    # (defaults to false). Compression is still enabled per-behavior via
+    # `compress = true` on the API cache behaviors.
   }
 }
 
 # --- Origin request policy: forward what the API needs ---------------------
-# Forwards all viewer headers EXCEPT Host (API Gateway must see its own host),
-# plus all query strings. This is the AWS-recommended shape for API origins.
-resource "aws_cloudfront_origin_request_policy" "api_all_viewer" {
+# API Gateway (HTTP API) rejects requests whose Host header is not its own
+# execute-api domain (403 ForbiddenException). CloudFront only sets Host to the
+# origin domain when the origin request policy does NOT forward the viewer Host.
+# A CUSTOM policy cannot express "all viewer headers EXCEPT Host" (its
+# `allViewer`/`allViewerAndWhitelistCloudFront` behaviors both include Host), so
+# we use the AWS-managed "AllViewerExceptHostHeader" policy — the canonical and
+# AWS-recommended choice for API Gateway / Lambda-URL origins behind CloudFront.
+data "aws_cloudfront_origin_request_policy" "api_all_viewer" {
   provider = aws.us_east_1
-  name     = "${local.name_prefix}-api-all-viewer-except-host"
-  comment  = "Forward viewer headers (except Host), all cookies and query strings to the API origin."
-
-  cookies_config {
-    cookie_behavior = "all"
-  }
-  headers_config {
-    header_behavior = "allViewerAndWhitelistCloudFront"
-    headers {
-      items = ["CloudFront-Viewer-Country"]
-    }
-  }
-  query_strings_config {
-    query_string_behavior = "all"
-  }
+  name     = "Managed-AllViewerExceptHostHeader"
 }
 
 # ---------------------------------------------------------------------------
@@ -117,7 +110,7 @@ locals {
       allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
       cached_methods           = ["GET", "HEAD"]
       cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
-      origin_request_policy_id = aws_cloudfront_origin_request_policy.api_all_viewer.id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.api_all_viewer.id
       compress                 = true
     },
     {
@@ -127,7 +120,7 @@ locals {
       allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
       cached_methods           = ["GET", "HEAD"]
       cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
-      origin_request_policy_id = aws_cloudfront_origin_request_policy.api_all_viewer.id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.api_all_viewer.id
       compress                 = true
     },
   ]

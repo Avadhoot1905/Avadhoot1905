@@ -104,9 +104,34 @@ variable "certificate_key_algorithm" {
 # ---------------------------------------------------------------------------
 
 variable "bedrock_model_id" {
-  description = "Amazon Bedrock model identifier (Nova Lite). Used to scope IAM InvokeModel permissions."
+  description = "Underlying Bedrock FOUNDATION MODEL id (Nova Lite). Used ONLY to scope IAM InvokeModel permissions (grants both foundation-model/<id> and inference-profile/*<id>). Keep this as the bare foundation-model id."
   type        = string
   default     = "amazon.nova-lite-v1:0"
+}
+
+variable "bedrock_inference_profile_id" {
+  description = <<-EOT
+    Bedrock model/inference-profile id the Lambda actually invokes at RUNTIME
+    (BEDROCK_MODEL_ID env var). In ap-south-1 (and most regions) Nova Lite has no
+    on-demand throughput on the bare foundation-model id, so a cross-region
+    inference profile is required — e.g. "apac.amazon.nova-lite-v1:0" (APAC),
+    "us.amazon.nova-lite-v1:0" (US). IAM is scoped separately via
+    bedrock_model_id so this value carries no permission risk. Set it back to the
+    bare foundation-model id only in regions where on-demand is supported.
+  EOT
+  type        = string
+  default     = "apac.amazon.nova-lite-v1:0"
+}
+
+# ---------------------------------------------------------------------------
+# Admin endpoint.
+# ---------------------------------------------------------------------------
+
+variable "admin_secret" {
+  description = "Shared secret checked against the x-admin-secret header on GET /admin/chats. Consumed by the Lambda as ADMIN_SECRET. Set via terraform.tfvars (gitignored)."
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 # ---------------------------------------------------------------------------

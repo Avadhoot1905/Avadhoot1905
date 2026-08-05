@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, type ReactNode } from "react"
-import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext } from "phosphor-react"
+import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -35,6 +35,16 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   const [brightness, setBrightness] = useState(70)
   const [volume, setVolume] = useState(60)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  
+  // iOS Control Center States
+  const [airplaneMode, setAirplaneMode] = useState(false)
+  const [cellular, setCellular] = useState(true)
+  const [wifi, setWifi] = useState(true)
+  const [bluetooth, setBluetooth] = useState(true)
+  const [rotationLock, setRotationLock] = useState(false)
+  const [silentMode, setSilentMode] = useState(false)
+  const [flashlight, setFlashlight] = useState(false)
+
   const { theme, setTheme } = useTheme()
 
   // Map app IDs to display names
@@ -182,15 +192,13 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
                 {/* Draggable Panel */}
                 <motion.div
-                  className={`fixed top-0 left-0 right-0 z-[9999] backdrop-blur-2xl shadow-2xl ${theme === "dark"
-                    ? "bg-black/40 text-white"
-                    : "bg-white/40 text-black"
+                  className={`fixed inset-0 z-[9999] shadow-2xl ${theme === "dark"
+                    ? "bg-black/50 text-white"
+                    : "bg-black/30 text-white"
                     }`}
                   style={{
-                    backdropFilter: 'blur(40px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                    borderBottomLeftRadius: '24px',
-                    borderBottomRightRadius: '24px',
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                   }}
                   initial={{ y: '-100%' }}
                   animate={{ y: 0 }}
@@ -203,255 +211,173 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                   onDragEnd={handleDragEnd}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-6 pt-16 pb-6">
-                    {/* Date */}
-                    <div className="text-center mb-6">
-                      <Clock>
-                        {(now) => (
-                          <>
-                            <div className="text-2xl font-semibold mb-1">
-                              {now.toLocaleDateString('en-US', { weekday: 'long' })}
-                            </div>
-                            <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                              {now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-                            </div>
-                          </>
-                        )}
-                      </Clock>
-                    </div>
-
-                    {/* Main Control Section */}
-                    <div className="flex flex-col gap-3 mb-4">
-                      {/* Icon Grid - 1x4 Top, 1x4 Bottom */}
-                      <div className="flex flex-col gap-3">
-                        {/* Top 4 icons - Single Horizontal Row */}
-                        <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
-                          {/* Airplane Mode */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-white/10 hover:bg-white/15"
-                              : "bg-black/10 hover:bg-black/15"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                  <div className="p-6 pt-[60px] pb-10 h-full flex flex-col justify-start">
+                    
+                    {/* Control Center Grid */}
+                    <div className="w-full max-w-[360px] mx-auto flex flex-col gap-[14px]">
+                      {/* Row 1 & 2 */}
+                      <div className="flex gap-[14px] h-[150px] sm:h-[160px]">
+                        {/* Connectivity */}
+                        <div className={`w-1/2 h-full rounded-[2rem] p-[14px] grid grid-cols-2 gap-[14px] ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setAirplaneMode(!airplaneMode) }}
+                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${airplaneMode ? 'bg-orange-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
-                            <Airplane className="h-5 w-5 mb-1" />
-                            <span className="text-[9px] font-medium">Airplane</span>
+                            <Airplane weight="fill" size={24} className="text-white" />
                           </button>
-
-                          {/* Mobile Data */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-blue-500/30 hover:bg-blue-500/40"
-                              : "bg-blue-500/30 hover:bg-blue-500/40"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setCellular(!cellular) }}
+                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${cellular ? 'bg-green-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
-                            <CellSignalHigh className="h-5 w-5 mb-1" />
-                            <span className="text-[9px] font-medium">Cellular</span>
+                            <CellSignalHigh weight="fill" size={22} className="text-white" />
                           </button>
-
-                          {/* WiFi */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-blue-500/30 hover:bg-blue-500/40"
-                              : "bg-blue-500/30 hover:bg-blue-500/40"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setWifi(!wifi) }}
+                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${wifi ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
-                            <img
-                              src={theme === "dark" ? "/assets/macos/icons8-wi-fi-100-white.svg" : "/assets/macos/icons8-wi-fi-100.svg"}
-                              alt="Wi-Fi"
-                              className="h-5 w-5 mb-1"
-                            />
-                            <span className="text-[9px] font-medium">Wi-Fi</span>
+                            <img src="/assets/macos/icons8-wi-fi-100-white.svg" className="w-[22px] h-[22px]" alt="Wi-Fi" />
                           </button>
-
-                          {/* Bluetooth */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-blue-500/30 hover:bg-blue-500/40"
-                              : "bg-blue-500/30 hover:bg-blue-500/40"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setBluetooth(!bluetooth) }}
+                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${bluetooth ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
-                            <img
-                              src={theme === "dark" ? "/assets/macos/icons8-bluetooth-100.svg" : "/assets/macos/bluetooth-svgrepo-com.svg"}
-                              alt="Bluetooth"
-                              className={theme === "dark" ? "h-[26px] w-[26px] mb-1" : "h-5 w-5 mb-1"}
-                            />
-                            <span className="text-[9px] font-medium">Bluetooth</span>
+                            <img src="/assets/macos/icons8-bluetooth-100.svg" className="w-[20px] h-[20px]" alt="Bluetooth" />
                           </button>
                         </div>
-
-                        {/* Bottom 4 icons - Single Row */}
-                        <div className="grid grid-cols-4 gap-3 max-w-[300px] mx-auto">
-                          {/* Lock Orientation - Active (Blue) */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-blue-500/30 hover:bg-blue-500/40"
-                              : "bg-blue-500/30 hover:bg-blue-500/40"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                        
+                        {/* Media Player */}
+                        <div className={`w-1/2 h-full rounded-[2rem] p-4 flex flex-col justify-between relative ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <div className="flex justify-between items-start w-full">
+                            <div className="text-white/70 text-[13px] font-medium tracking-wide">Not Playing</div>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-white/20" : "bg-white/50"}`}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2L22 20H2L12 2Z"/></svg>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-center gap-5 mt-2">
+                            <Rewind weight="fill" size={24} className="text-white/50 hover:text-white transition-colors" />
+                            <Play weight="fill" size={32} className="text-white" />
+                            <FastForward weight="fill" size={24} className="text-white/50 hover:text-white transition-colors" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Row 3 & 4 */}
+                      <div className="flex gap-[14px] h-[150px] sm:h-[160px]">
+                        {/* Left Column (Rotation + Focus) */}
+                        <div className="w-1/2 h-full flex flex-col gap-[14px]">
+                          <div className="flex gap-[14px] h-[calc(50%-7px)]">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setRotationLock(!rotationLock) }}
+                              className={`w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${rotationLock ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
+                            >
+                              <ArrowsCounterClockwise weight="bold" size={24} />
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setSilentMode(!silentMode) }}
+                              className={`w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${silentMode ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
+                            >
+                              <Bell weight="fill" size={24} />
+                            </button>
+                          </div>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onLockScreen?.() }}
+                            className={`w-full h-[calc(50%-7px)] rounded-[1.5rem] flex items-center px-4 gap-3 ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
                           >
-                            <ArrowsCounterClockwise className="h-5 w-5 mb-1" />
-                            <span className="text-[9px] font-medium">Rotation</span>
+                            <div className="w-[30px] h-[30px] rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                              <Moon weight="fill" size={18} className="text-white" />
+                            </div>
+                            <span className="text-white font-medium text-[15px]">Focus</span>
                           </button>
-
-                          {/* Flashlight */}
-                          <button
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-white/10 hover:bg-white/15"
-                              : "bg-black/10 hover:bg-black/15"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Flashlight className="h-5 w-5 mb-1" />
-                            <span className="text-[9px] font-medium">Torch</span>
-                          </button>
-
-                          {/* Theme Toggle */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setTheme(theme === 'dark' ? 'light' : 'dark')
-                            }}
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-white/10 hover:bg-white/15"
-                              : "bg-black/10 hover:bg-black/15"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                          >
-                            <img
-                              src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
-                              alt="Theme"
-                              className="h-5 w-5 mb-1"
-                            />
-                            <span className="text-[9px] font-medium">
-                              {theme === "dark" ? "Dark" : theme === "light" ? "Light" : "Auto"}
-                            </span>
-                          </button>
-
-                          {/* Screen Lock */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onLockScreen?.()
-                              setShowNotificationPanel(false)
-                            }}
-                            className={`w-[70px] h-[70px] rounded-3xl flex flex-col items-center justify-center backdrop-blur-xl transition-all active:scale-95 ${theme === "dark"
-                              ? "bg-white/10 hover:bg-white/15"
-                              : "bg-black/10 hover:bg-black/15"
-                              }`}
-                            style={{
-                              backdropFilter: 'blur(20px) saturate(180%)',
-                              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            }}
-                          >
-                            <Lock className="h-5 w-5 mb-1" />
-                            <span className="text-[9px] font-medium">Lock</span>
-                          </button>
+                        </div>
+                        
+                        {/* Right Column (Sliders) */}
+                        <div 
+                          className={`w-1/4 h-full rounded-[2rem] relative overflow-hidden flex flex-col justify-end cursor-pointer touch-none ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
+                          onPointerDownCapture={(e) => {
+                            e.stopPropagation();
+                            const target = e.currentTarget;
+                            target.setPointerCapture(e.pointerId);
+                            const rect = target.getBoundingClientRect();
+                            const update = (clientY: number) => {
+                              const y = rect.bottom - clientY;
+                              const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+                              setBrightness(Math.round(percentage));
+                            };
+                            update(e.clientY);
+                            const handleMove = (ev: PointerEvent) => update(ev.clientY);
+                            const handleUp = (ev: PointerEvent) => {
+                              target.removeEventListener('pointermove', handleMove);
+                              target.removeEventListener('pointerup', handleUp);
+                              target.releasePointerCapture(ev.pointerId);
+                            };
+                            target.addEventListener('pointermove', handleMove);
+                            target.addEventListener('pointerup', handleUp);
+                          }}
+                        >
+                          <div className="bg-white w-full transition-all duration-75" style={{ height: `${brightness}%` }} />
+                          <div className="absolute bottom-5 left-0 right-0 flex justify-center pointer-events-none">
+                            <Lightbulb weight="fill" size={24} className={brightness > 20 ? "text-gray-500" : "text-white"} />
+                          </div>
+                        </div>
+                        
+                        <div 
+                          className={`w-1/4 h-full rounded-[2rem] relative overflow-hidden flex flex-col justify-end cursor-pointer touch-none ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
+                          onPointerDownCapture={(e) => {
+                            e.stopPropagation();
+                            const target = e.currentTarget;
+                            target.setPointerCapture(e.pointerId);
+                            const rect = target.getBoundingClientRect();
+                            const update = (clientY: number) => {
+                              const y = rect.bottom - clientY;
+                              const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+                              setVolume(Math.round(percentage));
+                            };
+                            update(e.clientY);
+                            const handleMove = (ev: PointerEvent) => update(ev.clientY);
+                            const handleUp = (ev: PointerEvent) => {
+                              target.removeEventListener('pointermove', handleMove);
+                              target.removeEventListener('pointerup', handleUp);
+                              target.releasePointerCapture(ev.pointerId);
+                            };
+                            target.addEventListener('pointermove', handleMove);
+                            target.addEventListener('pointerup', handleUp);
+                          }}
+                        >
+                          <div className="bg-white w-full transition-all duration-75" style={{ height: `${volume}%` }} />
+                          <div className="absolute bottom-5 left-0 right-0 flex justify-center pointer-events-none">
+                            <SpeakerHigh weight="fill" size={24} className={volume > 20 ? "text-gray-500" : "text-white"} />
+                          </div>
                         </div>
                       </div>
 
-                      {/* Horizontal Sliders */}
-                      <div className="flex flex-col gap-3 max-w-[300px] mx-auto w-full">
-                        {/* Brightness Slider - Horizontal */}
-                        <div
-                          className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${theme === "dark"
-                            ? "bg-white/10"
-                            : "bg-black/10"
-                            }`}
-                          style={{
-                            backdropFilter: 'blur(20px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const iconWidth = 20 + 12 // icon + margin
-                            const padding = 16
-                            const x = e.clientX - rect.left - padding - iconWidth
-                            const width = rect.width - (2 * padding) - (2 * iconWidth)
-                            const percentage = Math.max(0, Math.min(100, (x / width) * 100))
-                            setBrightness(Math.round(percentage))
-                          }}
+                      {/* Row 5 */}
+                      <div className="flex gap-[14px] h-[72px] sm:h-[76px]">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setFlashlight(!flashlight) }}
+                          className={`flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${flashlight ? 'bg-white text-black' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
                         >
-                          <Lightbulb className="h-5 w-5 flex-shrink-0 mr-3" />
-                          <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${theme === "dark" ? "bg-white/10" : "bg-black/10"
-                            }`}>
-                            <div
-                              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
-                              style={{ width: `${brightness}%` }}
-                            />
+                          <Flashlight weight="fill" size={24} />
+                        </button>
+                        <button className={`flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <div className="relative w-[22px] h-[22px]">
+                            <div className="absolute top-0 right-0 w-[15px] h-[15px] border-2 border-white rounded-[3px]" />
+                            <div className="absolute bottom-0 left-0 w-[15px] h-[15px] border-2 border-white rounded-[3px] bg-black/40 backdrop-blur-md" />
                           </div>
-                          <Lightbulb className="h-5 w-5 flex-shrink-0 ml-3" />
-                        </div>
-
-                        {/* Volume Slider - Horizontal */}
-                        <div
-                          className={`rounded-3xl backdrop-blur-xl p-4 flex items-center cursor-pointer ${theme === "dark"
-                            ? "bg-white/10"
-                            : "bg-black/10"
-                            }`}
-                          style={{
-                            backdropFilter: 'blur(20px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const iconWidth = 20 + 12 // icon + margin
-                            const padding = 16
-                            const x = e.clientX - rect.left - padding - iconWidth
-                            const width = rect.width - (2 * padding) - (2 * iconWidth)
-                            const percentage = Math.max(0, Math.min(100, (x / width) * 100))
-                            setVolume(Math.round(percentage))
-                          }}
+                        </button>
+                        <button className={`flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <Camera weight="fill" size={24} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
+                          className={`flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white text-black" : "bg-white/30 text-white"}`}
                         >
-                          <SpeakerHigh className="h-5 w-5 flex-shrink-0 mr-3" />
-                          <div className={`flex-1 h-3 rounded-full overflow-hidden relative ${theme === "dark" ? "bg-white/10" : "bg-black/10"
-                            }`}>
-                            <div
-                              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
-                              style={{ width: `${volume}%` }}
-                            />
-                          </div>
-                          <SpeakerHigh className="h-5 w-5 flex-shrink-0 ml-3" />
-                        </div>
+                          <img
+                            src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com.svg" : "/assets/macos/dark-mode-svgrepo-com-white.svg"}
+                            alt="Theme"
+                            className="h-6 w-6"
+                          />
+                        </button>
                       </div>
-                    </div>
-
-                    {/* Drag Handle at Bottom */}
-                    <div className="flex justify-center pt-4 pb-2">
-                      <div className={`w-10 h-1 rounded-full ${theme === "dark" ? "bg-white/30" : "bg-black/30"
-                        }`} />
                     </div>
                   </div>
                 </motion.div>

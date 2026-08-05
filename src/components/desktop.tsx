@@ -137,7 +137,7 @@ const projectsIcon = (
 
 const achievementsIcon = (
   <img
-    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Notes_icon.svg"
+    src="/assets/macos/Apple_Notes_icon.svg"
     alt="Achievements"
     className="h-[88%] w-[88%] object-contain drop-shadow-sm"
     draggable={false}
@@ -164,7 +164,7 @@ const experienceIcon = (
 
 const terminalIcon = (
   <img
-    src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png"
+    src="/assets/macos/Terminalicon2.webp"
     alt="Terminal"
     className="h-full w-full object-contain scale-110 drop-shadow-sm"
     draggable={false}
@@ -184,7 +184,7 @@ const flappyBirdIcon = (
 
 const game2048Icon = (
   <img
-    src="https://upload.wikimedia.org/wikipedia/commons/1/18/2048_logo.svg"
+    src="/assets/macos/2048_logo.svg"
     alt="2048"
     className="h-[92%] w-[92%] object-contain drop-shadow-sm"
     draggable={false}
@@ -1156,7 +1156,7 @@ export function MacOSDesktop() {
           >
             {/* Boundary element keeping app windows below the 36px menu bar */}
             <div id="desktop-window-area" className="absolute top-9 bottom-0 left-0 right-0 pointer-events-none" />
-            
+
             <Widgets />
             {isMobile ? (
               /* Mobile Grid View (unchanged) */

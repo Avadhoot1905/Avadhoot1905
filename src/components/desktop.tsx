@@ -544,12 +544,20 @@ export function MacOSDesktop() {
     // Preload the first-view assets (lock-screen wallpapers + desktop
     // backgrounds) so they're warm in the browser cache before the user
     // dismisses the loading screen — no loading flashes on the lock screen.
-    const CRITICAL_ASSETS = [
-      "/assets/tahoejpg.webp",         // desktop lock screen
-      "/assets/lock-screen-phone.png", // mobile lock screen
-      "/assets/v-dark-c.jpg",          // desktop background (light theme)
-      "/assets/v-light-c.jpg",         // desktop background (dark theme)
-    ]
+    // Only preload what the current form factor actually renders: the mobile
+    // lock-screen wallpaper is never shown on desktop (and vice-versa), so
+    // fetching both wastes >1MB per visit. Both desktop-theme backgrounds are
+    // kept so toggling theme stays flash-free.
+    const isMobileViewport = window.innerWidth < 768
+    const CRITICAL_ASSETS = isMobileViewport
+      ? [
+          "/assets/lock-screen-phone.webp", // mobile lock screen
+        ]
+      : [
+          "/assets/tahoejpg.webp", // desktop lock screen
+          "/assets/v-dark-c.webp", // desktop background (light theme)
+          "/assets/v-light-c.webp", // desktop background (dark theme)
+        ]
 
     let settled = false
     const markLoaded = () => {
@@ -1063,7 +1071,7 @@ export function MacOSDesktop() {
     <div
       className="h-screen w-full overflow-hidden font-sans transition-colors duration-300 text-white relative select-none"
       style={{
-        backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light-c.jpg' : 'v-dark-c.jpg'})`,
+        backgroundImage: `url(/assets/${theme === 'dark' ? 'v-light-c.webp' : 'v-dark-c.webp'})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

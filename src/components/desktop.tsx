@@ -902,6 +902,7 @@ export function MacOSDesktop() {
     if (
       !target ||
       target.closest(".window-drag-handle") ||
+      target.closest(".react-rnd-window-container") ||
       target.closest("[data-window]") ||
       target.closest("[data-app-icon]") ||
       target.closest("[data-widget]") ||

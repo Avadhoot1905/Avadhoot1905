@@ -1076,6 +1076,7 @@ export function MacOSDesktop() {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
+      onDragStart={(e) => e.preventDefault()}
     >
       <LockScreen
         key="lockscreen"
@@ -1161,6 +1162,7 @@ export function MacOSDesktop() {
             onPointerMove={handleDesktopPointerMove}
             onPointerUp={handleDesktopPointerUp}
             onContextMenu={handleDesktopContextMenu}
+            onDragStart={(e) => e.preventDefault()}
           >
             {/* Boundary element keeping app windows below the 36px menu bar */}
             <div id="desktop-window-area" className="absolute top-9 bottom-0 left-0 right-0 pointer-events-none" />

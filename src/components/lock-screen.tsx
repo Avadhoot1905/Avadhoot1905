@@ -138,6 +138,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
         transform: 'translateY(0%)'
       }}
       onClick={handleClick}
+      onDragStart={(e) => e.preventDefault()}
     >
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/20" />

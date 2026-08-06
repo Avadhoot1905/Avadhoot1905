@@ -147,7 +147,7 @@ export function AboutApp({ onOpenApp }: AboutAppProps = {}) {
                     }`}
                 >
                   <img
-                    src="/assets/macos/Terminalicon2.svg"
+                    src="/assets/macos/Terminalicon2.webp"
                     alt="Terminal"
                     className="h-6 w-6 shrink-0 object-contain drop-shadow-sm"
                   />

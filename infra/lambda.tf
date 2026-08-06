@@ -53,17 +53,28 @@ resource "aws_lambda_function" "api" {
   memory_size = var.lambda_memory
   timeout     = var.lambda_timeout
 
-  # Environment configuration the future implementation will consume.
+  # Environment configuration the function implementation consumes.
   environment {
-    variables = {
-      ENVIRONMENT         = var.environment
-      DYNAMODB_TABLE_NAME = aws_dynamodb_table.chat_history.name
-      # Runtime invoke id = inference profile (on-demand Nova Lite requires it).
-      # IAM stays scoped to the underlying foundation model via bedrock_model_id.
-      BEDROCK_MODEL_ID    = var.bedrock_inference_profile_id
-      ALLOWED_ORIGINS     = join(",", local.cors_allowed_origins)
-      ADMIN_SECRET        = var.admin_secret
-    }
+    # AWS_BEARER_TOKEN_BEDROCK is added only when a key is configured. When set,
+    # the AWS SDK authenticates to Bedrock with this long-term API key (bearer
+    # token) instead of SigV4-signing with the execution role. Omitting it while
+    # empty lets the function fall back to the IAM role (iam.tf).
+    variables = merge(
+      {
+        ENVIRONMENT         = var.environment
+        DYNAMODB_TABLE_NAME = aws_dynamodb_table.chat_history.name
+        # Runtime invoke id = inference profile (on-demand Nova Lite requires it).
+        # IAM stays scoped to the underlying foundation model via bedrock_model_id.
+        BEDROCK_MODEL_ID = var.bedrock_inference_profile_id
+        ALLOWED_ORIGINS  = join(",", local.cors_allowed_origins)
+        ADMIN_SECRET     = var.admin_secret
+        # Active chat provider + Gemini config (Bedrock path kept intact).
+        LLM_PROVIDER    = var.llm_provider
+        GEMINI_MODEL_ID = var.gemini_model_id
+      },
+      var.bedrock_api_key != "" ? { AWS_BEARER_TOKEN_BEDROCK = var.bedrock_api_key } : {},
+      var.gemini_api_key != "" ? { GEMINI_API_KEY = var.gemini_api_key } : {},
+    )
   }
 
   # Ensure the log group (with retention) exists before the function.

@@ -23,6 +23,18 @@ const DYNAMODB_TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'chat_history'
 // Region is picked up automatically from AWS_REGION in Lambda.
 const AWS_REGION = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
 
+// Active chat provider: 'gemini' (default) or 'bedrock'. The Bedrock path is
+// kept fully intact as a fallback; Gemini is active while Bedrock on-demand
+// quota is unavailable on the account.
+const LLM_PROVIDER = (process.env.LLM_PROVIDER || 'gemini').toLowerCase()
+// Google Gemini (Generative Language API) configuration.
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
+const GEMINI_MODEL_ID = process.env.GEMINI_MODEL_ID || 'gemini-3.5-flash'
+// Gemini 3.x thinking level; 'low' minimises latency/cost for chat. Empty string
+// leaves the model default (set GEMINI_THINKING_LEVEL="" to omit it).
+const GEMINI_THINKING_LEVEL =
+  process.env.GEMINI_THINKING_LEVEL === undefined ? 'low' : process.env.GEMINI_THINKING_LEVEL
+
 const MAX_HISTORY_MESSAGES = 30
 const ADMIN_LIMIT = 100
 
@@ -265,8 +277,38 @@ async function clearChatHistory(sessionId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Model inference (Amazon Bedrock — Nova Lite via the Converse API)
+// Model inference
+//
+// Two providers are supported; `LLM_PROVIDER` selects the active one:
+//   - 'gemini'  (default): Google Gemini via the Generative Language REST API.
+//   - 'bedrock'          : Amazon Bedrock (Nova Lite) via the Converse API.
+// The Bedrock path is retained in full; Gemini is active while Bedrock on-demand
+// quota is unavailable on the account. History/persistence are provider-neutral.
 // ---------------------------------------------------------------------------
+
+/** Provider-neutral conversation turn. */
+type ChatTurn = { role: 'user' | 'assistant'; content: string }
+
+/**
+ * Load history and build the turn list for a new user message. The conversation
+ * must begin with a `user` turn and alternate — drop any leading assistant turn
+ * (e.g. from a truncated window) before appending the new message. Both Bedrock
+ * (Nova) and Gemini require this shape.
+ */
+async function buildConversation(sessionId: string, userMessage: string): Promise<ChatTurn[]> {
+  const history = await getChatHistory(sessionId)
+  const conversation: ChatTurn[] = history.map((msg) => ({
+    role: msg.role === 'user' ? 'user' : 'assistant',
+    content: msg.content,
+  }))
+  while (conversation.length > 0 && conversation[0].role !== 'user') {
+    conversation.shift()
+  }
+  conversation.push({ role: 'user', content: userMessage })
+  return conversation
+}
+
+// --- Amazon Bedrock (Nova Lite via the Converse API) -----------------------
 
 /** Retry helper for transient Bedrock errors (throttling / service blips). */
 function isRetryableBedrockError(error: unknown): boolean {
@@ -279,62 +321,152 @@ function isRetryableBedrockError(error: unknown): boolean {
   )
 }
 
-async function sendMessageToBedrock(sessionId: string, userMessage: string): Promise<string> {
-  try {
-    console.log(`[lambda] sendMessageToBedrock start: sessionId=${sessionId} messageLength=${userMessage.length}`)
-    const history = await getChatHistory(sessionId)
+async function callBedrock(conversation: ChatTurn[]): Promise<string> {
+  const messages: BedrockMessage[] = conversation.map((t) => ({
+    role: t.role,
+    content: [{ text: t.content }],
+  }))
 
-    // Build the Converse messages array. Nova requires the conversation to
-    // begin with a `user` turn and to alternate — drop any leading assistant
-    // turn that could violate that (e.g. from a truncated window).
-    const conversation: BedrockMessage[] = history.map((msg) => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: [{ text: msg.content }],
-    }))
-    while (conversation.length > 0 && conversation[0].role !== 'user') {
-      conversation.shift()
-    }
-    conversation.push({ role: 'user', content: [{ text: userMessage }] })
+  let lastError: Error | null = null
+  const retries = 3
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const result = await bedrock.send(
+        new ConverseCommand({
+          modelId: BEDROCK_MODEL_ID,
+          system: [{ text: PERSONALITY_PROMPT }],
+          messages,
+          inferenceConfig: { maxTokens: 2048, temperature: 0.85 },
+        })
+      )
+      return result.output?.message?.content?.[0]?.text ?? ''
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      console.error(`[lambda] Bedrock invoke failed: attempt=${attempt}`, lastError)
 
-    let aiResponse = ''
-    let lastError: Error | null = null
-    const retries = 3
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const result = await bedrock.send(
-          new ConverseCommand({
-            modelId: BEDROCK_MODEL_ID,
-            system: [{ text: PERSONALITY_PROMPT }],
-            messages: conversation,
-            inferenceConfig: { maxTokens: 2048, temperature: 0.85 },
-          })
-        )
-        aiResponse = result.output?.message?.content?.[0]?.text ?? ''
-        break
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error))
-        console.error(`[lambda] Bedrock invoke failed: sessionId=${sessionId} attempt=${attempt}`, lastError)
-        if (attempt < retries && isRetryableBedrockError(error)) {
-          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 200))
-          continue
-        }
-        throw lastError
+      const httpStatus = (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode
+      const throttled = lastError.name === 'ThrottlingException' || httpStatus === 429
+
+      // A daily token/request quota (e.g. "Too many tokens per day") will not
+      // clear on retry — fail fast with a clear, user-facing 503 instead of
+      // burning the retry budget (and billed Lambda time) on it.
+      if (throttled && /per day|quota|limit/i.test(lastError.message)) {
+        throw new HttpError(503, 'The AI assistant has reached its usage limit for now. Please try again later.')
       }
+      if (attempt < retries && isRetryableBedrockError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 200))
+        continue
+      }
+      // Transient throttling/capacity that survived retries is a 503
+      // (temporary, retryable) — not a 500 Internal Server Error.
+      if (throttled) {
+        throw new HttpError(503, 'The AI assistant is temporarily busy. Please try again in a moment.')
+      }
+      throw lastError
     }
-
-    console.log(`[lambda] sendMessageToBedrock generated response: sessionId=${sessionId} responseLength=${aiResponse.length}`)
-
-    // Persist the exchange. Distinct, strictly-ordered timestamps keep the
-    // user turn before the assistant turn in the sort key.
-    const base = Date.now()
-    await saveMessage(sessionId, 'user', userMessage, new Date(base).toISOString())
-    await saveMessage(sessionId, 'assistant', aiResponse, new Date(base + 1).toISOString())
-
-    return aiResponse
-  } catch (error) {
-    console.error(`[lambda] sendMessageToBedrock error: sessionId=${sessionId}`, error)
-    throw error
   }
+  throw lastError ?? new Error('Bedrock invocation failed')
+}
+
+// --- Google Gemini (Generative Language API) -------------------------------
+
+const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta'
+
+async function callGemini(conversation: ChatTurn[]): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new HttpError(500, 'Chat is not configured (missing GEMINI_API_KEY).')
+  }
+
+  // Gemini uses roles 'user' and 'model'; the persona goes in system_instruction.
+  const contents = conversation.map((t) => ({
+    role: t.role === 'user' ? 'user' : 'model',
+    parts: [{ text: t.content }],
+  }))
+
+  const body = {
+    system_instruction: { parts: [{ text: PERSONALITY_PROMPT }] },
+    contents,
+    generationConfig: {
+      temperature: 0.85,
+      maxOutputTokens: 2048,
+      ...(GEMINI_THINKING_LEVEL ? { thinkingConfig: { thinkingLevel: GEMINI_THINKING_LEVEL } } : {}),
+    },
+  }
+
+  const url = `${GEMINI_ENDPOINT}/models/${encodeURIComponent(GEMINI_MODEL_ID)}:generateContent`
+  const retries = 3
+  let lastError: Error | null = null
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        const data = (await res.json()) as {
+          candidates?: { content?: { parts?: { text?: string }[] } }[]
+        }
+        return (data.candidates?.[0]?.content?.parts || []).map((p) => p.text ?? '').join('')
+      }
+
+      const errText = await res.text()
+      console.error(`[lambda] Gemini call failed: attempt=${attempt} status=${res.status} ${errText.slice(0, 300)}`)
+
+      // 429 (rate/quota) and 5xx (transient overload) are retryable.
+      if ((res.status === 429 || res.status >= 500) && attempt < retries) {
+        lastError = new Error(`Gemini HTTP ${res.status}`)
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 300))
+        continue
+      }
+      if (res.status === 429 || res.status >= 500) {
+        throw new HttpError(503, 'The AI assistant is temporarily busy. Please try again in a moment.')
+      }
+      // 4xx (bad model id, invalid key, etc.) — not retryable.
+      throw new HttpError(502, 'The AI assistant is unavailable right now. Please try again later.')
+    } catch (error) {
+      if (error instanceof HttpError) throw error
+      lastError = error instanceof Error ? error : new Error(String(error))
+      console.error(`[lambda] Gemini fetch error: attempt=${attempt}`, lastError)
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 300))
+        continue
+      }
+      throw new HttpError(502, 'The AI assistant is unavailable right now. Please try again later.')
+    }
+  }
+  throw lastError ?? new Error('Gemini invocation failed')
+}
+
+// --- Orchestration ---------------------------------------------------------
+
+/**
+ * Generate an assistant reply: load history, dispatch to the active provider,
+ * then persist both turns with strictly-ordered timestamps (user before
+ * assistant in the sort key).
+ */
+async function generateReply(sessionId: string, userMessage: string): Promise<string> {
+  console.log(
+    `[lambda] generateReply start: provider=${LLM_PROVIDER} sessionId=${sessionId} messageLength=${userMessage.length}`
+  )
+  const conversation = await buildConversation(sessionId, userMessage)
+
+  const aiResponse =
+    LLM_PROVIDER === 'bedrock' ? await callBedrock(conversation) : await callGemini(conversation)
+
+  if (!aiResponse.trim()) {
+    console.error(`[lambda] generateReply: empty response from provider=${LLM_PROVIDER} sessionId=${sessionId}`)
+    throw new HttpError(502, 'The AI assistant did not return a response. Please try again.')
+  }
+
+  console.log(`[lambda] generateReply done: sessionId=${sessionId} responseLength=${aiResponse.length}`)
+
+  const base = Date.now()
+  await saveMessage(sessionId, 'user', userMessage, new Date(base).toISOString())
+  await saveMessage(sessionId, 'assistant', aiResponse, new Date(base + 1).toISOString())
+
+  return aiResponse
 }
 
 // ---------------------------------------------------------------------------
@@ -356,7 +488,7 @@ async function handleChat(body: Record<string, unknown>): Promise<APIGatewayProx
     }
     if (!message.trim()) return jsonResponse(400, { error: 'message is required' })
 
-    const response = await sendMessageToBedrock(sessionId, message.trim())
+    const response = await generateReply(sessionId, message.trim())
     return jsonResponse(200, { success: true, response, sessionId })
   } catch (error) {
     console.error('[lambda] handleChat error:', error)

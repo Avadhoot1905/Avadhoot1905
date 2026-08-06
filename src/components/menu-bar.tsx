@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect, type ReactNode } from "react"
-import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera, WifiHigh, Bluetooth, Broadcast, CircleHalf, Sun, SpeakerLow, Screencast, Copy, Airplay } from "phosphor-react"
+import { createPortal } from "react-dom"
+import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera, WifiHigh, Bluetooth, Broadcast, Sun, SpeakerLow, Screencast, Copy, Airplay } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
+import { LiquidGlassSurface } from "./liquid-glass-surface"
 
 interface MenuBarProps {
   onLockScreen?: () => void
@@ -35,7 +37,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   const [brightness, setBrightness] = useState(70)
   const [volume, setVolume] = useState(60)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  
+
   // iOS Control Center States
   const [airplaneMode, setAirplaneMode] = useState(false)
   const [cellular, setCellular] = useState(true)
@@ -212,86 +214,109 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-6 pt-[60px] pb-10 h-full flex flex-col justify-start">
-                    
+
                     {/* Control Center Grid */}
                     <div className="w-full max-w-[360px] mx-auto flex flex-col gap-[14px]">
                       {/* Row 1 & 2 */}
                       <div className="flex gap-[14px] h-[150px] sm:h-[160px]">
                         {/* Connectivity */}
-                        <div className={`w-1/2 h-full rounded-[2rem] p-[14px] grid grid-cols-2 gap-[14px] ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
-                          <button 
+                        <div className={`relative overflow-hidden w-1/2 h-full rounded-[2rem] p-[14px] grid grid-cols-2 gap-[14px] ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <LiquidGlassSurface
+                            radius={30}
+                            strength={0.06}
+                            edgeHighlight={0.16}
+                            glow={0.03}
+                            specular={0.5}
+                            panelClassName={theme === "dark"
+                              ? "bg-gradient-to-br from-white/[0.06] to-transparent"
+                              : "bg-gradient-to-br from-white/10 to-transparent"}
+                          />
+                          <button
                             onClick={(e) => { e.stopPropagation(); setAirplaneMode(!airplaneMode) }}
-                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${airplaneMode ? 'bg-orange-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
+                            className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${airplaneMode ? 'bg-orange-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
                             <Airplane weight="fill" size={24} className="text-white" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); setCellular(!cellular) }}
-                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${cellular ? 'bg-green-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
+                            className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${cellular ? 'bg-green-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
                             <CellSignalHigh weight="fill" size={22} className="text-white" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); setWifi(!wifi) }}
-                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${wifi ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
+                            className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${wifi ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
                             <img src="/assets/macos/icons8-wi-fi-100-white.svg" className="w-[22px] h-[22px]" alt="Wi-Fi" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); setBluetooth(!bluetooth) }}
-                            className={`w-full h-full rounded-full flex items-center justify-center transition-colors ${bluetooth ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
+                            className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${bluetooth ? 'bg-blue-500' : (theme === 'dark' ? 'bg-white/20' : 'bg-white/50')}`}
                           >
                             <img src="/assets/macos/icons8-bluetooth-100.svg" className="w-[20px] h-[20px]" alt="Bluetooth" />
                           </button>
                         </div>
-                        
+
                         {/* Media Player */}
-                        <div className={`w-1/2 h-full rounded-[2rem] p-4 flex flex-col justify-between relative ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
-                          <div className="flex justify-between items-start w-full">
+                        <div className={`w-1/2 h-full rounded-[2rem] p-4 flex flex-col justify-between relative overflow-hidden ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <LiquidGlassSurface
+                            radius={30}
+                            strength={0.06}
+                            edgeHighlight={0.16}
+                            glow={0.03}
+                            specular={0.5}
+                            panelClassName={theme === "dark"
+                              ? "bg-gradient-to-br from-white/[0.06] to-transparent"
+                              : "bg-gradient-to-br from-white/10 to-transparent"}
+                          />
+                          <div className="relative z-10 flex justify-between items-start w-full">
                             <div className="text-white/70 text-[13px] font-medium tracking-wide">Not Playing</div>
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-white/20" : "bg-white/50"}`}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2L22 20H2L12 2Z"/></svg>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2L22 20H2L12 2Z" /></svg>
                             </div>
                           </div>
-                          <div className="flex items-center justify-center gap-5 mt-2">
+                          <div className="relative z-10 flex items-center justify-center gap-5 mt-2">
                             <Rewind weight="fill" size={24} className="text-white/50 hover:text-white transition-colors" />
                             <Play weight="fill" size={32} className="text-white" />
                             <FastForward weight="fill" size={24} className="text-white/50 hover:text-white transition-colors" />
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Row 3 & 4 */}
                       <div className="flex gap-[14px] h-[150px] sm:h-[160px]">
                         {/* Left Column (Rotation + Focus) */}
                         <div className="w-1/2 h-full flex flex-col gap-[14px]">
                           <div className="flex gap-[14px] h-[calc(50%-7px)]">
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); setRotationLock(!rotationLock) }}
-                              className={`w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${rotationLock ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
+                              className={`relative overflow-hidden w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${rotationLock ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
                             >
-                              <ArrowsCounterClockwise weight="bold" size={24} />
+                              {!rotationLock && <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />}
+                              <ArrowsCounterClockwise weight="bold" size={24} className="relative z-10" />
                             </button>
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); setSilentMode(!silentMode) }}
-                              className={`w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${silentMode ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
+                              className={`relative overflow-hidden w-1/2 h-full rounded-[1.5rem] flex items-center justify-center transition-colors ${silentMode ? 'bg-white text-red-500' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
                             >
-                              <Bell weight="fill" size={24} />
+                              {!silentMode && <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />}
+                              <Bell weight="fill" size={24} className="relative z-10" />
                             </button>
                           </div>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); onLockScreen?.() }}
-                            className={`w-full h-[calc(50%-7px)] rounded-[1.5rem] flex items-center px-4 gap-3 ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
+                            className={`relative overflow-hidden w-full h-[calc(50%-7px)] rounded-[1.5rem] flex items-center px-4 gap-3 ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
                           >
-                            <div className="w-[30px] h-[30px] rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                            <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />
+                            <div className="relative z-10 w-[30px] h-[30px] rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
                               <Moon weight="fill" size={18} className="text-white" />
                             </div>
-                            <span className="text-white font-medium text-[15px]">Focus</span>
+                            <span className="relative z-10 text-white font-medium text-[15px]">Focus</span>
                           </button>
                         </div>
-                        
+
                         {/* Right Column (Sliders) */}
-                        <div 
+                        <div
                           className={`w-1/4 h-full rounded-[2rem] relative overflow-hidden flex flex-col justify-end cursor-pointer touch-none ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
                           onPointerDownCapture={(e) => {
                             e.stopPropagation();
@@ -314,13 +339,14 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                             target.addEventListener('pointerup', handleUp);
                           }}
                         >
-                          <div className="bg-white w-full transition-all duration-75" style={{ height: `${brightness}%` }} />
-                          <div className="absolute bottom-5 left-0 right-0 flex justify-center pointer-events-none">
+                          <LiquidGlassSurface radius={32} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />
+                          <div className="relative z-10 bg-white w-full transition-all duration-75" style={{ height: `${brightness}%` }} />
+                          <div className="absolute z-10 bottom-5 left-0 right-0 flex justify-center pointer-events-none">
                             <Lightbulb weight="fill" size={24} className={brightness > 20 ? "text-gray-500" : "text-white"} />
                           </div>
                         </div>
-                        
-                        <div 
+
+                        <div
                           className={`w-1/4 h-full rounded-[2rem] relative overflow-hidden flex flex-col justify-end cursor-pointer touch-none ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}
                           onPointerDownCapture={(e) => {
                             e.stopPropagation();
@@ -343,8 +369,9 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                             target.addEventListener('pointerup', handleUp);
                           }}
                         >
-                          <div className="bg-white w-full transition-all duration-75" style={{ height: `${volume}%` }} />
-                          <div className="absolute bottom-5 left-0 right-0 flex justify-center pointer-events-none">
+                          <LiquidGlassSurface radius={32} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />
+                          <div className="relative z-10 bg-white w-full transition-all duration-75" style={{ height: `${volume}%` }} />
+                          <div className="absolute z-10 bottom-5 left-0 right-0 flex justify-center pointer-events-none">
                             <SpeakerHigh weight="fill" size={24} className={volume > 20 ? "text-gray-500" : "text-white"} />
                           </div>
                         </div>
@@ -352,29 +379,33 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
 
                       {/* Row 5 */}
                       <div className="flex gap-[14px] h-[72px] sm:h-[76px]">
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setFlashlight(!flashlight) }}
-                          className={`flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${flashlight ? 'bg-white text-black' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
+                          className={`relative overflow-hidden flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${flashlight ? 'bg-white text-black' : `${theme === "dark" ? "bg-white/10" : "bg-white/30"} text-white`}`}
                         >
-                          <Flashlight weight="fill" size={24} />
+                          {!flashlight && <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />}
+                          <Flashlight weight="fill" size={24} className="relative z-10" />
                         </button>
-                        <button className={`flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
-                          <div className="relative w-[22px] h-[22px]">
+                        <button className={`relative overflow-hidden flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />
+                          <div className="relative z-10 w-[22px] h-[22px]">
                             <div className="absolute top-0 right-0 w-[15px] h-[15px] border-2 border-white rounded-[3px]" />
                             <div className="absolute bottom-0 left-0 w-[15px] h-[15px] border-2 border-white rounded-[3px] bg-black/40 backdrop-blur-md" />
                           </div>
                         </button>
-                        <button className={`flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
-                          <Camera weight="fill" size={24} />
+                        <button className={`relative overflow-hidden flex-1 rounded-[1.5rem] flex items-center justify-center text-white ${theme === "dark" ? "bg-white/10" : "bg-white/30"}`}>
+                          <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName={theme === "dark" ? "bg-gradient-to-br from-white/[0.06] to-transparent" : "bg-gradient-to-br from-white/10 to-transparent"} />
+                          <Camera weight="fill" size={24} className="relative z-10" />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
-                          className={`flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white text-black" : "bg-white/30 text-white"}`}
+                          className={`relative overflow-hidden flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white text-black" : "bg-white/30 text-white"}`}
                         >
+                          {theme !== "dark" && <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName="bg-gradient-to-br from-white/10 to-transparent" />}
                           <img
                             src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com.svg" : "/assets/macos/dark-mode-svgrepo-com-white.svg"}
                             alt="Theme"
-                            className="h-6 w-6"
+                            className="relative z-10 h-6 w-6"
                           />
                         </button>
                       </div>
@@ -438,6 +469,21 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
+        {/* Liquid-glass material layer — refracts a translucent panel behind the
+            menu content; menus/dropdowns stay crisp siblings on top. */}
+        <LiquidGlassSurface
+          radius={0}
+          strength={0.04}
+          chromaticAberration={0.1}
+          glow={0.025}
+          edgeHighlight={0.14}
+          specular={0.5}
+          depth={7}
+          panelClassName={theme === "dark"
+            ? "bg-gradient-to-b from-white/[0.06] to-transparent"
+            : "bg-gradient-to-b from-white/12 to-transparent"}
+        />
+
         <div
           className={`pointer-events-none absolute inset-0 ${theme === "dark"
             ? "bg-gradient-to-b from-white/10 to-transparent"
@@ -702,11 +748,10 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           <div className="relative">
             <button
               onClick={() => toggleMenu("controlCenter")}
-              className={`flex h-6 w-6 items-center justify-center rounded-md p-1 transition-all duration-200 ease-out ${
-                activeMenu === "controlCenter"
-                  ? theme === "dark" ? "bg-white/15 opacity-100" : "bg-black/10 opacity-100"
-                  : `opacity-80 hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"}`
-              }`}
+              className={`flex h-6 w-6 items-center justify-center rounded-md p-1 transition-all duration-200 ease-out ${activeMenu === "controlCenter"
+                ? theme === "dark" ? "bg-white/15 opacity-100" : "bg-black/10 opacity-100"
+                : `opacity-80 hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"}`
+                }`}
               title="Control Center"
             >
               <img
@@ -715,200 +760,213 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                 className={`h-[16px] w-[16px] ${theme === "dark" ? "invert" : ""}`}
               />
             </button>
-            <AnimatePresence>
-              {activeMenu === "controlCenter" && (
-                <motion.div
-                  className={`fixed right-2.5 top-[38px] z-[99999] rounded-[2rem] p-4 shadow-2xl ${theme === "dark"
-                    ? "border border-white/10 bg-[#1e1e1e]/80 text-white"
-                    : "border border-black/10 bg-white/80 text-black"
-                    }`}
-                  style={{
-                    width: '320px',
-                    backdropFilter: 'blur(30px) saturate(190%)',
-                    WebkitBackdropFilter: 'blur(30px) saturate(190%)'
-                  }}
-                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                >
-                  <div className="flex flex-col gap-3.5">
-                    {/* Row 1: Connectivity & Media */}
-                    <div className="flex gap-3.5 h-[155px]">
-                      {/* Left Column: Connectivity */}
-                      <div className={`w-[145px] flex flex-col justify-between rounded-[1.8rem] p-3.5 ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
-                            <WifiHigh weight="bold" size={16} className="text-white" />
+            {createPortal(
+              <AnimatePresence>
+                {activeMenu === "controlCenter" && (
+                  <>
+                    {/* Click-away catcher */}
+                    <motion.div
+                      className="fixed inset-0 z-[99998]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setActiveMenu(null)}
+                    />
+                    <motion.div
+                      className={`fixed right-2.5 top-[38px] z-[99999] rounded-[2rem] p-4 shadow-2xl ${theme === "dark"
+                        ? "bg-black/10 text-white"
+                        : "bg-white/20 text-black"
+                        }`}
+                      style={{
+                        width: '320px',
+                        backdropFilter: 'blur(2px) saturate(160%)',
+                        WebkitBackdropFilter: 'blur(2px) saturate(160%)'
+                      }}
+                      initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <div className="relative z-10 flex flex-col gap-3.5">
+                        {/* Row 1: Connectivity & Media */}
+                        <div className="flex gap-3.5 h-[155px]">
+                          {/* Left Column: Connectivity */}
+                          <div className={`w-[145px] flex flex-col justify-between rounded-[1.8rem] p-3.5 ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                                <WifiHigh weight="bold" size={16} className="text-white" />
+                              </div>
+                              <div className="flex flex-col justify-center overflow-hidden">
+                                <span className="font-semibold text-[13px] leading-tight">Wi-Fi</span>
+                                <span className="text-[11px] opacity-70 leading-tight truncate">T-VIT</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                                <Bluetooth weight="bold" size={16} className="text-white" />
+                              </div>
+                              <div className="flex flex-col justify-center overflow-hidden">
+                                <span className="font-semibold text-[13px] leading-tight">Bluetooth</span>
+                                <span className="text-[11px] opacity-70 leading-tight truncate">On</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                                <Broadcast weight="bold" size={16} className="text-white" />
+                              </div>
+                              <div className="flex flex-col justify-center overflow-hidden">
+                                <span className="font-semibold text-[13px] leading-tight">AirDrop</span>
+                                <span className="text-[11px] opacity-70 leading-tight truncate">Everyone</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex flex-col justify-center overflow-hidden">
-                            <span className="font-semibold text-[13px] leading-tight">Wi-Fi</span>
-                            <span className="text-[11px] opacity-70 leading-tight truncate">T-VIT</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
-                            <Bluetooth weight="bold" size={16} className="text-white" />
-                          </div>
-                          <div className="flex flex-col justify-center overflow-hidden">
-                            <span className="font-semibold text-[13px] leading-tight">Bluetooth</span>
-                            <span className="text-[11px] opacity-70 leading-tight truncate">On</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
-                            <Broadcast weight="bold" size={16} className="text-white" />
-                          </div>
-                          <div className="flex flex-col justify-center overflow-hidden">
-                            <span className="font-semibold text-[13px] leading-tight">AirDrop</span>
-                            <span className="text-[11px] opacity-70 leading-tight truncate">Everyone</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Right Column: Media + Utils */}
-                      <div className="flex-1 flex flex-col gap-3.5">
-                        {/* Media */}
-                        <div className={`h-[100px] rounded-[1.8rem] p-3 flex flex-col justify-between ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                          <div className="flex items-start gap-3">
-                            <div className="w-[42px] h-[42px] rounded-[0.8rem] bg-gray-500/30"></div>
-                            <span className="text-[13px] font-semibold mt-1">Not Playing</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-3.5 pb-1">
-                            <Rewind weight="fill" size={18} className="opacity-50" />
-                            <Play weight="fill" size={24} />
-                            <FastForward weight="fill" size={18} className="opacity-50" />
-                          </div>
-                        </div>
-                        {/* Two Utils */}
-                        <div className="flex gap-3.5 flex-1">
-                          <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                            <Screencast weight="bold" size={18} />
-                          </div>
-                          <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                            <Copy weight="bold" size={18} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Row 2: Circles & Pill */}
-                    <div className="flex gap-3.5">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
-                        className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"}`}
-                      >
-                        <img
-                          src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
-                          alt="Theme"
-                          className="h-[22px] w-[22px]"
-                        />
-                      </button>
-                      <div className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                        <Camera weight="bold" size={20} />
-                      </div>
-                      <div className={`flex-1 h-[52px] rounded-full flex items-center px-3.5 gap-3 ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                        <div className="h-7 w-7 rounded-full bg-[#5856D6] text-white flex items-center justify-center flex-shrink-0">
-                          <Moon weight="fill" size={14} />
-                        </div>
-                        <div className="flex flex-col justify-center">
-                          <span className="font-semibold text-[13px] leading-tight">Do Not Disturb</span>
-                          <span className="text-[11px] opacity-70 leading-tight">On</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Row 3: Display Slider */}
-                    <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[13px] font-semibold">Display</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Sun weight="fill" size={14} className="opacity-70" />
-                        <div 
-                          className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
-                          onPointerDownCapture={(e) => {
-                            e.stopPropagation();
-                            const target = e.currentTarget;
-                            target.setPointerCapture(e.pointerId);
-                            const rect = target.getBoundingClientRect();
-                            const update = (clientX: number) => {
-                              const x = clientX - rect.left;
-                              const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                              setBrightness(Math.round(percentage));
-                            };
-                            update(e.clientX);
-                            const handleMove = (ev: PointerEvent) => update(ev.clientX);
-                            const handleUp = (ev: PointerEvent) => {
-                              target.removeEventListener('pointermove', handleMove);
-                              target.removeEventListener('pointerup', handleUp);
-                              target.releasePointerCapture(ev.pointerId);
-                            };
-                            target.addEventListener('pointermove', handleMove);
-                            target.addEventListener('pointerup', handleUp);
-                          }}
-                        >
-                          <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
-                            <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${brightness}%` }}></div>
-                            <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${brightness}%` }}></div>
+                          {/* Right Column: Media + Utils */}
+                          <div className="flex-1 flex flex-col gap-3.5">
+                            {/* Media */}
+                            <div className={`h-[100px] rounded-[1.8rem] p-3 flex flex-col justify-between ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                              <div className="flex items-start gap-3">
+                                <div className="w-[42px] h-[42px] rounded-[0.8rem] bg-gray-500/30"></div>
+                                <span className="text-[13px] font-semibold mt-1">Not Playing</span>
+                              </div>
+                              <div className="flex items-center justify-center gap-3.5 pb-1">
+                                <Rewind weight="fill" size={18} className="opacity-50" />
+                                <Play weight="fill" size={24} />
+                                <FastForward weight="fill" size={18} className="opacity-50" />
+                              </div>
+                            </div>
+                            {/* Two Utils */}
+                            <div className="flex gap-3.5 flex-1">
+                              <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                                <Screencast weight="bold" size={18} />
+                              </div>
+                              <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                                <Copy weight="bold" size={18} />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <Sun weight="fill" size={18} />
-                      </div>
-                    </div>
 
-                    {/* Row 4: Sound Slider */}
-                    <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[13px] font-semibold">Sound</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <SpeakerLow weight="fill" size={14} className="opacity-70" />
-                        <div 
-                          className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
-                          onPointerDownCapture={(e) => {
-                            e.stopPropagation();
-                            const target = e.currentTarget;
-                            target.setPointerCapture(e.pointerId);
-                            const rect = target.getBoundingClientRect();
-                            const update = (clientX: number) => {
-                              const x = clientX - rect.left;
-                              const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                              setVolume(Math.round(percentage));
-                            };
-                            update(e.clientX);
-                            const handleMove = (ev: PointerEvent) => update(ev.clientX);
-                            const handleUp = (ev: PointerEvent) => {
-                              target.removeEventListener('pointermove', handleMove);
-                              target.removeEventListener('pointerup', handleUp);
-                              target.releasePointerCapture(ev.pointerId);
-                            };
-                            target.addEventListener('pointermove', handleMove);
-                            target.addEventListener('pointerup', handleUp);
-                          }}
-                        >
-                          <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
-                            <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${volume}%` }}></div>
-                            <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${volume}%` }}></div>
+                        {/* Row 2: Circles & Pill */}
+                        <div className="flex gap-3.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
+                            className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/15"}`}
+                          >
+                            <img
+                              src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
+                              alt="Theme"
+                              className="h-[22px] w-[22px]"
+                            />
+                          </button>
+                          <div className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                            <Camera weight="bold" size={20} />
+                          </div>
+                          <div className={`flex-1 h-[52px] rounded-full flex items-center px-3.5 gap-3 ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                            <div className="h-7 w-7 rounded-full bg-[#5856D6] text-white flex items-center justify-center flex-shrink-0">
+                              <Moon weight="fill" size={14} />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                              <span className="font-semibold text-[13px] leading-tight">Do Not Disturb</span>
+                              <span className="text-[11px] opacity-70 leading-tight">On</span>
+                            </div>
                           </div>
                         </div>
-                        <SpeakerHigh weight="fill" size={18} />
-                        <div className="w-[22px] h-[22px] rounded-full bg-[#0A84FF]/20 text-[#0A84FF] dark:text-[#0A84FF] flex items-center justify-center flex-shrink-0 ml-1">
-                          <Airplay weight="bold" size={12} />
+
+                        {/* Row 3: Display Slider */}
+                        <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[13px] font-semibold">Display</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Sun weight="fill" size={14} className="opacity-70" />
+                            <div
+                              className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
+                              onPointerDownCapture={(e) => {
+                                e.stopPropagation();
+                                const target = e.currentTarget;
+                                target.setPointerCapture(e.pointerId);
+                                const rect = target.getBoundingClientRect();
+                                const update = (clientX: number) => {
+                                  const x = clientX - rect.left;
+                                  const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                                  setBrightness(Math.round(percentage));
+                                };
+                                update(e.clientX);
+                                const handleMove = (ev: PointerEvent) => update(ev.clientX);
+                                const handleUp = (ev: PointerEvent) => {
+                                  target.removeEventListener('pointermove', handleMove);
+                                  target.removeEventListener('pointerup', handleUp);
+                                  target.releasePointerCapture(ev.pointerId);
+                                };
+                                target.addEventListener('pointermove', handleMove);
+                                target.addEventListener('pointerup', handleUp);
+                              }}
+                            >
+                              <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
+                                <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${brightness}%` }}></div>
+                                <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${brightness}%` }}></div>
+                              </div>
+                            </div>
+                            <Sun weight="fill" size={18} />
+                          </div>
+                        </div>
+
+                        {/* Row 4: Sound Slider */}
+                        <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/20" : "bg-black/10"}`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[13px] font-semibold">Sound</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <SpeakerLow weight="fill" size={14} className="opacity-70" />
+                            <div
+                              className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
+                              onPointerDownCapture={(e) => {
+                                e.stopPropagation();
+                                const target = e.currentTarget;
+                                target.setPointerCapture(e.pointerId);
+                                const rect = target.getBoundingClientRect();
+                                const update = (clientX: number) => {
+                                  const x = clientX - rect.left;
+                                  const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                                  setVolume(Math.round(percentage));
+                                };
+                                update(e.clientX);
+                                const handleMove = (ev: PointerEvent) => update(ev.clientX);
+                                const handleUp = (ev: PointerEvent) => {
+                                  target.removeEventListener('pointermove', handleMove);
+                                  target.removeEventListener('pointerup', handleUp);
+                                  target.releasePointerCapture(ev.pointerId);
+                                };
+                                target.addEventListener('pointermove', handleMove);
+                                target.addEventListener('pointerup', handleUp);
+                              }}
+                            >
+                              <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
+                                <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${volume}%` }}></div>
+                                <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${volume}%` }}></div>
+                              </div>
+                            </div>
+                            <SpeakerHigh weight="fill" size={18} />
+                            <div className="w-[22px] h-[22px] rounded-full bg-[#0A84FF]/20 text-[#0A84FF] dark:text-[#0A84FF] flex items-center justify-center flex-shrink-0 ml-1">
+                              <Airplay weight="bold" size={12} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Row 5: Edit Button */}
+                        <div className="flex justify-center mt-1">
+                          <button className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${theme === "dark" ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/15"}`}>
+                            Edit Controls
+                          </button>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Row 5: Edit Button */}
-                    <div className="flex justify-center mt-1">
-                      <button className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"}`}>
-                        Edit Controls
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>,
+              document.body
+            )}
           </div>
 
           <Clock>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, ReactElement, memo } from "re
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import gsap from "gsap"
+import { LiquidGlassSurface } from "./liquid-glass-surface"
 
 export interface DockApp {
   id: string
@@ -543,23 +544,20 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 flex items-end justify-center z-50 ${
-        isMobile ? "h-24 pb-3" : "h-20 pb-2.5"
-      }`}
+      className={`fixed bottom-0 left-0 right-0 flex items-end justify-center z-50 ${isMobile ? "h-24 pb-3" : "h-20 pb-2.5"
+        }`}
     >
       <motion.div
         ref={dockContainerRef}
         data-dock="true"
         onPointerDown={(e) => e.stopPropagation()}
-        className={`relative flex items-center ${
-          isMobile
-            ? `w-[calc(100%-24px)] max-w-[420px] justify-evenly rounded-[2.25rem] px-3 py-4 mb-1 shadow-2xl border ${
-                theme === "dark"
-                  ? "bg-white/10 border-white/20"
-                  : "bg-white/40 border-white/60"
-              }`
+        className={`relative flex items-center ${isMobile
+            ? `w-[calc(100%-24px)] max-w-[420px] justify-evenly rounded-[2.25rem] px-3 py-4 mb-1 shadow-2xl border ${theme === "dark"
+              ? "bg-white/10 border-white/20"
+              : "bg-white/40 border-white/60"
+            }`
             : "px-3 py-2 mb-2 h-[72px]"
-        }`}
+          }`}
         style={isMobile ? {
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -572,22 +570,33 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
         {!isMobile && (
           <div
             ref={shelfRef}
-            className={`absolute inset-0 rounded-2xl backdrop-blur-2xl border transition-colors duration-300 will-change-transform ${
-              theme === "dark"
+            className={`absolute inset-0 rounded-2xl backdrop-blur-2xl border transition-colors duration-300 will-change-transform ${theme === "dark"
                 ? "bg-white/[0.11] border-white/15 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
                 : "bg-white/35 border-black/10 shadow-[0_15px_35px_rgba(0,0,0,0.15)]"
-            }`}
+              }`}
             style={{
               transformOrigin: "50% 100%",
               backdropFilter: "blur(24px) saturate(190%)",
               WebkitBackdropFilter: "blur(24px) saturate(190%)",
             }}
           >
+            {/* Liquid-glass material over the shelf; dock icons are a z-10 sibling. */}
+            <LiquidGlassSurface
+              radius={16}
+              strength={0.05}
+              chromaticAberration={0.12}
+              glow={0.03}
+              edgeHighlight={0.16}
+              specular={0.55}
+              panelClassName={theme === "dark"
+                ? "bg-gradient-to-b from-white/[0.06] to-transparent"
+                : "bg-gradient-to-b from-white/12 to-transparent"}
+            />
+
             {/* Very soft reflection beneath dock shelf */}
             <div
-              className={`absolute -bottom-2 left-4 right-4 h-3 rounded-full blur-md opacity-30 pointer-events-none ${
-                theme === "dark" ? "bg-white/20" : "bg-black/20"
-              }`}
+              className={`absolute -bottom-2 left-4 right-4 h-3 rounded-full blur-md opacity-30 pointer-events-none ${theme === "dark" ? "bg-white/20" : "bg-black/20"
+                }`}
             />
           </div>
         )}
@@ -618,9 +627,8 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                       className="flex items-center justify-center will-change-transform"
                     >
                       <div
-                        className={`mx-2 w-px ${isMobile ? "h-8" : "h-8"} ${
-                          theme === "dark" ? "bg-white/30" : "bg-black/20"
-                        }`}
+                        className={`mx-2 w-px ${isMobile ? "h-8" : "h-8"} ${theme === "dark" ? "bg-white/30" : "bg-black/20"
+                          }`}
                       />
                     </div>
                   </motion.div>
@@ -667,9 +675,8 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                     }}
                     onClick={() => handleAppClick(app.id, index)}
                     onMouseEnter={() => onPreload?.(app.id)}
-                    className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${
-                      isMobile ? "mx-0" : "mx-1.5"
-                    }`}
+                    className={`relative flex items-center justify-center cursor-pointer select-none will-change-transform ${isMobile ? "mx-0" : "mx-1.5"
+                      }`}
                   >
                     {/* App Icon Container (Magnifies upwards around bottom center) */}
                     <div
@@ -705,9 +712,8 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
-                        className={`absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full shadow-sm ${
-                          theme === "dark" ? "bg-white" : "bg-gray-800"
-                        }`}
+                        className={`absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full shadow-sm ${theme === "dark" ? "bg-white" : "bg-gray-800"
+                          }`}
                       />
                     )}
 
@@ -717,11 +723,10 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                         ref={(el) => {
                           labelRefs.current[index] = el
                         }}
-                        className={`absolute -top-11 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium shadow-lg backdrop-blur-xl border z-40 ${
-                          theme === "dark"
+                        className={`absolute -top-11 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium shadow-lg backdrop-blur-xl border z-40 ${theme === "dark"
                             ? "bg-black/60 text-white border-white/20"
                             : "bg-white/70 text-black border-black/15"
-                        }`}
+                          }`}
                         style={{
                           opacity: 0,
                           transform: "translate3d(-50%, 4px, 0)",

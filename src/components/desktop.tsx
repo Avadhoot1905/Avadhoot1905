@@ -551,13 +551,13 @@ export function MacOSDesktop() {
     const isMobileViewport = window.innerWidth < 768
     const CRITICAL_ASSETS = isMobileViewport
       ? [
-          "/assets/lock-screen-phone.webp", // mobile lock screen
-        ]
+        "/assets/lock-screen-phone.webp", // mobile lock screen
+      ]
       : [
-          "/assets/tahoejpg.webp", // desktop lock screen
-          "/assets/v-dark-c.webp", // desktop background (light theme)
-          "/assets/v-light-c.webp", // desktop background (dark theme)
-        ]
+        "/assets/tahoejpg.webp", // desktop lock screen
+        "/assets/v-dark-c.webp", // desktop background (light theme)
+        "/assets/v-light-c.webp", // desktop background (dark theme)
+      ]
 
     let settled = false
     const markLoaded = () => {

@@ -551,13 +551,13 @@ export function MacOSDesktop() {
     const isMobileViewport = window.innerWidth < 768
     const CRITICAL_ASSETS = isMobileViewport
       ? [
-          "/assets/lock-screen-phone.webp", // mobile lock screen
-        ]
+        "/assets/lock-screen-phone.webp", // mobile lock screen
+      ]
       : [
-          "/assets/tahoejpg.webp", // desktop lock screen
-          "/assets/v-dark-c.webp", // desktop background (light theme)
-          "/assets/v-light-c.webp", // desktop background (dark theme)
-        ]
+        "/assets/tahoejpg.webp", // desktop lock screen
+        "/assets/v-dark-c.webp", // desktop background (light theme)
+        "/assets/v-light-c.webp", // desktop background (dark theme)
+      ]
 
     let settled = false
     const markLoaded = () => {
@@ -902,6 +902,7 @@ export function MacOSDesktop() {
     if (
       !target ||
       target.closest(".window-drag-handle") ||
+      target.closest(".react-rnd-window-container") ||
       target.closest("[data-window]") ||
       target.closest("[data-app-icon]") ||
       target.closest("[data-widget]") ||
@@ -1076,6 +1077,7 @@ export function MacOSDesktop() {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
+      onDragStart={(e) => e.preventDefault()}
     >
       <LockScreen
         key="lockscreen"
@@ -1161,6 +1163,7 @@ export function MacOSDesktop() {
             onPointerMove={handleDesktopPointerMove}
             onPointerUp={handleDesktopPointerUp}
             onContextMenu={handleDesktopContextMenu}
+            onDragStart={(e) => e.preventDefault()}
           >
             {/* Boundary element keeping app windows below the 36px menu bar */}
             <div id="desktop-window-area" className="absolute top-9 bottom-0 left-0 right-0 pointer-events-none" />

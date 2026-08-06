@@ -20,7 +20,7 @@ export const SelectionBox: React.FC<SelectionBoxProps> = React.memo(({ rect }) =
 
   return (
     <div
-      className="pointer-events-none absolute z-40 rounded-sm border border-blue-400/60 bg-blue-500/20 backdrop-blur-[1px] transition-none"
+      className="pointer-events-none absolute z-40 rounded-sm border border-blue-400/60 bg-blue-500/20 transition-none"
       style={{
         left: rect.left,
         top: rect.top,

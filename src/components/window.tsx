@@ -232,6 +232,7 @@ export function Window({
   // Desktop window
   return (
     <Rnd
+      className="react-rnd-window-container"
       position={position}
       size={size}
       onDragStop={(_e, d) => {

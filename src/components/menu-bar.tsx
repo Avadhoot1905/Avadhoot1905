@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, type ReactNode } from "react"
-import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera } from "phosphor-react"
+import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera, WifiHigh, Bluetooth, Broadcast, CircleHalf, Sun, SpeakerLow, Screencast, Copy, Airplay } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
@@ -699,12 +699,216 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
             />
           </div>
 
-          <div className={iconTriggerClass} title="Control Center">
-            <img
-              src="/assets/macos/apple-control-center.svg"
-              alt="Control Center"
-              className={`h-[16px] w-[16px] ${theme === "dark" ? "invert" : ""}`}
-            />
+          <div className="relative">
+            <button
+              onClick={() => toggleMenu("controlCenter")}
+              className={`flex h-6 w-6 items-center justify-center rounded-md p-1 transition-all duration-200 ease-out ${
+                activeMenu === "controlCenter"
+                  ? theme === "dark" ? "bg-white/15 opacity-100" : "bg-black/10 opacity-100"
+                  : `opacity-80 hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"}`
+              }`}
+              title="Control Center"
+            >
+              <img
+                src="/assets/macos/apple-control-center.svg"
+                alt="Control Center"
+                className={`h-[16px] w-[16px] ${theme === "dark" ? "invert" : ""}`}
+              />
+            </button>
+            <AnimatePresence>
+              {activeMenu === "controlCenter" && (
+                <motion.div
+                  className={`fixed right-2.5 top-[38px] z-[99999] rounded-[2rem] p-4 shadow-2xl ${theme === "dark"
+                    ? "border border-white/10 bg-[#1e1e1e]/80 text-white"
+                    : "border border-black/10 bg-white/80 text-black"
+                    }`}
+                  style={{
+                    width: '320px',
+                    backdropFilter: 'blur(30px) saturate(190%)',
+                    WebkitBackdropFilter: 'blur(30px) saturate(190%)'
+                  }}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="flex flex-col gap-3.5">
+                    {/* Row 1: Connectivity & Media */}
+                    <div className="flex gap-3.5 h-[155px]">
+                      {/* Left Column: Connectivity */}
+                      <div className={`w-[145px] flex flex-col justify-between rounded-[1.8rem] p-3.5 ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                            <WifiHigh weight="bold" size={16} className="text-white" />
+                          </div>
+                          <div className="flex flex-col justify-center overflow-hidden">
+                            <span className="font-semibold text-[13px] leading-tight">Wi-Fi</span>
+                            <span className="text-[11px] opacity-70 leading-tight truncate">T-VIT</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                            <Bluetooth weight="bold" size={16} className="text-white" />
+                          </div>
+                          <div className="flex flex-col justify-center overflow-hidden">
+                            <span className="font-semibold text-[13px] leading-tight">Bluetooth</span>
+                            <span className="text-[11px] opacity-70 leading-tight truncate">On</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+                            <Broadcast weight="bold" size={16} className="text-white" />
+                          </div>
+                          <div className="flex flex-col justify-center overflow-hidden">
+                            <span className="font-semibold text-[13px] leading-tight">AirDrop</span>
+                            <span className="text-[11px] opacity-70 leading-tight truncate">Everyone</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Right Column: Media + Utils */}
+                      <div className="flex-1 flex flex-col gap-3.5">
+                        {/* Media */}
+                        <div className={`h-[100px] rounded-[1.8rem] p-3 flex flex-col justify-between ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                          <div className="flex items-start gap-3">
+                            <div className="w-[42px] h-[42px] rounded-[0.8rem] bg-gray-500/30"></div>
+                            <span className="text-[13px] font-semibold mt-1">Not Playing</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-3.5 pb-1">
+                            <Rewind weight="fill" size={18} className="opacity-50" />
+                            <Play weight="fill" size={24} />
+                            <FastForward weight="fill" size={18} className="opacity-50" />
+                          </div>
+                        </div>
+                        {/* Two Utils */}
+                        <div className="flex gap-3.5 flex-1">
+                          <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                            <Screencast weight="bold" size={18} />
+                          </div>
+                          <div className={`flex-1 rounded-[1.2rem] flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                            <Copy weight="bold" size={18} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Circles & Pill */}
+                    <div className="flex gap-3.5">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
+                        className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"}`}
+                      >
+                        <img
+                          src={theme === "dark" ? "/assets/macos/dark-mode-svgrepo-com-white.svg" : "/assets/macos/dark-mode-svgrepo-com.svg"}
+                          alt="Theme"
+                          className="h-[22px] w-[22px]"
+                        />
+                      </button>
+                      <div className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                        <Camera weight="bold" size={20} />
+                      </div>
+                      <div className={`flex-1 h-[52px] rounded-full flex items-center px-3.5 gap-3 ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                        <div className="h-7 w-7 rounded-full bg-[#5856D6] text-white flex items-center justify-center flex-shrink-0">
+                          <Moon weight="fill" size={14} />
+                        </div>
+                        <div className="flex flex-col justify-center">
+                          <span className="font-semibold text-[13px] leading-tight">Do Not Disturb</span>
+                          <span className="text-[11px] opacity-70 leading-tight">On</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Display Slider */}
+                    <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[13px] font-semibold">Display</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Sun weight="fill" size={14} className="opacity-70" />
+                        <div 
+                          className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
+                          onPointerDownCapture={(e) => {
+                            e.stopPropagation();
+                            const target = e.currentTarget;
+                            target.setPointerCapture(e.pointerId);
+                            const rect = target.getBoundingClientRect();
+                            const update = (clientX: number) => {
+                              const x = clientX - rect.left;
+                              const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                              setBrightness(Math.round(percentage));
+                            };
+                            update(e.clientX);
+                            const handleMove = (ev: PointerEvent) => update(ev.clientX);
+                            const handleUp = (ev: PointerEvent) => {
+                              target.removeEventListener('pointermove', handleMove);
+                              target.removeEventListener('pointerup', handleUp);
+                              target.releasePointerCapture(ev.pointerId);
+                            };
+                            target.addEventListener('pointermove', handleMove);
+                            target.addEventListener('pointerup', handleUp);
+                          }}
+                        >
+                          <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
+                            <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${brightness}%` }}></div>
+                            <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${brightness}%` }}></div>
+                          </div>
+                        </div>
+                        <Sun weight="fill" size={18} />
+                      </div>
+                    </div>
+
+                    {/* Row 4: Sound Slider */}
+                    <div className={`h-[64px] rounded-[1.8rem] flex flex-col justify-center px-4 relative overflow-hidden ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[13px] font-semibold">Sound</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <SpeakerLow weight="fill" size={14} className="opacity-70" />
+                        <div 
+                          className="relative flex-1 h-[24px] flex items-center cursor-pointer touch-none"
+                          onPointerDownCapture={(e) => {
+                            e.stopPropagation();
+                            const target = e.currentTarget;
+                            target.setPointerCapture(e.pointerId);
+                            const rect = target.getBoundingClientRect();
+                            const update = (clientX: number) => {
+                              const x = clientX - rect.left;
+                              const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                              setVolume(Math.round(percentage));
+                            };
+                            update(e.clientX);
+                            const handleMove = (ev: PointerEvent) => update(ev.clientX);
+                            const handleUp = (ev: PointerEvent) => {
+                              target.removeEventListener('pointermove', handleMove);
+                              target.removeEventListener('pointerup', handleUp);
+                              target.releasePointerCapture(ev.pointerId);
+                            };
+                            target.addEventListener('pointermove', handleMove);
+                            target.addEventListener('pointerup', handleUp);
+                          }}
+                        >
+                          <div className="w-full h-[5px] bg-black/10 dark:bg-white/20 rounded-full relative pointer-events-none">
+                            <div className="absolute left-0 h-full bg-black/70 dark:bg-white rounded-full" style={{ width: `${volume}%` }}></div>
+                            <div className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] bg-white border border-black/10 shadow-sm rounded-full -ml-[7px]" style={{ left: `${volume}%` }}></div>
+                          </div>
+                        </div>
+                        <SpeakerHigh weight="fill" size={18} />
+                        <div className="w-[22px] h-[22px] rounded-full bg-[#0A84FF]/20 text-[#0A84FF] dark:text-[#0A84FF] flex items-center justify-center flex-shrink-0 ml-1">
+                          <Airplay weight="bold" size={12} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 5: Edit Button */}
+                    <div className="flex justify-center mt-1">
+                      <button className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"}`}>
+                        Edit Controls
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <Clock>

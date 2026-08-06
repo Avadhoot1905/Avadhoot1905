@@ -69,7 +69,7 @@ variable "lambda_timeout" {
 variable "lambda_runtime" {
   description = "Lambda runtime identifier for the (future) function implementation."
   type        = string
-  default     = "nodejs20.x"
+  default     = "nodejs22.x"
 }
 
 variable "lambda_handler" {

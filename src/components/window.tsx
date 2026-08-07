@@ -6,6 +6,10 @@ import { Rnd } from "react-rnd"
 import { X } from "lucide-react"
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
+import gsap from "gsap"
+import { CustomEase } from "gsap/CustomEase"
+
+gsap.registerPlugin(CustomEase)
 
 interface Position {
   x: number
@@ -18,6 +22,7 @@ interface Size {
 }
 
 interface WindowProps {
+  appId: string
   title: string
   children: React.ReactNode
   isActive: boolean
@@ -28,6 +33,107 @@ interface WindowProps {
   initialPosition: Position
   initialSize: Size
   bounds?: string
+}
+
+// ── Native minimize / restore ("Genie") animation helpers ────────────────────
+// The window is never itself animated — instead we snapshot it into a detached
+// clone on <body>, animate that with GSAP transforms (translate3d/scale/opacity
+// only, so it stays on the compositor), and drop the clone when it lands on the
+// Dock icon. All DOM measurements are cached once before the tween begins; the
+// tween never reads layout.
+
+// Bottom-center transform origin makes the window collapse *downward* toward the
+// Dock, giving the funnel/"sucked-in" character of the macOS genie.
+const GENIE_ORIGIN = "50% 100%"
+const GENIE_DURATION = 0.36
+
+// Apple-flavoured easing curves (via CustomEase). Minimize accelerates as it's
+// pulled into the Dock; restore springs out then softly settles — matching the
+// asymmetric feel of the real macOS genie.
+const MINIMIZE_EASE = CustomEase.create("genieMinimize", "M0,0 C0.34,0 0.16,1 1,1")
+const RESTORE_EASE = CustomEase.create("genieRestore", "M0,0 C0.2,0 0.1,1 1,1")
+
+// The single biggest source of jitter is backdrop-filter blur: re-rasterising a
+// blur against a moving backdrop every frame is brutally expensive. Shadows,
+// rings and inherited CSS transitions add more layer churn and fight GSAP. We
+// flatten the clone into ONE cheap, opaque compositor layer so the whole thing
+// travels on the GPU untouched by paint.
+function flattenCloneForCompositing(clone: HTMLElement) {
+  const nodes: HTMLElement[] = [clone, ...(Array.from(clone.getElementsByTagName("*")) as HTMLElement[])]
+  for (const el of nodes) {
+    const s = el.style
+    s.backdropFilter = "none"
+    s.setProperty("-webkit-backdrop-filter", "none")
+    s.filter = "none"
+    s.boxShadow = "none"
+    // CSS transitions/animations on the live window race GSAP's own writes.
+    s.transition = "none"
+    s.animation = "none"
+    // Drop any inherited will-change so we don't spawn a layer per descendant.
+    s.willChange = "auto"
+  }
+}
+
+// Deep-clone the live window into a floating snapshot. Canvas pixels aren't copied
+// by cloneNode, so each canvas is rasterised to an <img> overlay first.
+function buildWindowClone(windowNode: HTMLElement): HTMLElement {
+  const clone = windowNode.cloneNode(true) as HTMLElement
+  clone.removeAttribute("id")
+  const allElements = clone.getElementsByTagName("*")
+  for (let i = 0; i < allElements.length; i++) {
+    allElements[i].removeAttribute("id")
+  }
+
+  const canvases = windowNode.getElementsByTagName("canvas")
+  const cloneCanvases = clone.getElementsByTagName("canvas")
+  for (let i = 0; i < canvases.length; i++) {
+    try {
+      const img = document.createElement("img")
+      img.src = canvases[i].toDataURL()
+      img.style.cssText = "width:100%;height:100%;position:absolute;top:0;left:0"
+      cloneCanvases[i].parentElement?.appendChild(img)
+      cloneCanvases[i].style.display = "none"
+    } catch {
+      // Tainted canvas (cross-origin) — skip; the frame stays as-is.
+    }
+  }
+
+  flattenCloneForCompositing(clone)
+  return clone
+}
+
+// Pin the clone over the window's exact on-screen rect at transform identity.
+// Clearing the inherited transform is essential: react-rnd puts its own
+// translate() on the window root, and leaving it would double the offset and
+// make GSAP snap on the first frame.
+function positionCloneOverRect(clone: HTMLElement, rect: DOMRect) {
+  clone.style.position = "fixed"
+  clone.style.left = `${rect.left}px`
+  clone.style.top = `${rect.top}px`
+  clone.style.width = `${rect.width}px`
+  clone.style.height = `${rect.height}px`
+  clone.style.margin = "0"
+  clone.style.transform = "none"
+  clone.style.transformOrigin = GENIE_ORIGIN
+  clone.style.zIndex = "999999"
+  clone.style.pointerEvents = "none"
+  clone.style.willChange = "transform, opacity"
+  // Single self-contained compositor layer — nothing outside repaints as it moves.
+  clone.style.backfaceVisibility = "hidden"
+  clone.style.contain = "layout paint"
+}
+
+// Transform that maps the window's rect onto the (possibly magnified) Dock-icon
+// rect, expressed relative to the bottom-center origin. dockRect is read live so
+// magnification / responsive shifts are honoured automatically.
+function computeGenieTransform(windowRect: DOMRect, dockRect: DOMRect) {
+  return {
+    scaleX: dockRect.width / windowRect.width,
+    scaleY: dockRect.height / windowRect.height,
+    // Bottom-center of the window → center of the Dock icon.
+    deltaX: dockRect.left + dockRect.width / 2 - (windowRect.left + windowRect.width / 2),
+    deltaY: dockRect.top + dockRect.height / 2 - windowRect.bottom,
+  }
 }
 
 export function Window({
@@ -41,8 +147,14 @@ export function Window({
   initialPosition,
   initialSize,
   bounds = "#desktop-window-area",
+  appId,
 }: WindowProps) {
   const [mounted, setMounted] = useState(false)
+  const [internalMinimized, setInternalMinimized] = useState(isMinimized)
+  const justRestored = useRef(false)
+  // Clones currently mid-flight, so we can tear them down if the window unmounts
+  // (e.g. app closed) before an animation finishes — no orphaned nodes / leaks.
+  const activeClonesRef = useRef<HTMLElement[]>([])
   const [isMobile, setIsMobile] = useState(false)
   const [dragY, setDragY] = useState(0)
   const [isGame2048Locked, setIsGame2048Locked] = useState(false)
@@ -131,9 +243,114 @@ export function Window({
     }
   }
 
+  // --- Minimize & Restore Animation Logic ---
+  // Detach a finished/aborted clone and forget it. Safe to call twice.
+  const releaseClone = useCallback((clone: HTMLElement) => {
+    activeClonesRef.current = activeClonesRef.current.filter((c) => c !== clone)
+    gsap.killTweensOf(clone)
+    clone.remove()
+  }, [])
+
+  // Minimize: window → Dock icon (genie funnel + fade), then hide the real window.
+  useEffect(() => {
+    if (isMinimized && !internalMinimized) {
+      if (!isMobile) {
+        const windowNode = document.querySelector(`.window-${appId}`) as HTMLElement
+        const dockNode = document.querySelector(`[data-dock-icon="${appId}"]`) as HTMLElement
+
+        if (windowNode && dockNode) {
+          // Cache every measurement up front — nothing below reads layout.
+          const windowRect = windowNode.getBoundingClientRect()
+          const dockRect = dockNode.getBoundingClientRect()
+          const { scaleX, scaleY, deltaX, deltaY } = computeGenieTransform(windowRect, dockRect)
+
+          const clone = buildWindowClone(windowNode)
+          positionCloneOverRect(clone, windowRect)
+          document.body.appendChild(clone)
+          activeClonesRef.current.push(clone)
+
+          const tl = gsap.timeline({ onComplete: () => releaseClone(clone) })
+          // One compositor-only tween funnels the whole window into the icon —
+          // position + scale share the Apple curve so the path stays coherent
+          // (no two-tween drift), and force3D keeps it on the GPU.
+          tl.to(clone, {
+            x: deltaX,
+            y: deltaY,
+            scaleX,
+            scaleY,
+            duration: GENIE_DURATION,
+            ease: MINIMIZE_EASE,
+            force3D: true,
+          }, 0)
+          // Fade only over the final stretch so it vanishes into the icon.
+          tl.to(clone, { opacity: 0, duration: GENIE_DURATION * 0.3, ease: "power2.in" }, GENIE_DURATION * 0.7)
+        }
+      }
+      setInternalMinimized(true)
+    } else if (!isMinimized && internalMinimized) {
+      setInternalMinimized(false)
+      justRestored.current = true
+    }
+  }, [isMinimized, internalMinimized, isMobile, appId, releaseClone])
+
+  // Restore: reverse the genie — Dock icon → window — then reveal the real window.
+  useEffect(() => {
+    if (!justRestored.current || internalMinimized) return
+    justRestored.current = false
+    if (isMobile) return
+
+    const windowNode = document.querySelector(`.window-${appId}`) as HTMLElement
+    const dockNode = document.querySelector(`[data-dock-icon="${appId}"]`) as HTMLElement
+    if (!windowNode || !dockNode) return
+
+    const windowRect = windowNode.getBoundingClientRect()
+    const dockRect = dockNode.getBoundingClientRect()
+    const { scaleX, scaleY, deltaX, deltaY } = computeGenieTransform(windowRect, dockRect)
+
+    // Hide the freshly-mounted real window until the clone lands on it.
+    windowNode.style.opacity = "0"
+
+    const clone = buildWindowClone(windowNode)
+    positionCloneOverRect(clone, windowRect)
+    document.body.appendChild(clone)
+    activeClonesRef.current.push(clone)
+
+    const reveal = () => {
+      windowNode.style.opacity = "1"
+      releaseClone(clone)
+    }
+
+    // Start collapsed over the Dock icon, then unfurl back to the window in one
+    // composited tween with the softly-settling restore curve.
+    gsap.set(clone, { x: deltaX, y: deltaY, scaleX, scaleY, opacity: 0, force3D: true })
+    const tl = gsap.timeline({ onComplete: reveal })
+    tl.to(clone, {
+      x: 0,
+      y: 0,
+      scaleX: 1,
+      scaleY: 1,
+      duration: GENIE_DURATION,
+      ease: RESTORE_EASE,
+      force3D: true,
+    }, 0)
+    tl.to(clone, { opacity: 1, duration: GENIE_DURATION * 0.4, ease: "power2.out" }, 0)
+  }, [internalMinimized, isMobile, appId, releaseClone])
+
+  // Tear down any in-flight clones if the window unmounts mid-animation.
+  useEffect(() => {
+    return () => {
+      activeClonesRef.current.forEach((clone) => {
+        gsap.killTweensOf(clone)
+        clone.remove()
+      })
+      activeClonesRef.current = []
+    }
+  }, [])
+  // --- End Animation Logic ---
+
   if (!mounted) return null
 
-  if (isMinimized) {
+  if (internalMinimized) {
     return (
       <div style={{ display: "none" }}>
         {children}
@@ -232,7 +449,7 @@ export function Window({
   // Desktop window
   return (
     <Rnd
-      className="react-rnd-window-container"
+      className={`react-rnd-window-container window-${appId}`}
       position={position}
       size={size}
       onDragStop={(_e, d) => {

@@ -17,6 +17,11 @@ output "lambda_role_arn" {
   value       = aws_iam_role.lambda.arn
 }
 
+output "bedrock_api_key_user_name" {
+  description = "IAM user to mint the long-term Bedrock API key against (aws iam create-service-specific-credential --service-name bedrock.amazonaws.com)."
+  value       = aws_iam_user.bedrock_api.name
+}
+
 output "dynamodb_table_name" {
   description = "Name of the chat history DynamoDB table."
   value       = aws_dynamodb_table.chat_history.name

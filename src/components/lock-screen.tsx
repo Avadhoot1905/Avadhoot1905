@@ -81,7 +81,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
           { opacity: 1, scale: 1, duration: 0.5, delay: 0.5, ease: "power2.out" }
         )
       }
-      
+
       if (promptRef.current) {
         gsap.fromTo(promptRef.current,
           { opacity: 0, y: 20 },
@@ -131,7 +131,7 @@ export function LockScreen({ isLocked, onUnlock }: LockScreenProps) {
       style={{
         backgroundImage: isMobile
           ? 'url(/assets/lock-screen-phone.webp)'
-          : 'url(/assets/tahoejpg.webp)',
+          : 'url(/assets/tahoe.webp)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

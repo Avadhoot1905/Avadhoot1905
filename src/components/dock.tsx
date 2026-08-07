@@ -683,6 +683,7 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
                       ref={(el) => {
                         iconRefs.current[index] = el
                       }}
+                      data-dock-icon={app.id}
                       className="relative flex items-center justify-center will-change-transform"
                       style={{
                         width: isMobile ? 64 : 52,

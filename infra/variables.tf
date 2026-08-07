@@ -124,6 +124,53 @@ variable "bedrock_inference_profile_id" {
 }
 
 # ---------------------------------------------------------------------------
+# Chat provider (Gemini / Bedrock switch).
+# ---------------------------------------------------------------------------
+
+variable "llm_provider" {
+  description = "Active chat provider consumed by the Lambda (LLM_PROVIDER): 'gemini' (default) or 'bedrock'. The Bedrock path is retained regardless; this only selects which one is invoked at runtime."
+  type        = string
+  default     = "gemini"
+
+  validation {
+    condition     = contains(["gemini", "bedrock"], var.llm_provider)
+    error_message = "llm_provider must be either 'gemini' or 'bedrock'."
+  }
+}
+
+variable "gemini_api_key" {
+  description = "Google Gemini (Generative Language API) key, exposed to the Lambda as GEMINI_API_KEY. Set via terraform.tfvars (gitignored). Required when llm_provider = 'gemini'."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "gemini_model_id" {
+  description = "Gemini model id the Lambda invokes (GEMINI_MODEL_ID). Defaults to gemini-3.5-flash — the nearest available flash model to gemini-2.5-flash, which is blocked for new-user keys."
+  type        = string
+  default     = "gemini-3.5-flash"
+}
+
+# ---------------------------------------------------------------------------
+# Bedrock long-term API key (bearer token).
+# ---------------------------------------------------------------------------
+
+variable "bedrock_api_key" {
+  description = <<-EOT
+    Long-term Bedrock API key (bearer token) the Lambda uses to authenticate to
+    Bedrock via the AWS_BEARER_TOKEN_BEDROCK env var, instead of SigV4-signing
+    with its execution role. This is the ServiceApiKeyValue of the IAM
+    service-specific credential minted (out of band, no expiry) against the
+    aws_iam_user.bedrock_api user — the pinned provider can't mint it in HCL.
+    Set via terraform.tfvars (gitignored). Leave empty on the first apply (before
+    the key is minted); the Lambda falls back to its IAM role until it is set.
+  EOT
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+# ---------------------------------------------------------------------------
 # Admin endpoint.
 # ---------------------------------------------------------------------------
 

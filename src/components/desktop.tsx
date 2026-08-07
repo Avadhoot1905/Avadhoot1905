@@ -1224,6 +1224,7 @@ export function MacOSDesktop() {
               {openWindows.includes("finder") && (
                 <Window
                   key="finder"
+                  appId="finder"
                   title="Finder"
                   isActive={activeWindow === "finder"}
                   onActivate={() => activateWindow("finder")}
@@ -1240,6 +1241,7 @@ export function MacOSDesktop() {
               {openWindows.includes("safari") && (
                 <Window
                   key="safari"
+                  appId="safari"
                   title="Safari"
                   isActive={activeWindow === "safari"}
                   onActivate={() => activateWindow("safari")}
@@ -1256,6 +1258,7 @@ export function MacOSDesktop() {
               {openWindows.includes("messages") && (
                 <Window
                   key="messages"
+                  appId="messages"
                   title="Messages"
                   isActive={activeWindow === "messages"}
                   onActivate={() => activateWindow("messages")}
@@ -1272,6 +1275,7 @@ export function MacOSDesktop() {
               {openWindows.includes("photos") && (
                 <Window
                   key="photos"
+                  appId="photos"
                   title="Photos"
                   isActive={activeWindow === "photos"}
                   onActivate={() => activateWindow("photos")}
@@ -1288,6 +1292,7 @@ export function MacOSDesktop() {
               {openWindows.includes("about") && (
                 <Window
                   key="about"
+                  appId="about"
                   title="Contacts - About Me"
                   isActive={activeWindow === "about"}
                   onActivate={() => activateWindow("about")}
@@ -1304,6 +1309,7 @@ export function MacOSDesktop() {
               {openWindows.includes("projects") && (
                 <Window
                   key="projects"
+                  appId="projects"
                   title="Projects"
                   isActive={activeWindow === "projects"}
                   onActivate={() => activateWindow("projects")}
@@ -1320,6 +1326,7 @@ export function MacOSDesktop() {
               {openWindows.includes("achievements") && (
                 <Window
                   key="achievements"
+                  appId="achievements"
                   title="Achievements"
                   isActive={activeWindow === "achievements"}
                   onActivate={() => activateWindow("achievements")}
@@ -1336,6 +1343,7 @@ export function MacOSDesktop() {
               {openWindows.includes("education") && (
                 <Window
                   key="education"
+                  appId="education"
                   title="Education"
                   isActive={activeWindow === "education"}
                   onActivate={() => activateWindow("education")}
@@ -1352,6 +1360,7 @@ export function MacOSDesktop() {
               {openWindows.includes("experience") && (
                 <Window
                   key="experience"
+                  appId="experience"
                   title="Mail — Experiences"
                   isActive={activeWindow === "experience"}
                   onActivate={() => activateWindow("experience")}
@@ -1368,6 +1377,7 @@ export function MacOSDesktop() {
               {openWindows.includes("tictactoe") && (
                 <Window
                   key="tictactoe"
+                  appId="tictactoe"
                   title="Tic Tac Toe"
                   isActive={activeWindow === "tictactoe"}
                   onActivate={() => activateWindow("tictactoe")}
@@ -1384,6 +1394,7 @@ export function MacOSDesktop() {
               {openWindows.includes("2048") && (
                 <Window
                   key="2048"
+                  appId="2048"
                   title="2048"
                   isActive={activeWindow === "2048"}
                   onActivate={() => activateWindow("2048")}
@@ -1400,6 +1411,7 @@ export function MacOSDesktop() {
               {openWindows.includes("flappybird") && (
                 <Window
                   key="flappybird"
+                  appId="flappybird"
                   title="Flappy Bird"
                   isActive={activeWindow === "flappybird"}
                   onActivate={() => activateWindow("flappybird")}
@@ -1416,6 +1428,7 @@ export function MacOSDesktop() {
               {openWindows.includes("terminal") && (
                 <Window
                   key="terminal"
+                  appId="terminal"
                   title="Terminal"
                   isActive={activeWindow === "terminal"}
                   onActivate={() => activateWindow("terminal")}

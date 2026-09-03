@@ -300,7 +300,6 @@ export function MacOSDesktop() {
   const [isShuttingDown, setIsShuttingDown] = useState(false)
   const [shutdownAction, setShutdownAction] = useState<'shutdown' | 'restart'>('shutdown')
   const [isLocked, setIsLocked] = useState(true)
-  const [lastActivity, setLastActivity] = useState(Date.now())
   const [projectsFilter, setProjectsFilter] = useState<string>("all")
   const [terminalCommand, setTerminalCommand] = useState<string | undefined>(undefined)
   const [showWelcomeNotification, setShowWelcomeNotification] = useState(true)
@@ -618,13 +617,10 @@ export function MacOSDesktop() {
   const lastActivityRef = useRef(Date.now())
 
   const updateActivity = useCallback((e?: Event) => {
-    const now = Date.now()
-    if (now - lastActivityRef.current > 10000) {
-      lastActivityRef.current = now
-      setLastActivity(now)
-    } else {
-      lastActivityRef.current = now
-    }
+    // Activity time is only ever read imperatively (the 5s idle-lock interval
+    // below), never during render — so it lives in a ref. Updating it no longer
+    // triggers a MacOSDesktop re-render on every tracked event.
+    lastActivityRef.current = Date.now()
 
     if (isLocked) {
       // Only unlock on deliberate actions, not just moving the mouse
@@ -661,29 +657,28 @@ export function MacOSDesktop() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleUnlock = () => {
+  // Stable callbacks: these are passed to memoized children (MenuBar, LockScreen),
+  // so keeping their identity constant lets those children skip re-rendering when
+  // unrelated desktop state changes.
+  const handleUnlock = useCallback(() => {
     setIsLocked(false)
-    const now = Date.now()
-    lastActivityRef.current = now
-    setLastActivity(now)
-  }
+    lastActivityRef.current = Date.now()
+  }, [])
 
-  const handleLockScreen = () => {
+  const handleLockScreen = useCallback(() => {
     setIsLocked(true)
-    const now = Date.now()
-    lastActivityRef.current = now
-    setLastActivity(now)
-  }
+    lastActivityRef.current = Date.now()
+  }, [])
 
-  const handleShutdown = () => {
+  const handleShutdown = useCallback(() => {
     setShutdownAction('shutdown')
     setIsShuttingDown(true)
-  }
+  }, [])
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     setShutdownAction('restart')
     setIsShuttingDown(true)
-  }
+  }, [])
 
   const handleShutdownComplete = () => {
     setIsShuttingDown(false)
@@ -1183,8 +1178,8 @@ export function MacOSDesktop() {
                     id={app.id}
                     name={app.name}
                     icon={app.icon}
-                    onClick={() => openOrActivateWindow(app.id)}
-                    onPreload={() => preloadApp(app.id)}
+                    onClick={handleIconDoubleClick}
+                    onPreload={preloadApp}
                   />
                 ))}
               </motion.div>
@@ -1210,10 +1205,10 @@ export function MacOSDesktop() {
                       x={pos.x}
                       y={pos.y}
                       isSelected={selectedIcons.includes(app.id)}
-                      onClick={(e) => handleIconClick(app.id, e)}
-                      onDoubleClick={() => handleIconDoubleClick(app.id)}
+                      onClick={handleIconClick}
+                      onDoubleClick={handleIconDoubleClick}
                       onDragEnd={handleIconDragEnd}
-                      onPreload={() => preloadApp(app.id)}
+                      onPreload={preloadApp}
                     />
                   )
                 })}

@@ -56,7 +56,16 @@ const nextConfig: NextConfig = {
   },
   
   // Turbopack configuration (Next.js 16+)
-  turbopack: {},
+  //
+  // Pin the workspace root to THIS project. Without this, Turbopack walks up the
+  // directory tree looking for a lockfile, finds a stray `package-lock.json` in the
+  // home directory (~/), and infers `~/` as the workspace root. It then tries to
+  // watch/index the entire home folder (iCloud, Library, every other project's
+  // node_modules), which pegs CPU and RAM on `next dev`. Pinning the root stops
+  // that walk-up and the runaway file watching.
+  turbopack: {
+    root: __dirname,
+  },
   
   // Trailing slashes for S3 compatibility
   trailingSlash: true,

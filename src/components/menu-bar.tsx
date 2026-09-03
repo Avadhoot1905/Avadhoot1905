@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, type ReactNode } from "react"
+import { useState, useEffect, useRef, useCallback, memo, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { SpeakerHigh, Lightbulb, CellSignalHigh, Lock, ArrowsCounterClockwise, Flashlight, Airplane, ArrowsOutSimple, ArrowsInSimple, IconContext, Bell, Moon, Play, FastForward, Rewind, Camera, WifiHigh, Bluetooth, Broadcast, Sun, SpeakerLow, Screencast, Copy, Airplay } from "phosphor-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { SiApple } from "react-icons/si"
 import { LiquidGlassSurface } from "./liquid-glass-surface"
+import { withThemeTransition } from "@/lib/theme-transition"
 
 interface MenuBarProps {
   onLockScreen?: () => void
@@ -29,7 +30,7 @@ function Clock({ children }: { children: (now: Date) => ReactNode }) {
   return <>{children(now)}</>
 }
 
-export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
+function MenuBarComponent({ onLockScreen, onShutdown, onRestart, activeApp }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -48,6 +49,47 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   const [flashlight, setFlashlight] = useState(false)
 
   const { theme, setTheme } = useTheme()
+
+  // Theme toggle that plays the scoped light<->dark color-fade (see
+  // src/lib/theme-transition.ts). Visually identical to a bare setTheme, but the
+  // transition machinery is only active for the duration of the switch.
+  const toggleTheme = useCallback(() => {
+    withThemeTransition(() => setTheme(theme === "dark" ? "light" : "dark"))
+  }, [theme, setTheme])
+
+  // Control-Center slider commits are coalesced to one React state update per
+  // animation frame. The pointer handlers can fire far faster than the display
+  // refresh (esp. on 120Hz trackpads); without this, every pointermove re-rendered
+  // the whole Control Center. The fill/thumb still track the pointer smoothly
+  // (state drives the same styles, just at <=60fps), and identical values are a
+  // no-op in React — so the slider feels exactly the same with far less work.
+  const sliderRafRef = useRef<number | null>(null)
+  const pendingSliderRef = useRef<{ setter: (v: number) => void; value: number } | null>(null)
+  const scheduleSlider = useCallback((setter: (v: number) => void, value: number) => {
+    pendingSliderRef.current = { setter, value }
+    if (sliderRafRef.current == null) {
+      sliderRafRef.current = requestAnimationFrame(() => {
+        sliderRafRef.current = null
+        const pending = pendingSliderRef.current
+        pendingSliderRef.current = null
+        if (pending) pending.setter(pending.value)
+      })
+    }
+  }, [])
+  // On pointer release, flush the last pending value immediately so the final
+  // resting position is exact (never a frame stale).
+  const flushSlider = useCallback(() => {
+    if (sliderRafRef.current != null) {
+      cancelAnimationFrame(sliderRafRef.current)
+      sliderRafRef.current = null
+    }
+    const pending = pendingSliderRef.current
+    pendingSliderRef.current = null
+    if (pending) pending.setter(pending.value)
+  }, [])
+  useEffect(() => () => {
+    if (sliderRafRef.current != null) cancelAnimationFrame(sliderRafRef.current)
+  }, [])
 
   // Map app IDs to display names
   const appNames: Record<string, string> = {
@@ -326,7 +368,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                             const update = (clientY: number) => {
                               const y = rect.bottom - clientY;
                               const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
-                              setBrightness(Math.round(percentage));
+                              scheduleSlider(setBrightness, Math.round(percentage));
                             };
                             update(e.clientY);
                             const handleMove = (ev: PointerEvent) => update(ev.clientY);
@@ -334,6 +376,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                               target.removeEventListener('pointermove', handleMove);
                               target.removeEventListener('pointerup', handleUp);
                               target.releasePointerCapture(ev.pointerId);
+                              flushSlider();
                             };
                             target.addEventListener('pointermove', handleMove);
                             target.addEventListener('pointerup', handleUp);
@@ -356,7 +399,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                             const update = (clientY: number) => {
                               const y = rect.bottom - clientY;
                               const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
-                              setVolume(Math.round(percentage));
+                              scheduleSlider(setVolume, Math.round(percentage));
                             };
                             update(e.clientY);
                             const handleMove = (ev: PointerEvent) => update(ev.clientY);
@@ -364,6 +407,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                               target.removeEventListener('pointermove', handleMove);
                               target.removeEventListener('pointerup', handleUp);
                               target.releasePointerCapture(ev.pointerId);
+                              flushSlider();
                             };
                             target.addEventListener('pointermove', handleMove);
                             target.addEventListener('pointerup', handleUp);
@@ -398,7 +442,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                           <Camera weight="fill" size={24} className="relative z-10" />
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
+                          onClick={(e) => { e.stopPropagation(); toggleTheme() }}
                           className={`relative overflow-hidden flex-1 rounded-[1.5rem] flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white text-black" : "bg-white/30 text-white"}`}
                         >
                           {theme !== "dark" && <LiquidGlassSurface radius={24} strength={0.05} chromaticAberration={0.1} edgeHighlight={0.16} glow={0.03} specular={0.5} quality={256} panelClassName="bg-gradient-to-br from-white/10 to-transparent" />}
@@ -453,7 +497,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
   return (
     <IconContext.Provider value={{ weight: "fill" }}>
       <motion.div
-        className={`fixed left-0 top-0 z-[10000] flex h-9 w-full items-center px-3.5 text-sm backdrop-blur-2xl ${theme === "dark"
+        className={`fixed left-0 top-0 z-[10000] flex h-9 w-full items-center px-3.5 text-sm ${theme === "dark"
           ? "bg-black/40 text-white"
           : "bg-white/60 text-black"
           }`}
@@ -685,7 +729,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
           </button>
 
           <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={toggleTheme}
             className={`flex h-6 w-6 items-center justify-center rounded-md opacity-80 transition-all duration-200 ease-out hover:opacity-100 ${theme === "dark" ? "hover:bg-white/15" : "hover:bg-black/10"
               }`}
             title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
@@ -850,7 +894,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                         {/* Row 2: Circles & Pill */}
                         <div className="flex gap-3.5">
                           <button
-                            onClick={(e) => { e.stopPropagation(); setTheme(theme === 'dark' ? 'light' : 'dark') }}
+                            onClick={(e) => { e.stopPropagation(); toggleTheme() }}
                             className={`h-[52px] w-[52px] rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${theme === "dark" ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/15"}`}
                           >
                             <img
@@ -890,7 +934,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                                 const update = (clientX: number) => {
                                   const x = clientX - rect.left;
                                   const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                                  setBrightness(Math.round(percentage));
+                                  scheduleSlider(setBrightness, Math.round(percentage));
                                 };
                                 update(e.clientX);
                                 const handleMove = (ev: PointerEvent) => update(ev.clientX);
@@ -898,6 +942,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                                   target.removeEventListener('pointermove', handleMove);
                                   target.removeEventListener('pointerup', handleUp);
                                   target.releasePointerCapture(ev.pointerId);
+                                  flushSlider();
                                 };
                                 target.addEventListener('pointermove', handleMove);
                                 target.addEventListener('pointerup', handleUp);
@@ -929,7 +974,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                                 const update = (clientX: number) => {
                                   const x = clientX - rect.left;
                                   const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                                  setVolume(Math.round(percentage));
+                                  scheduleSlider(setVolume, Math.round(percentage));
                                 };
                                 update(e.clientX);
                                 const handleMove = (ev: PointerEvent) => update(ev.clientX);
@@ -937,6 +982,7 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
                                   target.removeEventListener('pointermove', handleMove);
                                   target.removeEventListener('pointerup', handleUp);
                                   target.releasePointerCapture(ev.pointerId);
+                                  flushSlider();
                                 };
                                 target.addEventListener('pointermove', handleMove);
                                 target.addEventListener('pointerup', handleUp);
@@ -987,3 +1033,9 @@ export function MenuBar({ onLockScreen, onShutdown, onRestart, activeApp }: Menu
     </IconContext.Provider>
   )
 }
+
+// Memoized so the glass-heavy menu bar only re-renders when its own props change
+// (active app name / lock/shutdown/restart callbacks) or its internal state/theme
+// — not on every unrelated MacOSDesktop state update (selection, window open/close,
+// welcome toast, activity). Requires the parent to pass stable callback props.
+export const MenuBar = memo(MenuBarComponent)

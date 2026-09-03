@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, type ReactNode } from "react"
+import { useState, useEffect, memo, type ReactNode } from "react"
 import { useTheme } from "next-themes"
 import { LiquidGlassCard } from "./liquid-glass-surface"
 
@@ -15,7 +15,7 @@ function Clock({ children }: { children: (now: Date) => ReactNode }) {
   return <>{children(now)}</>
 }
 
-export function Widgets() {
+function WidgetsComponent() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [weather, setWeather] = useState({
@@ -194,3 +194,9 @@ export function Widgets() {
     </div>
   )
 }
+
+// Memoized and prop-less, so once mounted the widgets never re-render from
+// MacOSDesktop's frequent state churn (selection, window open/close, activity).
+// The clock's per-second tick is already isolated in the inner <Clock> leaf, and
+// the weather fetch updates this component's own state — both still work.
+export const Widgets = memo(WidgetsComponent)

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 import { Application, Container, Graphics, Text } from "pixi.js"
+import { useWindowHidden } from "@/components/window"
 
 type Pipe = {
   id: number
@@ -31,6 +32,8 @@ function randomGapY() {
 
 export function FlappyBirdApp() {
   const { theme } = useTheme()
+  // Pauses the game loop AND the Pixi render ticker while the window is minimized.
+  const isHidden = useWindowHidden()
   const pixiHostRef = useRef<HTMLDivElement | null>(null)
   const appRef = useRef<Application | null>(null)
   const birdGraphicsRef = useRef<Graphics | null>(null)
@@ -314,6 +317,10 @@ export function FlappyBirdApp() {
   }, [isMobile])
 
   useEffect(() => {
+    // While minimized, don't run the game/render loop. All game state lives in
+    // refs + a little React state, so restoring resumes exactly where it paused.
+    if (isHidden) return
+
     const tick = () => {
       if (!startedRef.current || gameOverRef.current) {
         renderScene()
@@ -386,7 +393,21 @@ export function FlappyBirdApp() {
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current)
     }
-  }, [endGame, renderScene])
+  }, [endGame, renderScene, isHidden])
+
+  // Pixi runs its own internal render ticker independent of our game-loop RAF.
+  // Stop it while minimized so the GPU isn't re-presenting the (frozen) scene
+  // every frame; resume it on restore. The scene is redrawn by the game loop
+  // once it resumes, so nothing is lost.
+  useEffect(() => {
+    const app = appRef.current
+    if (!app) return
+    if (isHidden) {
+      app.ticker.stop()
+    } else {
+      app.ticker.start()
+    }
+  }, [isHidden])
 
   useEffect(() => {
     renderScene()

@@ -721,9 +721,13 @@ export function MessagesApp({ onOpenApp }: MessagesAppProps = {}) {
                         }`}
                     >
                       <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {typingMessage}
-                        </ReactMarkdown>
+                        {/* While the response is streaming we render the growing text
+                            as PLAIN text (whitespace-preserved) instead of re-parsing
+                            the full Markdown/GFM document on every ~12ms tick. The
+                            visible typewriter effect is identical; once the message
+                            settles it is committed to `messages` and rendered with the
+                            full ReactMarkdown pipeline (bold/lists/links/code) above. */}
+                        <span className="whitespace-pre-wrap break-words">{typingMessage}</span>
                         <span className="inline-block w-1 h-3.5 bg-[#0A84FF] animate-pulse ml-0.5" />
                       </div>
                     </div>

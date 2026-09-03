@@ -1,49 +1,49 @@
 {
   "stats": {
-    "totalSolved": 181,
-    "easySolved": 72,
-    "mediumSolved": 99,
+    "totalSolved": 186,
+    "easySolved": 74,
+    "mediumSolved": 102,
     "hardSolved": 10,
-    "ranking": 853609,
+    "ranking": 915514,
     "contributionPoints": 0
   },
   "recentProblems": [
     {
-      "title": "Valid Anagram",
-      "titleSlug": "valid-anagram",
-      "timestamp": "1774815540",
+      "title": "Max Area of Island",
+      "titleSlug": "max-area-of-island",
+      "timestamp": "1785042300",
       "statusDisplay": "Accepted",
-      "lang": "java"
+      "lang": "cpp"
     },
     {
-      "title": "Valid Anagram",
-      "titleSlug": "valid-anagram",
-      "timestamp": "1774815534",
+      "title": "Max Area of Island",
+      "titleSlug": "max-area-of-island",
+      "timestamp": "1785042269",
       "statusDisplay": "Accepted",
-      "lang": "java"
+      "lang": "cpp"
     },
     {
-      "title": "Valid Anagram",
-      "titleSlug": "valid-anagram",
-      "timestamp": "1774815469",
+      "title": "Number of Islands",
+      "titleSlug": "number-of-islands",
+      "timestamp": "1785041548",
       "statusDisplay": "Accepted",
-      "lang": "java"
+      "lang": "cpp"
     },
     {
-      "title": "Valid Anagram",
-      "titleSlug": "valid-anagram",
-      "timestamp": "1774815462",
+      "title": "Clone Graph",
+      "titleSlug": "clone-graph",
+      "timestamp": "1785040859",
       "statusDisplay": "Accepted",
-      "lang": "java"
+      "lang": "cpp"
     },
     {
-      "title": "Valid Anagram",
-      "titleSlug": "valid-anagram",
-      "timestamp": "1774815329",
+      "title": "Maximum Depth of Binary Tree",
+      "titleSlug": "maximum-depth-of-binary-tree",
+      "timestamp": "1784974852",
       "statusDisplay": "Accepted",
-      "lang": "java"
+      "lang": "cpp"
     }
   ],
-  "fetchedAt": "2026-04-19T12:53:04.669Z",
+  "fetchedAt": "2026-09-03T21:57:50.961Z",
   "success": true
 }

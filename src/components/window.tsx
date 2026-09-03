@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from "react"
 import { Rnd } from "react-rnd"
 import { X } from "lucide-react"
 import { motion } from "framer-motion"
@@ -10,6 +10,27 @@ import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
 
 gsap.registerPlugin(CustomEase)
+
+/**
+ * Visibility signal for a window's subtree.
+ *
+ * A minimized window is kept MOUNTED (hidden with display:none) so the genie
+ * restore animation has a live DOM to fly back to — but that means children keep
+ * running. Apps with continuous work (game RAF loops) read this context and pause
+ * while `true`, then resume seamlessly when the window is restored. Defaults to
+ * `false` (visible) for any component rendered outside a Window.
+ */
+const WindowHiddenContext = createContext(false)
+
+/** `true` while the enclosing window is minimized/hidden. */
+export function useWindowHidden(): boolean {
+  return useContext(WindowHiddenContext)
+}
+
+// Layout effect that no-ops on the server (avoids the SSR useLayoutEffect warning)
+// but runs before paint on the client — used to hide the restored window before it
+// can flash, now that the window subtree is never remounted on minimize/restore.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
 
 interface Position {
   x: number
@@ -294,7 +315,11 @@ export function Window({
   }, [isMinimized, internalMinimized, isMobile, appId, releaseClone])
 
   // Restore: reverse the genie — Dock icon → window — then reveal the real window.
-  useEffect(() => {
+  // Runs as a LAYOUT effect: the window subtree is no longer remounted on restore
+  // (so game state/canvas survive), which means the real window would paint at full
+  // opacity for one frame before we hide it. Setting opacity to 0 before paint here
+  // prevents that flash so the genie visual is identical to before.
+  useIsomorphicLayoutEffect(() => {
     if (!justRestored.current || internalMinimized) return
     justRestored.current = false
     if (isMobile) return
@@ -307,7 +332,7 @@ export function Window({
     const dockRect = dockNode.getBoundingClientRect()
     const { scaleX, scaleY, deltaX, deltaY } = computeGenieTransform(windowRect, dockRect)
 
-    // Hide the freshly-mounted real window until the clone lands on it.
+    // Hide the just-revealed real window until the clone lands on it.
     windowNode.style.opacity = "0"
 
     const clone = buildWindowClone(windowNode)
@@ -350,13 +375,12 @@ export function Window({
 
   if (!mounted) return null
 
-  if (internalMinimized) {
-    return (
-      <div style={{ display: "none" }}>
-        {children}
-      </div>
-    )
-  }
+  // NOTE: a minimized window is NOT swapped for a different element tree. Doing so
+  // (the old `return <div display:none>`) changed the element type at this position
+  // and forced React to unmount + remount the whole app subtree — resetting game
+  // state and restarting Pixi. Instead each branch below stays mounted and is just
+  // hidden with display:none while minimized, so children (and their paused loops)
+  // are preserved and resume exactly where they left off.
 
   // Mobile iOS-style modal
   if (isMobile) {
@@ -365,7 +389,7 @@ export function Window({
     return (
       <motion.div
         className="fixed inset-0 flex items-end md:items-center justify-center p-0"
-        style={{ zIndex: isActive ? 100 : 90 }}
+        style={{ zIndex: isActive ? 100 : 90, display: internalMinimized ? "none" : undefined }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -439,7 +463,9 @@ export function Window({
             onTouchStart={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {children}
+            <WindowHiddenContext.Provider value={internalMinimized}>
+              {children}
+            </WindowHiddenContext.Provider>
           </div>
         </motion.div>
       </motion.div>
@@ -470,8 +496,11 @@ export function Window({
       onMouseDown={onActivate}
       disableDragging={isFullScreen}
       enableResizing={!isFullScreen}
-      style={{ 
-        zIndex: isFullScreen ? 60 : isActive ? 40 : 20 
+      style={{
+        zIndex: isFullScreen ? 60 : isActive ? 40 : 20,
+        // Hidden (not unmounted) while minimized — the genie clone provides the
+        // visual, and keeping this mounted preserves the app's state + paused loops.
+        display: internalMinimized ? "none" : undefined,
       }}
     >
       <motion.div
@@ -609,7 +638,9 @@ export function Window({
             onActivate()
           }}
         >
-          {children}
+          <WindowHiddenContext.Provider value={internalMinimized}>
+            {children}
+          </WindowHiddenContext.Provider>
         </div>
       </motion.div>
     </Rnd>

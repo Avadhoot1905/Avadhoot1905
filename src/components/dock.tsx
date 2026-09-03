@@ -570,7 +570,7 @@ function DockComponent({ apps, onAppClick, onPreload }: DockProps) {
         {!isMobile && (
           <div
             ref={shelfRef}
-            className={`absolute inset-0 rounded-2xl backdrop-blur-2xl border transition-colors duration-300 will-change-transform ${theme === "dark"
+            className={`absolute inset-0 rounded-2xl border transition-colors duration-300 will-change-transform ${theme === "dark"
                 ? "bg-white/[0.11] border-white/15 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
                 : "bg-white/35 border-black/10 shadow-[0_15px_35px_rgba(0,0,0,0.15)]"
               }`}

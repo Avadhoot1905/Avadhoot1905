@@ -10,13 +10,17 @@ export interface AppIconProps {
   id?: string
   name: string
   icon: ReactElement
-  onClick?: (e: React.MouseEvent) => void
-  onDoubleClick?: (e: React.MouseEvent) => void
+  // Callbacks are id-first so the parent can pass ONE stable function reference for
+  // all icons (instead of a fresh `(e) => handler(app.id, e)` closure per render).
+  // That keeps this memoized component from re-rendering on every marquee-selection
+  // frame / unrelated desktop state change.
+  onClick?: (id: string, e: React.MouseEvent) => void
+  onDoubleClick?: (id: string, e: React.MouseEvent) => void
   isSelected?: boolean
   x?: number
   y?: number
   onDragEnd?: (id: string, newX: number, newY: number) => void
-  onPreload?: () => void
+  onPreload?: (id: string) => void
 }
 
 export const AppIcon: React.FC<AppIconProps> = React.memo(({
@@ -139,20 +143,20 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
     if (isMobile) {
       // On mobile, single tap opens the app directly
       if (onDoubleClick) {
-        onDoubleClick(e)
+        onDoubleClick(id, e)
       } else if (onClick) {
-        onClick(e)
+        onClick(id, e)
       }
       return
     }
     // On desktop, single click selects
-    onClick?.(e)
+    onClick?.(id, e)
   }
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     if (isMobile) return
     e.stopPropagation()
-    onDoubleClick?.(e)
+    onDoubleClick?.(id, e)
   }
 
   // Mobile layout - preserve exact original mobile behavior and styling
@@ -161,7 +165,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       <motion.div
         data-app-icon={id}
         onPointerDown={(e) => e.stopPropagation()}
-        onPointerEnter={onPreload}
+        onPointerEnter={() => onPreload?.(id)}
         className="flex flex-col items-center cursor-pointer select-none"
         onClick={handleClick}
         whileHover={{ scale: isMobile ? 1 : 1.05 }}
@@ -214,7 +218,7 @@ export const AppIcon: React.FC<AppIconProps> = React.memo(({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onPointerEnter={() => {
-        onPreload?.()
+        onPreload?.(id)
         if (!isDraggingRef.current && iconRef.current && typeof y === "number") {
           gsap.to(iconRef.current, { y: y - 2, duration: 0.2, ease: "power2.out", overwrite: "auto" })
         }

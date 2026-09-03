@@ -41,11 +41,31 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Sync to S3 (remove old files)
+      # Pass 1 — content-hashed, immutable assets (everything except the entry
+      # documents). These filenames change on every build, so a 1-year immutable
+      # cache is correct and optimal. --delete prunes old hashed chunks.
+      - name: Sync hashed static assets to S3 (immutable, remove old files)
         run: |
           aws s3 sync out/ s3://avadhootgmportfolio \
             --delete \
-            --cache-control "public, max-age=31536000, immutable"
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html" \
+            --exclude "*.txt" \
+            --exclude "data/*.json"
+
+      # Pass 2 — entry documents (HTML + Next.js route payload .txt + runtime
+      # data JSON). These have STABLE names and reference the hashed assets, so
+      # they must be revalidated on every visit. Without this they inherited the
+      # immutable policy above, meaning a returning browser could serve a stale
+      # index.html pointing at chunks that --delete already removed (broken load).
+      - name: Sync entry documents to S3 (always revalidate)
+        run: |
+          aws s3 sync out/ s3://avadhootgmportfolio \
+            --exclude "*" \
+            --include "*.html" \
+            --include "*.txt" \
+            --include "data/*.json" \
+            --cache-control "public, no-cache, must-revalidate"
 
       - name: Invalidate CloudFront cache
         run: |

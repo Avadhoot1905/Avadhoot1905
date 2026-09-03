@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
+import { useWindowHidden } from "@/components/window"
 
 type Obstacle = {
   id: number
@@ -32,6 +33,8 @@ const SPRITES = {
 }
 
 export function DinoGame({ className = "", children }: DinoGameProps) {
+  // Pauses the game loop while the enclosing window is minimized (see window.tsx).
+  const isHidden = useWindowHidden()
   const [dinoY, setDinoY] = useState(DINO_GROUND_Y)
   const [obstacles, setObstacles] = useState<Obstacle[]>([])
   const [score, setScore] = useState(0)
@@ -149,6 +152,15 @@ export function DinoGame({ className = "", children }: DinoGameProps) {
   }, [jump])
 
   useEffect(() => {
+    // While minimized, don't schedule any frames — the game state (all in refs +
+    // score/gameOver state) is preserved untouched, so restoring resumes exactly
+    // where it left off. Reset the frame clock so the first resumed frame uses a
+    // fresh delta instead of a large catch-up jump.
+    if (isHidden) {
+      lastFrameRef.current = 0
+      return
+    }
+
     const tick = (timestamp: number) => {
       if (!lastFrameRef.current) {
         lastFrameRef.current = timestamp
@@ -259,7 +271,7 @@ export function DinoGame({ className = "", children }: DinoGameProps) {
         window.cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [isGameOver, isRunning, syncState])
+  }, [isGameOver, isRunning, syncState, isHidden])
 
   useEffect(() => {
     resetGame()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
+import { useEffect, useRef, useState, memo, type CSSProperties, type ReactNode } from "react"
 import { LiquidGlass, type LiquidGlassProps } from "liquid-glass-web-react"
 
 type LiquidGlassSurfaceProps = Omit<LiquidGlassProps, "children" | "width" | "height"> & {
@@ -22,7 +22,7 @@ type LiquidGlassSurfaceProps = Omit<LiquidGlassProps, "children" | "width" | "he
  *
  * Drop it in as the first child of any `relative`/`fixed`/`absolute` container.
  */
-export function LiquidGlassSurface({
+function LiquidGlassSurfaceComponent({
   panelClassName,
   panelStyle,
   radius = 24,
@@ -82,6 +82,16 @@ export function LiquidGlassSurface({
   )
 }
 
+/**
+ * Memoized: the SVG-displacement glass layer is expensive to reconcile, so it must
+ * not re-render just because a parent re-rendered with identical props. Callers pass
+ * primitive props (radius/strength/…) + a theme-derived `panelClassName` string, all
+ * stable across unrelated state changes (e.g. Control-Center slider moves, the menu
+ * bar's 1s clock tick) — so this memo makes the glass immune to that churn while
+ * still re-rendering correctly when the theme (its panel tint) actually changes.
+ */
+export const LiquidGlassSurface = memo(LiquidGlassSurfaceComponent)
+
 type LiquidGlassCardProps = Omit<LiquidGlassProps, "children" | "width" | "height"> & {
   children: ReactNode
   /** Sizing/layout classes for the card footprint (e.g. "w-44 h-44", "w-full aspect-square"). */
@@ -100,7 +110,7 @@ type LiquidGlassCardProps = Omit<LiquidGlassProps, "children" | "width" | "heigh
  * instead of hard-coded pixels — so the same card works on desktop (`w-44 h-44`)
  * and on the phone grid (`w-full aspect-square`).
  */
-export function LiquidGlassCard({
+function LiquidGlassCardComponent({
   children,
   className,
   contentClassName,
@@ -165,3 +175,11 @@ export function LiquidGlassCard({
     </div>
   )
 }
+
+/**
+ * Memoized for the same reason as LiquidGlassSurface. The widget cards receive
+ * `children` (date / weather content); those only change when the Widgets parent
+ * itself re-renders (weather fetch, mount) — the per-second clock tick is isolated
+ * in an inner leaf, so the card's props stay stable between ticks.
+ */
+export const LiquidGlassCard = memo(LiquidGlassCardComponent)

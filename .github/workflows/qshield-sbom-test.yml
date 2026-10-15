@@ -1,0 +1,140 @@
+# QShield DEV SBOM Test
+#
+# Standalone, manually-triggered test workflow. It is INDEPENDENT of the
+# production deploy pipeline (deploy.yml): it never builds, deploys, or touches
+# the portfolio's AWS resources, and its concurrency group is isolated so it can
+# neither cancel nor be cancelled by any other job.
+#
+# What it does, end to end:
+#   1. Generate a genuine CycloneDX SBOM of the Lambda backend's RESOLVED
+#      dependency tree (direct + transitive) with a pinned generator.
+#   2. Build QShield's real `sbomci` CLI from source at a pinned commit, fetched
+#      onto the runner with a dedicated read-only token (the private QShield
+#      source is NEVER committed into this public repository).
+#   3. Submit the SBOM to QShield DEV, wait for the automatic vulnerability
+#      analysis, read back the policy verdict, and exit with sbomci's own exit
+#      code so a policy FAIL fails THIS job only.
+name: QShield DEV SBOM Test
+
+on:
+  workflow_dispatch: {}
+
+# Isolated from every other workflow. deploy.yml declares no concurrency group,
+# so nothing here can cancel or queue behind it (or vice versa).
+concurrency:
+  group: qshield-sbom-test-${{ github.ref }}
+  cancel-in-progress: false
+
+# Least privilege: only read this repo's own contents for checkout. The private
+# QShield source is fetched with a separate token (secrets.QSHIELD_SRC_TOKEN),
+# not GITHUB_TOKEN, which cannot read another private repository anyway.
+permissions:
+  contents: read
+
+jobs:
+  sbom-ingest:
+    name: Generate SBOM and submit to QShield DEV
+    runs-on: ubuntu-latest
+    # Bounded: SBOM gen + CLI build + a 300s scan poll, with headroom.
+    timeout-minutes: 15
+
+    env:
+      # Pinned, immutable QShield source. sbomci's binary imports only the Go
+      # standard library (its tests use testify, which we never build), so it
+      # compiles with the module graph disabled.
+      QSHIELD_REPO: qunulabs/qshield
+      QSHIELD_COMMIT: ff887c28c98ad449409ba4a2e9aca00b0d8c17b1
+      SBOM_GENERATOR_VERSION: "6.0.1" # @cyclonedx/cyclonedx-npm (CycloneDX 1.6)
+      SBOM_PATH: ${{ runner.temp }}/lambda.sbom.cdx.json
+      SBOMCI_BIN: ${{ runner.temp }}/sbomci
+
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      # Prove the runner can reach QShield DEV before doing any work. No
+      # credentials are sent — this is a plain reachability check.
+      - name: Preflight — QShield DEV reachable
+        run: |
+          echo "Probing https://dev.qshield.qnulabs.com/ (no credentials sent)"
+          code="$(curl -fsS -o /dev/null -w '%{http_code}' --max-time 15 https://dev.qshield.qnulabs.com/)"
+          echo "HTTP $code"
+
+      # --- Generate a genuine SBOM of the Lambda dependency tree --------------
+      - name: Set up Node.js (for the SBOM generator)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # satisfies cyclonedx-npm@6 (engines: node >=20.18)
+
+      - name: Generate CycloneDX SBOM (Lambda resolved dependencies)
+        run: |
+          # --package-lock-only resolves direct + transitive deps straight from
+          # lambda/package-lock.json without installing node_modules, so the app
+          # build is untouched. --omit dev keeps it to the deployed runtime tree.
+          npx --yes "@cyclonedx/cyclonedx-npm@${SBOM_GENERATOR_VERSION}" \
+            --package-lock-only \
+            --omit dev \
+            --output-format JSON \
+            --output-file "${SBOM_PATH}" \
+            lambda/package.json
+
+      - name: Validate the SBOM (fail clearly if empty or invalid)
+        run: |
+          test -s "${SBOM_PATH}" || { echo "::error::SBOM file missing or empty"; exit 1; }
+          node -e '
+            const fs = require("fs");
+            const b = JSON.parse(fs.readFileSync(process.env.SBOM_PATH, "utf8"));
+            const n = (b.components || []).length;
+            if (b.bomFormat !== "CycloneDX") { console.error("::error::not a CycloneDX document"); process.exit(1); }
+            if (n < 1) { console.error("::error::SBOM has no components — refusing to submit an empty inventory"); process.exit(1); }
+            console.log(`SBOM OK: ${b.bomFormat} ${b.specVersion}, ${n} components`);
+          '
+
+      # --- Build QShield's real sbomci CLI from pinned source -----------------
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.27" # matches backend/go.mod
+          cache: false
+
+      - name: Fetch QShield sbomci source (pinned, private, not committed)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.QSHIELD_REPO }}
+          ref: ${{ env.QSHIELD_COMMIT }}
+          token: ${{ secrets.QSHIELD_SRC_TOKEN }}
+          persist-credentials: false
+          path: qshield-src
+          sparse-checkout: |
+            backend/cmd/sbomci
+          sparse-checkout-cone-mode: true
+
+      - name: Build sbomci (stdlib only, module graph disabled)
+        working-directory: qshield-src
+        env:
+          GO111MODULE: "off"
+          GOWORK: "off"
+        run: |
+          go build -o "${SBOMCI_BIN}" ./backend/cmd/sbomci
+          "${SBOMCI_BIN}" nonexistent-arg || true # smoke test: prints usage, nonzero
+          echo "built sbomci at ${SBOMCI_BIN}"
+
+      # --- Submit to QShield DEV ----------------------------------------------
+      # Credentials are mapped to SBOMCI_* ONLY in this step. The binary runs
+      # directly (no `continue-on-error`, no wrapper) so its exit code — a policy
+      # FAIL is 1 — propagates to the job. WARN is exit 0 by design.
+      - name: Submit SBOM to QShield and gate on policy verdict
+        env:
+          SBOMCI_BASE_URL: https://dev.qshield.qnulabs.com
+          SBOMCI_PROJECT_NAME: Test Avadhoot
+          SBOMCI_LIFECYCLE: BUILD
+          # Explicit asset identity. Overriding GITHUB_REPOSITORY keeps this
+          # backend-dependency SBOM on its own asset ("<owner>/<repo>-lambda"),
+          # so a future frontend SBOM cannot merge into the same asset history.
+          SBOMCI_REPOSITORY: ${{ github.repository }}-lambda
+          SBOMCI_SBOM_PATH: ${{ env.SBOM_PATH }}
+          SBOMCI_POLL_INTERVAL_SECONDS: "5"
+          SBOMCI_POLL_TIMEOUT_SECONDS: "300"
+          SBOMCI_CLIENT_ID: ${{ secrets.QSHIELD_DEV_CLIENT_ID }}
+          SBOMCI_CLIENT_SECRET: ${{ secrets.QSHIELD_DEV_CLIENT_SECRET }}
+        run: "${SBOMCI_BIN}"

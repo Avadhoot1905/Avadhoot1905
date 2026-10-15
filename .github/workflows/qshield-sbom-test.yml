@@ -73,9 +73,13 @@ jobs:
 
       - name: Generate CycloneDX SBOM (Lambda resolved dependencies)
         run: |
-          # --package-lock-only resolves direct + transitive deps straight from
-          # lambda/package-lock.json without installing node_modules, so the app
-          # build is untouched. --omit dev keeps it to the deployed runtime tree.
+          # lambda/package-lock.json is gitignored (lambda/.gitignore), so it is
+          # absent on a clean checkout. Resolve it here — lockfile ONLY, no
+          # node_modules, so the app build is untouched; it lives on the runner
+          # and is never committed.
+          (cd lambda && npm install --package-lock-only)
+          # --package-lock-only then reads that lockfile; --omit dev keeps the
+          # SBOM to the deployed runtime dependency tree.
           npx --yes "@cyclonedx/cyclonedx-npm@${SBOM_GENERATOR_VERSION}" \
             --package-lock-only \
             --omit dev \

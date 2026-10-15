@@ -141,4 +141,12 @@ jobs:
           SBOMCI_POLL_TIMEOUT_SECONDS: "300"
           SBOMCI_CLIENT_ID: ${{ secrets.QSHIELD_DEV_CLIENT_ID }}
           SBOMCI_CLIENT_SECRET: ${{ secrets.QSHIELD_DEV_CLIENT_SECRET }}
-        run: "${SBOMCI_BIN}"
+        run: |
+          # Exit-code guide so a feature-flag failure is not mistaken for a
+          # policy failure: 0=PASS/WARN, 1=policy FAIL (blocking), 2=config,
+          # 3=API error — e.g. a DEV tenant with crp:sbom:osv:enabled or
+          # crp:sbom:policy:enabled OFF makes the vulnerabilities/policy call
+          # fail here; that is an environment toggle, NOT a policy FAIL —
+          # 4=scan failed, 5=poll timeout, 6=unknown verdict.
+          echo "::notice::sbomci exit codes: 0=pass/warn, 1=POLICY FAIL, 2=config, 3=API/feature-flag, 4=scan failed, 5=timeout, 6=unknown verdict"
+          "${SBOMCI_BIN}"

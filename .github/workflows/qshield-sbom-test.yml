@@ -45,12 +45,17 @@ jobs:
       QSHIELD_REPO: qunulabs/qshield
       QSHIELD_COMMIT: ff887c28c98ad449409ba4a2e9aca00b0d8c17b1
       SBOM_GENERATOR_VERSION: "6.0.1" # @cyclonedx/cyclonedx-npm (CycloneDX 1.6)
-      SBOM_PATH: ${{ runner.temp }}/lambda.sbom.cdx.json
-      SBOMCI_BIN: ${{ runner.temp }}/sbomci
 
     steps:
       - name: Check out this repository
         uses: actions/checkout@v4
+
+      # Resolve absolute runner paths once. (Done here, not in job-level env,
+      # because the `runner` context is not available in job-level env.)
+      - name: Resolve runner paths
+        run: |
+          echo "SBOM_PATH=$RUNNER_TEMP/lambda.sbom.cdx.json" >> "$GITHUB_ENV"
+          echo "SBOMCI_BIN=$RUNNER_TEMP/sbomci" >> "$GITHUB_ENV"
 
       # Prove the runner can reach QShield DEV before doing any work. No
       # credentials are sent — this is a plain reachability check.

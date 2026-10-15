@@ -41,7 +41,7 @@ export function createLegacyTLSConnection(
     host,
     port,
     servername: host,
-    rejectUnauthorized: false,
+    rejectUnauthorized: true,
   })
 }
 
